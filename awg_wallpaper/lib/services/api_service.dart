@@ -7,7 +7,7 @@ import '../models/category.dart';
 /// API Service for connecting to the AWG Backend
 class ApiService {
   // TODO: Update this URL to your deployed backend URL
-  static const String baseUrl = 'http://192.168.31.116:3002/api';
+  static const String baseUrl = 'https://softskyapi.softsky.studio/api';
 
   String? _authToken;
 
