@@ -46,10 +46,26 @@ const corsOptions = {
     optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
-app.use(cors(corsOptions));
+// Explicit CORS headers middleware (handles cases where reverse proxy interferes)
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
 
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
+    // Set CORS headers for all requests
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight requests immediately
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
+    next();
+});
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
