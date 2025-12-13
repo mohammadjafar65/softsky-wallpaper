@@ -29,19 +29,10 @@ const allowedOrigins = [
     'https://softskyadmin.softsky.studio'
 ].filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin)
-            return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-            callback(null, true);
-        }
-        else {
-            console.log('Blocked by CORS:', origin);
-            callback(null, true); // Temporarily allow all for troubleshooting if needed, or strictly: callback(new Error('Not allowed by CORS'))
-        }
-    },
-    credentials: true
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
 }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
