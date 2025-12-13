@@ -43,9 +43,12 @@ router.post('/admin/login', async (req, res) => {
                 role: user.role,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
-        res.status(500).json({ error: 'Login failed' });
+        res.status(500).json({
+            error: 'Login failed',
+            details: error.message || error
+        });
     }
 });
 

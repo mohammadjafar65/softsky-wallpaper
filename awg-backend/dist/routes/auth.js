@@ -42,7 +42,10 @@ router.post('/admin/login', async (req, res) => {
     }
     catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ error: 'Login failed' });
+        res.status(500).json({
+            error: 'Login failed',
+            details: error.message || error
+        });
     }
 });
 // Verify Firebase token and sync user (for mobile app)
