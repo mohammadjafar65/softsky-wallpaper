@@ -66,6 +66,10 @@ app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/awg_wallpaper';
+// Log masked URI for debugging
+console.log('Attempting to connect to MongoDB...');
+const maskedURI = MONGODB_URI.replace(/:([^:@]+)@/, ':****@');
+console.log(`Connection URI: ${maskedURI}`);
 mongoose_1.default.connect(MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch((err) => console.error('❌ MongoDB connection error:', err));
