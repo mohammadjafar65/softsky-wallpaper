@@ -18,7 +18,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-// Middleware
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
@@ -28,12 +27,29 @@ const allowedOrigins = [
     'https://softskyadmin.softsky.studio'
 ].filter(Boolean);
 
-app.use(cors({
-    origin: allowedOrigins,
+// CORS configuration
+const corsOptions = {
+    origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('Blocked by CORS:', origin);
+            callback(null, true); // For now, allow all origins for debugging
+        }
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

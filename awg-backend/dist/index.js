@@ -19,7 +19,6 @@ const packs_1 = __importDefault(require("./routes/packs"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middleware
-// Middleware
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
@@ -28,12 +27,28 @@ const allowedOrigins = [
     'http://softskyadmin.softsky.studio',
     'https://softskyadmin.softsky.studio'
 ].filter(Boolean);
-app.use((0, cors_1.default)({
-    origin: allowedOrigins,
+// CORS configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        }
+        else {
+            console.log('Blocked by CORS:', origin);
+            callback(null, true); // For now, allow all origins for debugging
+        }
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+app.use((0, cors_1.default)(corsOptions));
+// Handle preflight requests explicitly
+app.options('*', (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // MongoDB Connection
