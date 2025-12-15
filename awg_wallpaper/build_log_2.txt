@@ -1,0 +1,20 @@
+Running Gradle task 'assembleDebug'...                          
+e: file:///D:/02%20Persional%20Projects/softsky-wallpaper/awg_wallpaper/android/app/src/main/kotlin/com/awg/awg_wallpaper/MainActivity.kt:19:9 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun ComponentActivity.enableEdgeToEdge(statusBarStyle: SystemBarStyle = ..., navigationBarStyle: SystemBarStyle = ...): Unit
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 16s
+Running Gradle task 'assembleDebug'...                             17.1s
+Gradle task assembleDebug failed with exit code 1

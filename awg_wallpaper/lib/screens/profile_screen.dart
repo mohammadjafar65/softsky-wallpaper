@@ -224,11 +224,11 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
 
-                      if (!subscriptionProvider.isPro)
-                        const Padding(
-                          padding: EdgeInsets.all(20),
-                          child: AdBanner(adType: AdType.native),
-                        ),
+                      // if (!subscriptionProvider.isPro)
+                      //   const Padding(
+                      //     padding: EdgeInsets.all(20),
+                      //     child: AdBanner(adType: AdType.native),
+                      //   ),
 
                       const SizedBox(height: 20),
 
@@ -239,6 +239,8 @@ class ProfileScreen extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
+
+                      const SizedBox(height: 70),
                     ],
                   ),
                 );

@@ -5,7 +5,7 @@ import '../config/theme.dart';
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  
+
   const CustomBottomNav({
     super.key,
     required this.currentIndex,
@@ -15,16 +15,16 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 55),
+      margin: const EdgeInsets.fromLTRB(35, 0, 35, 60),
       height: 70,
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(50),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(50),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -74,7 +74,7 @@ class _NavIcon extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final Color? color;
-  
+
   const _NavIcon({
     required this.icon,
     required this.activeIcon,
@@ -90,22 +90,26 @@ class _NavIcon extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 60,
-        height: 70,
+        height: 60,
         child: Center(
           child: AnimatedScale(
             scale: isSelected ? 1.1 : 1.0,
             duration: const Duration(milliseconds: 200),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primary.withOpacity(0.1) : Colors.transparent,
+                color: isSelected
+                    ? AppTheme.primary.withOpacity(0.1)
+                    : Colors.transparent,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isSelected ? activeIcon : icon,
-                color: isSelected ? AppTheme.primary : (color ?? AppTheme.textSecondary),
-                size: 26,
+                color: isSelected
+                    ? AppTheme.primary
+                    : (color ?? AppTheme.textSecondary),
+                size: 27,
               ),
             ),
           ),
@@ -118,7 +122,7 @@ class _NavIcon extends StatelessWidget {
 class _CenterIcon extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
-  
+
   const _CenterIcon({
     required this.isSelected,
     required this.onTap,
@@ -130,13 +134,13 @@ class _CenterIcon extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 56,
-        height: 56,
+        width: 55,
+        height: 55,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
               AppTheme.primary,
-              AppTheme.primary.withOpacity(0.8),
+              AppTheme.primary.withOpacity(0.4),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -145,15 +149,15 @@ class _CenterIcon extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: AppTheme.primary.withOpacity(0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+              blurRadius: 10,
+              offset: const Offset(0, 0),
             ),
           ],
         ),
         child: const Icon(
-          Icons.auto_awesome_rounded,
+          Icons.desktop_mac_outlined,
           color: Colors.white,
-          size: 28,
+          size: 25,
         ),
       ),
     );

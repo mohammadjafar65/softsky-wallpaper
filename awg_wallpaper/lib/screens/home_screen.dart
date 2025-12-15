@@ -164,7 +164,7 @@ class HomeScreen extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
               decoration: BoxDecoration(
                 color: isSelected ? AppTheme.primary : AppTheme.surface,
                 borderRadius: BorderRadius.circular(20),
@@ -178,7 +178,7 @@ class HomeScreen extends StatelessWidget {
                 style: TextStyle(
                   color: isSelected ? Colors.white : AppTheme.textSecondary,
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  fontSize: 14,
                 ),
               ),
             ),

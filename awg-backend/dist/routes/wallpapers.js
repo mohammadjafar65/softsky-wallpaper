@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const Wallpaper_1 = __importDefault(require("../models/Wallpaper"));
 const Category_1 = __importDefault(require("../models/Category"));
+const Pack_1 = __importDefault(require("../models/Pack"));
 const auth_1 = require("../middleware/auth");
 const upload_1 = require("../middleware/upload");
 const router = (0, express_1.Router)();
@@ -171,6 +172,12 @@ router.post('/', auth_1.authenticate, auth_1.requireAdmin, upload_1.upload.singl
         // Update category wallpaper count
         categoryDoc.wallpaperCount += 1;
         await categoryDoc.save();
+        // Update pack wallpaper count if assigned to a pack
+        if (packId) {
+            await Pack_1.default.findByIdAndUpdate(packId, {
+                $inc: { wallpaperCount: 1 }
+            });
+        }
         res.status(201).json({
             message: 'Wallpaper created successfully',
             wallpaper: {
@@ -204,8 +211,27 @@ router.put('/:id', auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
             wallpaper.isWide = isWide === true || isWide === 'true';
         if (isPro !== undefined)
             wallpaper.isPro = isPro === true || isPro === 'true';
-        if (packId !== undefined)
-            wallpaper.packId = packId === '' ? undefined : packId;
+        // Handle pack assignment changes
+        if (packId !== undefined) {
+            const oldPackId = wallpaper.packId?.toString();
+            const newPackId = packId === '' ? undefined : packId;
+            // If pack changed, update counts
+            if (oldPackId !== newPackId) {
+                // Decrement old pack count
+                if (oldPackId) {
+                    await Pack_1.default.findByIdAndUpdate(oldPackId, {
+                        $inc: { wallpaperCount: -1 }
+                    });
+                }
+                // Increment new pack count
+                if (newPackId) {
+                    await Pack_1.default.findByIdAndUpdate(newPackId, {
+                        $inc: { wallpaperCount: 1 }
+                    });
+                }
+            }
+            wallpaper.packId = newPackId;
+        }
         await wallpaper.save();
         res.json({
             message: 'Wallpaper updated successfully',
@@ -231,6 +257,12 @@ router.delete('/:id', auth_1.authenticate, auth_1.requireAdmin, async (req, res)
         await Category_1.default.findByIdAndUpdate(wallpaper.category, {
             $inc: { wallpaperCount: -1 },
         });
+        // Update pack count if wallpaper was in a pack
+        if (wallpaper.packId) {
+            await Pack_1.default.findByIdAndUpdate(wallpaper.packId, {
+                $inc: { wallpaperCount: -1 }
+            });
+        }
         await Wallpaper_1.default.findByIdAndDelete(req.params.id);
         res.json({ message: 'Wallpaper deleted successfully' });
     }

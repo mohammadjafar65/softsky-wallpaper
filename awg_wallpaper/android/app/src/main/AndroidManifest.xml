@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet permission for network operations (Google Sign-In, Firebase, API calls) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- Billing permission for Google Play in-app purchases -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+    
     <!-- Permissions for wallpaper and storage -->
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>

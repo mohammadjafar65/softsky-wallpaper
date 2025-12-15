@@ -9,10 +9,10 @@ enum SubscriptionPlan { free, weekly, monthly, yearly, lifetime }
 
 /// Google Play Product IDs - Update these to match your Play Console products
 class ProductIds {
-  static const String weekly = 'awg_pro_weekly';
-  static const String monthly = 'awg_pro_monthly';
-  static const String yearly = 'awg_pro_yearly';
-  static const String lifetime = 'awg_pro_lifetime';
+  static const String weekly = 'ssw_pro_weekly';
+  static const String monthly = 'ssw_pro_monthly';
+  static const String yearly = 'ssw_pro_yearly';
+  static const String lifetime = 'ssw_pro_lifetime';
 
   static const Set<String> allIds = {weekly, monthly, yearly, lifetime};
 
@@ -129,6 +129,8 @@ class SubscriptionProvider extends ChangeNotifier {
 
       if (response.notFoundIDs.isNotEmpty) {
         debugPrint('Products not found: ${response.notFoundIDs}');
+        _errorMessage =
+            'Products not found in Store: ${response.notFoundIDs.join(', ')}. Check Play Console.';
       }
 
       _products = response.productDetails;

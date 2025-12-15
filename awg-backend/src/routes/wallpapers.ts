@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import Wallpaper from '../models/Wallpaper';
 import Category from '../models/Category';
+import Pack from '../models/Pack';
 import { authenticate, requireAdmin, AuthRequest, optionalAuth } from '../middleware/auth';
 import { upload, uploadToCloudinary, deleteFromCloudinary } from '../middleware/upload';
 
@@ -192,6 +193,13 @@ router.post('/', authenticate, requireAdmin, upload.single('image'), async (req:
         categoryDoc.wallpaperCount += 1;
         await categoryDoc.save();
 
+        // Update pack wallpaper count if assigned to a pack
+        if (packId) {
+            await Pack.findByIdAndUpdate(packId, {
+                $inc: { wallpaperCount: 1 }
+            });
+        }
+
         res.status(201).json({
             message: 'Wallpaper created successfully',
             wallpaper: {
@@ -223,7 +231,29 @@ router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => 
         if (tags) wallpaper.tags = tags.split(',').map((t: string) => t.trim());
         if (isWide !== undefined) wallpaper.isWide = isWide === true || isWide === 'true';
         if (isPro !== undefined) wallpaper.isPro = isPro === true || isPro === 'true';
-        if (packId !== undefined) wallpaper.packId = packId === '' ? undefined : packId;
+        // Handle pack assignment changes
+        if (packId !== undefined) {
+            const oldPackId = wallpaper.packId?.toString();
+            const newPackId = packId === '' ? undefined : packId;
+
+            // If pack changed, update counts
+            if (oldPackId !== newPackId) {
+                // Decrement old pack count
+                if (oldPackId) {
+                    await Pack.findByIdAndUpdate(oldPackId, {
+                        $inc: { wallpaperCount: -1 }
+                    });
+                }
+                // Increment new pack count
+                if (newPackId) {
+                    await Pack.findByIdAndUpdate(newPackId, {
+                        $inc: { wallpaperCount: 1 }
+                    });
+                }
+            }
+
+            wallpaper.packId = newPackId as any;
+        }
 
         await wallpaper.save();
 
@@ -253,6 +283,13 @@ router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) 
         await Category.findByIdAndUpdate(wallpaper.category, {
             $inc: { wallpaperCount: -1 },
         });
+
+        // Update pack count if wallpaper was in a pack
+        if (wallpaper.packId) {
+            await Pack.findByIdAndUpdate(wallpaper.packId, {
+                $inc: { wallpaperCount: -1 }
+            });
+        }
 
         await Wallpaper.findByIdAndDelete(req.params.id);
 

@@ -20,12 +20,40 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('bookmarks');
   await Hive.openBox('settings');
+  await Hive.openBox('cache');
 
   // Initialize Firebase
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    debugPrint('Firebase init failed: $e'); // Config might be missing
+    debugPrint('Firebase init failed: $e');
+    runApp(MaterialApp(
+      home: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  'Firebase Initialization Failed',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  e.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
+    return;
   }
 
   // Set system UI overlay style
@@ -33,7 +61,7 @@ void main() async {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
+      systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
@@ -70,8 +98,7 @@ class AWGWallpaperApp extends StatelessWidget {
               statusBarColor: Colors.transparent,
               statusBarIconBrightness:
                   isDark ? Brightness.light : Brightness.dark,
-              systemNavigationBarColor:
-                  isDark ? AppTheme.darkBackground : Colors.white,
+              systemNavigationBarColor: Colors.transparent,
               systemNavigationBarIconBrightness:
                   isDark ? Brightness.light : Brightness.dark,
             ),

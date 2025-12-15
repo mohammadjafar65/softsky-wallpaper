@@ -10,7 +10,7 @@ class WallpaperPack {
   final int wallpaperCount;
   final String? author;
   final DateTime? createdAt;
-  
+
   WallpaperPack({
     required this.id,
     required this.name,
@@ -22,7 +22,7 @@ class WallpaperPack {
     this.author,
     this.createdAt,
   }) : wallpaperCount = wallpaperCount ?? wallpapers.length;
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -36,20 +36,25 @@ class WallpaperPack {
       'createdAt': createdAt?.toIso8601String(),
     };
   }
-  
+
   factory WallpaperPack.fromJson(Map<String, dynamic> json) {
     return WallpaperPack(
-      id: json['id'] as String,
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       name: json['name'] as String,
       description: json['description'] as String,
       coverImage: json['coverImage'] as String,
-      wallpapers: (json['wallpapers'] as List)
-          .map((w) => Wallpaper.fromJson(w as Map<String, dynamic>))
-          .toList(),
+      wallpapers: json['wallpapers'] != null
+          ? (json['wallpapers'] as List)
+              .map((w) => Wallpaper.fromJson(w as Map<String, dynamic>))
+              .toList()
+          : [],
       isPro: json['isPro'] as bool? ?? false,
-      wallpaperCount: json['wallpaperCount'] as int?,
+      // Try multiple possible keys for the count
+      wallpaperCount: json['wallpaperCount'] as int? ??
+          json['wallpapersCount'] as int? ??
+          json['count'] as int?,
       author: json['author'] as String?,
-      createdAt: json['createdAt'] != null 
+      createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : null,
     );

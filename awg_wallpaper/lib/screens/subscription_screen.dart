@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/subscription_provider.dart';
+import '../services/auth_service.dart';
+import 'auth/login_screen.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -13,6 +15,15 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   SubscriptionPlan _selectedPlan = SubscriptionPlan.yearly;
   bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Clear any previous errors when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SubscriptionProvider>().clearError();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +172,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final features = [
       'Access all premium wallpapers',
       'Ad-free experience',
-      '4K ultra HD downloads',
+      // '4K ultra HD downloads',
       'Priority support',
     ];
 
@@ -350,17 +361,79 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Future<void> _subscribe(SubscriptionProvider provider) async {
     setState(() => _isProcessing = true);
-    final success = await provider.subscribe(_selectedPlan);
-    setState(() => _isProcessing = false);
 
-    if (success && mounted) {
-      Navigator.pop(context);
+    // Check if user is logged in
+    final authService = AuthService();
+    if (!authService.isLoggedIn) {
+      setState(() => _isProcessing = false);
+      _showLoginDialog();
+      return;
     }
+
+    try {
+      final success = await provider.subscribe(_selectedPlan);
+      setState(() => _isProcessing = false);
+
+      if (success && mounted) {
+        // Purchase initiated successfully - wait for purchase stream updates
+        // The actual success/failure will be handled by the provider
+      }
+    } catch (e) {
+      setState(() => _isProcessing = false);
+      if (mounted) {
+        _showError('Subscription failed: ${e.toString()}');
+      }
+    }
+
+    // Check for any errors from the provider
+    if (mounted && provider.errorMessage != null) {
+      _showError(provider.errorMessage!);
+      provider.clearError();
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   Future<void> _restorePurchases(SubscriptionProvider provider) async {
     setState(() => _isProcessing = true);
     await provider.restorePurchases();
     setState(() => _isProcessing = false);
+  }
+
+  void _showLoginDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Login Required'),
+        content: const Text(
+            'You need to be logged in to upgrade to Pro. This ensures your subscription is linked to your account and can be restored on any device.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+            child: const Text('Login / Signup'),
+          ),
+        ],
+      ),
+    );
   }
 }

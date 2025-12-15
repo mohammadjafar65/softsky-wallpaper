@@ -1,7 +1,7 @@
 name: awg_wallpaper
 description: SoftSky Wallpaper App - A premium wallpaper application with daily wallpapers, packs, and more.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -23,9 +23,9 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   share_plus: ^7.2.1
   url_launcher: ^6.2.1
-  google_sign_in: ^6.1.6
-  firebase_auth: ^4.15.0
-  firebase_core: ^2.24.0
+  google_sign_in: ^6.2.1
+  firebase_auth: ^5.1.0
+  firebase_core: ^3.1.0
   flutter_rating_bar: ^4.0.1
   in_app_review: ^2.0.9
   font_awesome_flutter: ^10.6.0

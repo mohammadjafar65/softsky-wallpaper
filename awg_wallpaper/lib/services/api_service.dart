@@ -56,7 +56,9 @@ class ApiService {
 
       final uri = Uri.parse('$baseUrl/wallpapers')
           .replace(queryParameters: queryParams);
-      final response = await http.get(uri, headers: _headers);
+      final response = await http
+          .get(uri, headers: _headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -75,7 +77,9 @@ class ApiService {
     try {
       final uri = Uri.parse('$baseUrl/wallpapers/search')
           .replace(queryParameters: {'q': query});
-      final response = await http.get(uri, headers: _headers);
+      final response = await http
+          .get(uri, headers: _headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -92,10 +96,12 @@ class ApiService {
   /// Get single wallpaper by ID
   Future<Wallpaper> getWallpaperById(String id) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/wallpapers/$id'),
-        headers: _headers,
-      );
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/wallpapers/$id'),
+            headers: _headers,
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -126,10 +132,12 @@ class ApiService {
   /// Get all categories
   Future<List<Category>> getCategories() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/categories'),
-        headers: _headers,
-      );
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/categories'),
+            headers: _headers,
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

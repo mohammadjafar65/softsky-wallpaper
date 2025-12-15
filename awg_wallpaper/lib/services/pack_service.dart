@@ -13,6 +13,7 @@ class PackService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('DEBUG: Packs response: $data'); // Debug logging
         final List<dynamic> packsJson = data['packs'];
         return packsJson.map((json) => WallpaperPack.fromJson(json)).toList();
       } else {

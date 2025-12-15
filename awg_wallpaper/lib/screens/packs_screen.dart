@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../config/theme.dart';
 import '../providers/pack_provider.dart';
 import '../widgets/pack_card.dart';
@@ -13,6 +15,8 @@ class PacksScreen extends StatefulWidget {
 }
 
 class _PacksScreenState extends State<PacksScreen> {
+  int _currentCarouselIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -24,37 +28,164 @@ class _PacksScreenState extends State<PacksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Consumer<PackProvider>(
-          builder: (context, provider, child) {
-            return CustomScrollView(
+      body: Consumer<PackProvider>(
+        builder: (context, provider, child) {
+          // Use pro packs as featured for now, or mix
+          final featuredPacks = provider.proPacks.take(5).toList();
+
+          return RefreshIndicator(
+            onRefresh: () => provider.fetchPacks(refresh: true),
+            color: AppTheme.primary,
+            backgroundColor: AppTheme.surface,
+            child: CustomScrollView(
               slivers: [
-                // Header
+                // Custom Header Matching Home Screen
                 SliverToBoxAdapter(
-                  child: _buildHeader(context),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 20, right: 20, top: 75, bottom: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Collections',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineLarge
+                                  ?.copyWith(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 28,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Curated sets for you',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: AppTheme.textSecondary,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
+
+                // Featured Carousel
+                // if (featuredPacks.isNotEmpty) ...[
+                //   SliverToBoxAdapter(
+                //     child: Padding(
+                //       padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                //       child: Text(
+                //         'Featured',
+                //         style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                //               fontWeight: FontWeight.bold,
+                //             ),
+                //       ),
+                //     ),
+                //   ),
+                //   SliverToBoxAdapter(
+                //     child: Column(
+                //       children: [
+                //         CarouselSlider.builder(
+                //           itemCount: featuredPacks.length,
+                //           itemBuilder: (context, index, realIndex) {
+                //             final pack = featuredPacks[index];
+                //             return PackCard(
+                //               pack: pack,
+                //               isLarge: true,
+                //               onTap: () {
+                //                 Navigator.push(
+                //                   context,
+                //                   MaterialPageRoute(
+                //                     builder: (_) => PackDetailScreen(
+                //                         packId: pack.id, packName: pack.name),
+                //                   ),
+                //                 );
+                //               },
+                //             );
+                //           },
+                //           options: CarouselOptions(
+                //             height: 220,
+                //             viewportFraction: 0.85,
+                //             enlargeCenterPage: true,
+                //             enlargeFactor: 0.2,
+                //             autoPlay: true,
+                //             autoPlayInterval: const Duration(seconds: 5),
+                //             onPageChanged: (index, reason) {
+                //               setState(() {
+                //                 _currentCarouselIndex = index;
+                //               });
+                //             },
+                //           ),
+                //         ),
+                //         const SizedBox(height: 16),
+                //         AnimatedSmoothIndicator(
+                //           activeIndex: _currentCarouselIndex,
+                //           count: featuredPacks.length,
+                //           effect: ExpandingDotsEffect(
+                //             activeDotColor: AppTheme.primary,
+                //             dotColor: AppTheme.primary.withOpacity(0.2),
+                //             dotHeight: 6,
+                //             dotWidth: 6,
+                //             expansionFactor: 3,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ],
 
                 // Free Packs Section
                 SliverToBoxAdapter(
-                  child: _buildSectionHeader('Free Collections', true),
+                  child: _buildSectionHeader(
+                    context,
+                    'Free Collections',
+                    Icons.folder_special_rounded,
+                    AppTheme.success,
+                  ),
                 ),
                 SliverToBoxAdapter(
-                  child: _buildPacksList(context, provider.freePacks),
-                ),
-
-                // Pro Packs Section
-                SliverToBoxAdapter(
-                  child: _buildSectionHeader('Pro Collections', false),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildPacksList(context, provider.proPacks),
+                  child: _buildHorizontalList(context, provider.freePacks),
                 ),
 
                 // All Packs Grid
                 SliverToBoxAdapter(
-                  child: _buildAllPacksHeader(),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.grid_view_rounded,
+                            color: AppTheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'All Collections',
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
+
                 _buildAllPacksGrid(context, provider.packs),
 
                 // Bottom padding for nav bar
@@ -62,124 +193,73 @@ class _PacksScreenState extends State<PacksScreen> {
                   child: SizedBox(height: 100),
                 ),
               ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Wallpaper Packs',
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Curated collections for you',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, bool isFree) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isFree
-                    ? [
-                        AppTheme.success.withOpacity(0.2),
-                        AppTheme.success.withOpacity(0.1)
-                      ]
-                    : [
-                        AppTheme.gold.withOpacity(0.2),
-                        AppTheme.gold.withOpacity(0.1)
-                      ],
-              ),
-              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              isFree
-                  ? Icons.folder_special_rounded
-                  : Icons.workspace_premium_rounded,
-              color: isFree ? AppTheme.success : AppTheme.gold,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPacksList(BuildContext context, List packs) {
-    return SizedBox(
-      height: 220,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: packs.length,
-        itemBuilder: (context, index) {
-          final pack = packs[index];
-          return PackCard(
-            pack: pack,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      PackDetailScreen(packId: pack.id, packName: pack.name),
-                ),
-              );
-            },
           );
         },
       ),
     );
   }
 
-  Widget _buildAllPacksHeader() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 32, 20, 16),
+  Widget _buildSectionHeader(
+      BuildContext context, String title, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
       child: Row(
         children: [
-          Icon(
-            Icons.apps_rounded,
-            color: AppTheme.primary,
-            size: 24,
-          ),
-          SizedBox(width: 12),
-          Text(
-            'All Packs',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20,
             ),
           ),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalList(BuildContext context, List packs) {
+    return SizedBox(
+      height: 200, // Reduced height slightly as card is optimized
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: packs.length,
+        itemBuilder: (context, index) {
+          final pack = packs[index];
+          return Container(
+            margin: const EdgeInsets.only(
+                right: 16), // Margin handled here or in card
+            // We need to ensure PackCard doesn't double margin if isLarge is false
+            // The current PackCard implementation adds right margin 16 if !isLarge.
+            // So we don't need extra margin here if we rely on that.
+            // Let's rely on PackCard's internal margin for now to keep it consistent.
+            child: PackCard(
+              pack: pack,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        PackDetailScreen(packId: pack.id, packName: pack.name),
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -192,14 +272,14 @@ class _PacksScreenState extends State<PacksScreen> {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.75, // Taller aspect ratio for better look
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final pack = packs[index];
             return PackCard(
               pack: pack,
-              isLarge: true,
+              isLarge: true, // Use large styling, but grid constrains width
               onTap: () {
                 Navigator.push(
                   context,

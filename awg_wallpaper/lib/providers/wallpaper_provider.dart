@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/wallpaper.dart';
 import '../models/wallpaper_pack.dart';
 import '../models/category.dart';
@@ -25,8 +27,10 @@ class WallpaperProvider extends ChangeNotifier {
   bool _useApi = true;
 
   List<Wallpaper> get wallpapers => _selectedCategory == 'all'
-      ? _wallpapers
-      : _wallpapers.where((w) => w.category == _selectedCategory).toList();
+      ? _wallpapers.where((w) => !w.isWide).toList()
+      : _wallpapers
+          .where((w) => w.category == _selectedCategory && !w.isWide)
+          .toList();
 
   List<Wallpaper> get allWallpapers => _wallpapers;
   List<Wallpaper> get wideWallpapers => _wideWallpapers;
@@ -43,7 +47,19 @@ class WallpaperProvider extends ChangeNotifier {
     _initializeData();
   }
 
+  Box? get _cacheBox {
+    if (Hive.isBoxOpen('cache')) {
+      return Hive.box('cache');
+    }
+    return null;
+  }
+
   Future<void> _initializeData() async {
+    // 1. Try to load from cache first for instant display
+    if (_useApi) {
+      _loadFromCache();
+    }
+
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -55,9 +71,14 @@ class WallpaperProvider extends ChangeNotifier {
         _loadSampleData();
       }
     } catch (e) {
-      debugPrint('API initialization failed, falling back to sample data: $e');
-      _error = 'Failed to connect to server. Using offline data.';
-      _loadSampleData();
+      // debugPrint('API initialization failed, falling back to sample data: $e');
+      // Only fallback to sample data if cache was empty
+      if (_wallpapers.isEmpty) {
+        _error = 'Failed to connect to server. Using offline data.';
+        _loadSampleData();
+      } else {
+        debugPrint('API failed but we have cached data');
+      }
     }
 
     _isLoading = false;
@@ -65,49 +86,101 @@ class WallpaperProvider extends ChangeNotifier {
   }
 
   Future<void> _loadFromApi() async {
-    // Load categories
     try {
-      _categories = await _apiService.getCategories();
-      // Ensure 'all' category exists
-      if (!_categories.any((c) => c.id == 'all')) {
-        _categories.insert(
+      // Run requests in parallel to speed up loading
+      final results = await Future.wait([
+        _apiService.getCategories(),
+        _apiService.getWallpapers(page: 1, limit: 30, isWide: false),
+        _apiService.getWallpapers(page: 1, limit: 20, isWide: true),
+      ]);
+
+      // 1. Categories
+      final fetchedCategories = results[0] as List<Category>;
+      if (!fetchedCategories.any((c) => c.id == 'all')) {
+        fetchedCategories.insert(
             0, const Category(id: 'all', name: 'All', icon: '✨'));
       }
-    } catch (e) {
-      debugPrint('Failed to load categories from API: $e');
-      _categories =
-          AppConstants.categories.map((c) => Category.fromMap(c)).toList();
-    }
+      _categories = fetchedCategories;
 
-    // Load wallpapers
-    try {
-      final response = await _apiService.getWallpapers(page: 1, limit: 30);
-      _wallpapers = response.wallpapers;
-      _currentPage = response.page;
-      _totalPages = response.pages;
+      // 2. Wallpapers
+      final wallpapersResponse = results[1] as WallpapersResponse;
+      _wallpapers = wallpapersResponse.wallpapers;
+      _currentPage = wallpapersResponse.page;
+      _totalPages = wallpapersResponse.pages;
       _hasMore = _currentPage < _totalPages;
-    } catch (e) {
-      debugPrint('Failed to load wallpapers from API: $e');
-      _generateSampleWallpapers();
-    }
 
-    // Load wide wallpapers
-    try {
-      final response =
-          await _apiService.getWallpapers(page: 1, limit: 20, isWide: true);
-      _wideWallpapers = response.wallpapers;
+      // 3. Wide Wallpapers
+      final wideWallpapersResponse = results[2] as WallpapersResponse;
+      _wideWallpapers = wideWallpapersResponse.wallpapers;
+
+      // Save to cache
+      _saveToCache();
     } catch (e) {
-      debugPrint('Failed to load wide wallpapers from API: $e');
-      _generateSampleWideWallpapers();
+      debugPrint('Failed to load data from API: $e');
+      rethrow;
     }
 
     // For now, packs are sample data (can be extended for API later)
     _generateSamplePacks();
   }
 
+  void _loadFromCache() {
+    final box = _cacheBox;
+    if (box == null) return;
+
+    if (box.containsKey('categories')) {
+      try {
+        final List<dynamic> catJson = json.decode(box.get('categories'));
+        _categories = catJson.map((c) => Category.fromJson(c)).toList();
+      } catch (e) {
+        debugPrint('Error loading categories from cache: $e');
+      }
+    } else {
+      // Default categories if cache empty
+      // _categories =
+      //     AppConstants.categories.map((c) => Category.fromMap(c)).toList();
+    }
+
+    if (box.containsKey('wallpapers')) {
+      try {
+        final List<dynamic> wallJson = json.decode(box.get('wallpapers'));
+        _wallpapers = wallJson.map((w) => Wallpaper.fromJson(w)).toList();
+      } catch (e) {
+        debugPrint('Error loading wallpapers from cache: $e');
+      }
+    }
+
+    if (box.containsKey('wide_wallpapers')) {
+      try {
+        final List<dynamic> wideJson = json.decode(box.get('wide_wallpapers'));
+        _wideWallpapers = wideJson.map((w) => Wallpaper.fromJson(w)).toList();
+      } catch (e) {
+        debugPrint('Error loading wide wallpapers from cache: $e');
+      }
+    }
+
+    notifyListeners();
+  }
+
+  void _saveToCache() {
+    final box = _cacheBox;
+    if (box == null) return;
+
+    try {
+      box.put('categories',
+          json.encode(_categories.map((c) => c.toJson()).toList()));
+      box.put('wallpapers',
+          json.encode(_wallpapers.map((w) => w.toJson()).toList()));
+      box.put('wide_wallpapers',
+          json.encode(_wideWallpapers.map((w) => w.toJson()).toList()));
+    } catch (e) {
+      debugPrint('Error saving to cache: $e');
+    }
+  }
+
   void _loadSampleData() {
-    _categories =
-        AppConstants.categories.map((c) => Category.fromMap(c)).toList();
+    // _categories =
+    //     AppConstants.categories.map((c) => Category.fromMap(c)).toList();
     _generateSampleWallpapers();
     _generateSampleWideWallpapers();
     _generateSamplePacks();
@@ -125,6 +198,7 @@ class WallpaperProvider extends ChangeNotifier {
           page: _currentPage + 1,
           limit: 20,
           category: _selectedCategory == 'all' ? null : _selectedCategory,
+          isWide: false, // Explicitly exclude wide wallpapers
         );
         _wallpapers.addAll(response.wallpapers);
         _currentPage = response.page;
@@ -304,6 +378,7 @@ class WallpaperProvider extends ChangeNotifier {
         page: 1,
         limit: 30,
         category: category,
+        isWide: false, // Explicitly exclude wide wallpapers
       );
       // Merge with existing wallpapers or filter
       _currentPage = response.page;

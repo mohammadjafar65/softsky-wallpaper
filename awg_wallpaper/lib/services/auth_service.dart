@@ -6,7 +6,7 @@ import 'api_service.dart';
 /// Authentication Service that handles Firebase Auth and syncs with backend API
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
   final ApiService _apiService = ApiService();
 
   // Backend API token (for authenticated requests)
@@ -109,7 +109,21 @@ class AuthService {
         message: _getReadableErrorMessage(e.code),
       );
     } catch (e) {
+      // Catch PlatformException and others dynamically
       debugPrint('Error signing in with Google: $e');
+      if (e.toString().contains('sign_in_failed')) {
+        throw AuthException(
+          code: 'sign_in_failed',
+          message:
+              'Google Sign-In failed. Please check your SHA-1 fingerprint configuration in Firebase Console.',
+        );
+      } else if (e.toString().contains('network_error')) {
+        throw AuthException(
+          code: 'network_error',
+          message:
+              'Network error preventing Google Sign-In. Check your connection.',
+        );
+      }
       rethrow;
     }
   }

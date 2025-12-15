@@ -37,6 +37,17 @@ class Category {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'icon': icon,
+      'slug': slug,
+      'description': description,
+      'wallpaperCount': wallpaperCount,
+    };
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

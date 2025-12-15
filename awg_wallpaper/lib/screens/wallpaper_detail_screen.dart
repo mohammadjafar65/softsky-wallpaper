@@ -16,7 +16,7 @@ import 'subscription_screen.dart';
 class WallpaperDetailScreen extends StatefulWidget {
   final List<Wallpaper> wallpapers;
   final int initialIndex;
-  
+
   const WallpaperDetailScreen({
     super.key,
     required this.wallpapers,
@@ -31,18 +31,18 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   bool _showControls = true;
   late PageController _pageController;
   late int _currentIndex;
-  
+
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
-    
+
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
   }
-  
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -55,7 +55,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     setState(() {
       _currentIndex = index;
     });
-    
+
     final subscriptionProvider = context.read<SubscriptionProvider>();
     if (_currentWallpaper.isPro && !subscriptionProvider.isPro) {
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -67,7 +67,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
-    
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -79,7 +79,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
             itemBuilder: (context, index) {
               final wallpaper = widget.wallpapers[index];
               final isInitial = index == widget.initialIndex;
-              
+
               return GestureDetector(
                 onTap: () => setState(() => _showControls = !_showControls),
                 child: isInitial
@@ -91,7 +91,6 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               );
             },
           ),
-          
           if (widget.wallpapers.length > 1)
             Positioned(
               top: topPadding + 60,
@@ -103,7 +102,6 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 child: _buildPageIndicator(),
               ),
             ),
-          
           Positioned(
             top: 0,
             left: 0,
@@ -129,7 +127,6 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               ),
             ),
           ),
-          
           Positioned(
             top: topPadding + 8,
             left: 16,
@@ -140,7 +137,6 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               child: _buildTopBar(),
             ),
           ),
-          
           Positioned(
             bottom: 0,
             left: 0,
@@ -166,7 +162,6 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               ),
             ),
           ),
-          
           Positioned(
             bottom: 0,
             left: 0,
@@ -181,7 +176,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   Widget _buildPageIndicator() {
     return Center(
       child: Container(
@@ -201,7 +196,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   Widget _buildWallpaperImage(Wallpaper wallpaper) {
     return InteractiveViewer(
       minScale: 0.8,
@@ -210,7 +205,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         imageUrl: wallpaper.imageUrl,
         fit: wallpaper.isWide ? BoxFit.contain : BoxFit.cover,
         placeholder: (context, url) => Container(
-          color: Colors.black, // Keep black loading for detail screen to avoid flash
+          color: Colors
+              .black, // Keep black loading for detail screen to avoid flash
           child: const Center(
             child: CircularProgressIndicator(
               color: AppTheme.primary,
@@ -231,7 +227,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   Widget _buildTopBar() {
     return Row(
       children: [
@@ -239,9 +235,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           icon: Icons.arrow_back_rounded,
           onTap: () => Navigator.pop(context),
         ),
-        
         const Spacer(),
-        
         if (_currentWallpaper.isPro)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -255,7 +249,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.workspace_premium_rounded, color: Colors.black, size: 14),
+                Icon(Icons.workspace_premium_rounded,
+                    color: Colors.black, size: 14),
                 SizedBox(width: 3),
                 Text(
                   'PRO',
@@ -268,31 +263,30 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               ],
             ),
           ),
-        
         Consumer<BookmarkProvider>(
           builder: (context, provider, child) {
             final isBookmarked = provider.isBookmarked(_currentWallpaper.id);
             return _buildIconBtn(
-              icon: isBookmarked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+              icon: isBookmarked
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_outline_rounded,
               iconColor: isBookmarked ? AppTheme.error : Colors.white,
               onTap: () {
                 provider.toggleBookmark(_currentWallpaper);
                 HapticFeedback.lightImpact();
-                _showMsg(isBookmarked ? 'Removed from favorites' : 'Added to favorites');
+                _showMsg(isBookmarked
+                    ? 'Removed from favorites'
+                    : 'Added to favorites');
               },
             );
           },
         ),
-        
         const SizedBox(width: 8),
-        
         _buildIconBtn(
           icon: Icons.share_rounded,
           onTap: () => _shareWallpaper(),
         ),
-        
         const SizedBox(width: 8),
-        
         _buildIconBtn(
           icon: Icons.more_horiz_rounded,
           onTap: () => _showOptionsSheet(),
@@ -300,7 +294,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ],
     );
   }
-  
+
   Widget _buildIconBtn({
     required IconData icon,
     required VoidCallback onTap,
@@ -325,10 +319,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   Widget _buildBottomContent() {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     return Consumer<SubscriptionProvider>(
       builder: (context, subscriptionProvider, child) {
         return Padding(
@@ -336,9 +330,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!subscriptionProvider.isPro)
-                _buildUpgradeBanner(),
-              
+              if (!subscriptionProvider.isPro) _buildUpgradeBanner(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Text(
@@ -353,13 +345,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              
               const SizedBox(height: 10),
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildTag(_currentWallpaper.category, AppTheme.primary),
+                  // _buildTag(_currentWallpaper.category, AppTheme.primary),
                   if (_currentWallpaper.isWide) ...[
                     const SizedBox(width: 8),
                     _buildTag('Wide', AppTheme.accent),
@@ -368,9 +358,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   _buildTag('HD', AppTheme.success),
                 ],
               ),
-              
               const SizedBox(height: 24),
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -383,11 +371,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                     icon: Icons.download_rounded,
                     onTap: () => _handleDownload(subscriptionProvider),
                   ),
-                  const SizedBox(width: 24),
-                  _buildActionBtn(
-                    icon: Icons.wallpaper_rounded,
-                    onTap: () => _handleApply(subscriptionProvider),
-                  ),
+                  if (!_currentWallpaper.isWide) ...[
+                    const SizedBox(width: 24),
+                    _buildActionBtn(
+                      icon: Icons.wallpaper_rounded,
+                      onTap: () => _handleApply(subscriptionProvider),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -396,9 +386,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       },
     );
   }
-  
+
   // Dialogs and Sheets updated for Light Theme Text visibility
-  
+
   void _showProPurchasePopup() {
     showDialog(
       context: context,
@@ -447,19 +437,17 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
               _buildProFeature(Icons.image_rounded, 'All premium wallpapers'),
               _buildProFeature(Icons.block_rounded, 'Ad-free experience'),
               _buildProFeature(Icons.hd_rounded, '4K downloads'),
-              
               const SizedBox(height: 24),
-              
               GestureDetector(
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+                    MaterialPageRoute(
+                        builder: (_) => const SubscriptionScreen()),
                   );
                 },
                 child: Container(
@@ -495,7 +483,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   Widget _buildProFeature(IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -505,13 +493,14 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13), // Fixed
+            style: const TextStyle(
+                color: AppTheme.textPrimary, fontSize: 13), // Fixed
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildUpgradeBanner() {
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -522,7 +511,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6), // Keep dark overlay for contrast on wallpaper
+          color: Colors.black
+              .withOpacity(0.6), // Keep dark overlay for contrast on wallpaper
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white24),
         ),
@@ -531,16 +521,21 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppTheme.gold, Color(0xFFFFB700)]),
+                gradient: const LinearGradient(
+                    colors: [AppTheme.gold, Color(0xFFFFB700)]),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.workspace_premium_rounded, color: Colors.black, size: 16),
+              child: const Icon(Icons.workspace_premium_rounded,
+                  color: Colors.black, size: 16),
             ),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
                 'Remove ads & unlock 4K',
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500),
               ),
             ),
             Container(
@@ -551,7 +546,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               ),
               child: const Text(
                 'Upgrade',
-                style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -572,34 +570,51 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
-            const Text('Wallpaper Info', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            const Text('Wallpaper Info',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary)),
             const SizedBox(height: 16),
             _infoRow('Title', _currentWallpaper.title),
             _infoRow('Category', _currentWallpaper.category),
-            _infoRow('Type', _currentWallpaper.isWide ? 'Landscape' : 'Portrait'),
-            _infoRow('Resolution', _currentWallpaper.isWide ? '1920×1080' : '1080×1920'),
+            _infoRow(
+                'Type', _currentWallpaper.isWide ? 'Landscape' : 'Portrait'),
+            _infoRow('Resolution',
+                _currentWallpaper.isWide ? '1920×1080' : '1080×1920'),
             _infoRow('Status', _currentWallpaper.isPro ? 'Premium' : 'Free'),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _infoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
-          Text(value, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w500, fontSize: 14)),
+          Text(label,
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+          Text(value,
+              style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14)),
         ],
       ),
     );
   }
-  
+
   void _showDownloadSheet() {
     showModalBottomSheet(
       context: context,
@@ -612,16 +627,27 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            _sheetItem(Icons.hd_rounded, 'Original Quality', () { Navigator.pop(ctx); _download('original'); }),
-            _sheetItem(Icons.sd_rounded, 'Medium Quality', () { Navigator.pop(ctx); _download('medium'); }),
+            _sheetItem(Icons.hd_rounded, 'Original Quality', () {
+              Navigator.pop(ctx);
+              _download('original');
+            }),
+            _sheetItem(Icons.sd_rounded, 'Medium Quality', () {
+              Navigator.pop(ctx);
+              _download('medium');
+            }),
           ],
         ),
       ),
     );
   }
-  
+
   void _showApplySheet() {
     showModalBottomSheet(
       context: context,
@@ -634,19 +660,37 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            const Text('Set Wallpaper', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            const Text('Set Wallpaper',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary)),
             const SizedBox(height: 20),
-            _sheetItem(Icons.home_rounded, 'Home Screen', () { Navigator.pop(ctx); _applyWallpaper(1); }),
-            _sheetItem(Icons.lock_rounded, 'Lock Screen', () { Navigator.pop(ctx); _applyWallpaper(2); }),
-            _sheetItem(Icons.smartphone_rounded, 'Both Screens', () { Navigator.pop(ctx); _applyWallpaper(3); }),
+            _sheetItem(Icons.home_rounded, 'Home Screen', () {
+              Navigator.pop(ctx);
+              _applyWallpaper(0);
+            }),
+            _sheetItem(Icons.lock_rounded, 'Lock Screen', () {
+              Navigator.pop(ctx);
+              _applyWallpaper(1);
+            }),
+            _sheetItem(Icons.smartphone_rounded, 'Both Screens', () {
+              Navigator.pop(ctx);
+              _applyWallpaper(2);
+            }),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _sheetItem(IconData icon, String text, VoidCallback onTap) {
     return ListTile(
       leading: Container(
@@ -659,12 +703,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
       title: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
+        style: const TextStyle(
+            fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
       ),
       onTap: onTap,
     );
   }
-  
+
   void _showOptionsSheet() {
     showModalBottomSheet(
       context: context,
@@ -677,17 +722,25 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
             _sheetItem(Icons.share_rounded, 'Share', () => Navigator.pop(ctx)),
-            _sheetItem(Icons.info_outline_rounded, 'Info', () { Navigator.pop(ctx); _showInfoSheet(); }),
+            _sheetItem(Icons.info_outline_rounded, 'Info', () {
+              Navigator.pop(ctx);
+              _showInfoSheet();
+            }),
             _sheetItem(Icons.flag_outlined, 'Report', () => Navigator.pop(ctx)),
           ],
         ),
       ),
     );
   }
-  
+
   Widget _buildTag(String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -698,12 +751,14 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+        style:
+            TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
       ),
     );
   }
-  
-  Widget _buildActionBtn({required IconData icon, required VoidCallback onTap}) {
+
+  Widget _buildActionBtn(
+      {required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -717,24 +772,29 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
-  Widget _buildPrimaryBtn({required IconData icon, required VoidCallback onTap}) {
+
+  Widget _buildPrimaryBtn(
+      {required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [AppTheme.primary, AppTheme.primaryVariant]),
+          gradient: const LinearGradient(
+              colors: [AppTheme.primary, AppTheme.primaryVariant]),
           shape: BoxShape.circle,
           boxShadow: [
-            BoxShadow(color: AppTheme.primary.withOpacity(0.5), blurRadius: 16, offset: const Offset(0, 6)),
+            BoxShadow(
+                color: AppTheme.primary.withOpacity(0.5),
+                blurRadius: 16,
+                offset: const Offset(0, 6)),
           ],
         ),
         child: Icon(icon, color: Colors.black, size: 26),
       ),
     );
   }
-  
+
   // Implementation of actions
   void _handleDownload(SubscriptionProvider provider) {
     if (_currentWallpaper.isPro && !provider.isPro) {
@@ -756,7 +816,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontSize: 13, color: Colors.black)),
+        content: Text(message,
+            style: const TextStyle(fontSize: 13, color: Colors.black)),
         backgroundColor: Colors.white,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.fromLTRB(20, 0, 20, 80),
@@ -765,21 +826,21 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   Future<void> _download(String quality) async {
     // Show progress
     _showDownloadProgress();
-    
+
     try {
       // simulate quality selection (in real app, use different URLs)
       final url = _currentWallpaper.imageUrl;
       final file = await DefaultCacheManager().getSingleFile(url);
-      
+
       // Save to external storage
       // Note: This needs permission handling in real app
       // For now, we simulate success
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (mounted) {
         Navigator.pop(context); // Close progress dialog
         _showSuccessMsg('Downloaded ($quality) successfully');
@@ -802,29 +863,28 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       _showMsg('Could not share wallpaper');
     }
   }
-  
+
   Future<void> _applyWallpaper(int location) async {
     // 1: Home, 2: Lock, 3: Both
     _showApplyProgress();
-    
+
     try {
-       final file = await DefaultCacheManager().getSingleFile(_currentWallpaper.imageUrl);
-       
-       // Call native channel
-       const platform = MethodChannel('com.awg.wallpaper/wallpaper');
-       final result = await platform.invokeMethod('setWallpaper', {
-         'path': file.path,
-         'location': location
-       });
-       
-       if (mounted) {
-         Navigator.pop(context);
-         if (result == true) {
-           _showSuccessMsg('Wallpaper applied successfully');
-         } else {
-           _showManualSetDialog(file.path);
-         }
-       }
+      final file =
+          await DefaultCacheManager().getSingleFile(_currentWallpaper.imageUrl);
+
+      // Call native channel
+      const platform = MethodChannel('com.awg.wallpaper/wallpaper');
+      final result = await platform.invokeMethod(
+          'setWallpaper', {'path': file.path, 'location': location});
+
+      if (mounted) {
+        Navigator.pop(context);
+        if (result == true) {
+          _showSuccessMsg('Wallpaper applied successfully');
+        } else {
+          _showManualSetDialog(file.path);
+        }
+      }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
@@ -832,7 +892,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       }
     }
   }
-  
+
   void _showDownloadProgress() {
     showDialog(
       context: context,
@@ -841,7 +901,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         canPop: false,
         child: Dialog(
           backgroundColor: AppTheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -849,7 +910,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               children: [
                 const CircularProgressIndicator(color: AppTheme.primary),
                 const SizedBox(height: 16),
-                const Text('Downloading...', style: TextStyle(color: AppTheme.textPrimary)),
+                const Text('Downloading...',
+                    style: TextStyle(color: AppTheme.textPrimary)),
               ],
             ),
           ),
@@ -857,7 +919,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   void _showApplyProgress() {
     showDialog(
       context: context,
@@ -866,7 +928,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         canPop: false,
         child: Dialog(
           backgroundColor: AppTheme.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -874,7 +937,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               children: [
                 const CircularProgressIndicator(color: AppTheme.primary),
                 const SizedBox(height: 16),
-                const Text('Applying wallpaper...', style: TextStyle(color: AppTheme.textPrimary)),
+                const Text('Applying wallpaper...',
+                    style: TextStyle(color: AppTheme.textPrimary)),
               ],
             ),
           ),
@@ -882,7 +946,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   void _showManualSetDialog(String path) {
     showDialog(
       context: context,
@@ -894,11 +958,15 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.settings_rounded, color: AppTheme.textPrimary, size: 40),
+              const Icon(Icons.settings_rounded,
+                  color: AppTheme.textPrimary, size: 40),
               const SizedBox(height: 16),
               const Text(
                 'Manual Setup',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -909,7 +977,8 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK', style: TextStyle(color: AppTheme.primary)),
+                child:
+                    const Text('OK', style: TextStyle(color: AppTheme.primary)),
               ),
             ],
           ),
@@ -917,7 +986,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
-  
+
   void _showSuccessMsg(String msg) {
     showDialog(
       context: context,
@@ -929,17 +998,22 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 50),
+              const Icon(Icons.check_circle_rounded,
+                  color: AppTheme.success, size: 50),
               const SizedBox(height: 16),
               Text(
                 msg,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary),
               ),
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Great!', style: TextStyle(color: AppTheme.primary)),
+                child: const Text('Great!',
+                    style: TextStyle(color: AppTheme.primary)),
               ),
             ],
           ),
