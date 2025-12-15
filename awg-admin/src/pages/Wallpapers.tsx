@@ -52,9 +52,11 @@ export default function Wallpapers() {
         isWide: false,
         packId: '',
     });
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string>('');
+    // Changed from selectedFile to selectedFiles
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -65,6 +67,13 @@ export default function Wallpapers() {
     useEffect(() => {
         fetchWallpapers();
     }, [page, selectedCategory]);
+
+    // Clean up object URLs to avoid memory leaks
+    useEffect(() => {
+        return () => {
+            previewUrls.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [previewUrls]);
 
     const fetchCategories = async () => {
         try {
@@ -101,40 +110,79 @@ export default function Wallpapers() {
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            setSelectedFiles(prev => [...prev, ...files]);
+            const newUrls = files.map(file => URL.createObjectURL(file));
+            setPreviewUrls(prev => [...prev, ...newUrls]);
         }
+    };
+
+    const removeFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+        setPreviewUrls(prev => {
+            URL.revokeObjectURL(prev[index]);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedFile || !formData.title || !formData.category) {
-            toast.error('Please fill all required fields');
+        if (selectedFiles.length === 0 || !formData.title || !formData.category) {
+            toast.error('Please fill all required fields and select at least one file');
             return;
         }
 
         setIsSubmitting(true);
-        try {
-            const data = new FormData();
-            data.append('image', selectedFile);
-            data.append('title', formData.title);
-            data.append('category', formData.category);
-            data.append('tags', formData.tags);
-            data.append('isPro', formData.isPro.toString());
-            data.append('isWide', formData.isWide.toString());
-            if (formData.packId) data.append('packId', formData.packId);
+        setUploadProgress(0);
+        let successCount = 0;
+        let failCount = 0;
 
-            await wallpapersApi.create(data);
-            toast.success('Wallpaper uploaded successfully!');
-            setShowModal(false);
-            resetForm();
-            fetchWallpapers();
+        try {
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const data = new FormData();
+                data.append('image', file);
+
+                // Generate title: "Title" or "Title 1", "Title 2"...
+                const title = selectedFiles.length > 1
+                    ? `${formData.title} ${i + 1}`
+                    : formData.title;
+
+                data.append('title', title);
+                data.append('category', formData.category);
+                data.append('tags', formData.tags);
+                data.append('isPro', formData.isPro.toString());
+                data.append('isWide', formData.isWide.toString());
+                if (formData.packId) data.append('packId', formData.packId);
+
+                try {
+                    await wallpapersApi.create(data);
+                    successCount++;
+                } catch (error) {
+                    console.error(`Failed to upload ${file.name}`, error);
+                    failCount++;
+                }
+
+                setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
+            }
+
+            if (successCount > 0) {
+                toast.success(`Successfully uploaded ${successCount} wallpaper${successCount !== 1 ? 's' : ''}!`);
+                if (failCount > 0) {
+                    toast.error(`Failed to upload ${failCount} wallpapers.`);
+                }
+                setShowModal(false);
+                resetForm();
+                fetchWallpapers();
+            } else {
+                toast.error('Failed to upload wallpapers');
+            }
         } catch (error: any) {
-            toast.error(error.response?.data?.error || 'Failed to upload wallpaper');
+            toast.error('An unexpected error occurred');
         } finally {
             setIsSubmitting(false);
+            setUploadProgress(0);
         }
     };
 
@@ -152,8 +200,8 @@ export default function Wallpapers() {
 
     const resetForm = () => {
         setFormData({ title: '', category: '', tags: '', isPro: false, isWide: false, packId: '' });
-        setSelectedFile(null);
-        setPreviewUrl('');
+        setSelectedFiles([]);
+        setPreviewUrls([]);
     };
 
     return (
@@ -271,8 +319,8 @@ export default function Wallpapers() {
                                 key={i}
                                 onClick={() => setPage(i + 1)}
                                 className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${page === i + 1
-                                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
-                                        : 'bg-slate-900/50 text-slate-500 hover:bg-slate-800 border border-slate-700/50'
+                                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
+                                    : 'bg-slate-900/50 text-slate-500 hover:bg-slate-800 border border-slate-700/50'
                                     }`}
                             >
                                 {i + 1}
@@ -297,7 +345,7 @@ export default function Wallpapers() {
                         <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
                             <div>
                                 <h2 className="text-xl font-bold text-white">Upload Wallpaper</h2>
-                                <p className="text-slate-400 text-sm mt-1">Add a new wallpaper to your collection</p>
+                                <p className="text-slate-400 text-sm mt-1">Add new wallpapers to your collection</p>
                             </div>
                             <button onClick={() => { setShowModal(false); resetForm(); }} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition">
                                 <XMarkIcon className="w-6 h-6" />
@@ -308,41 +356,64 @@ export default function Wallpapers() {
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 {/* Image Upload */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-300 mb-3">Wallpaper Image</label>
-                                    <div
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className={`group relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${previewUrl ? 'border-violet-500/50 bg-violet-500/5' : 'border-slate-700 hover:border-violet-500 hover:bg-slate-800/50'
-                                            }`}
-                                    >
-                                        {previewUrl ? (
-                                            <div className="relative max-w-sm mx-auto">
-                                                <img src={previewUrl} alt="Preview" className="rounded-xl shadow-2xl" />
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
-                                                    <p className="text-white font-medium">Click to change</p>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="py-8">
+                                    <label className="block text-sm font-semibold text-slate-300 mb-3">Wallpaper Images</label>
+                                    <div className="space-y-4">
+                                        <div
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className={`group relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${previewUrls.length > 0 ? 'border-violet-500/30 bg-violet-500/5' : 'border-slate-700 hover:border-violet-500 hover:bg-slate-800/50'
+                                                }`}
+                                        >
+                                            <div className="py-2">
                                                 <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                                                     <CloudArrowUpIcon className="w-8 h-8 text-violet-400" />
                                                 </div>
-                                                <p className="text-slate-200 font-medium text-lg">Click to upload</p>
-                                                <p className="text-slate-500 text-sm mt-1">SVG, PNG, JPG or GIF (max. 10MB)</p>
+                                                <p className="text-slate-200 font-medium text-lg">Click to upload files</p>
+                                                <p className="text-slate-500 text-sm mt-1">Select one or multiple files (max. 10MB each)</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Previews Grid */}
+                                        {previewUrls.length > 0 && (
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-4">
+                                                {previewUrls.map((url, index) => (
+                                                    <div key={url} className="relative group aspect-[9/16] rounded-xl overflow-hidden bg-slate-800 border border-white/10">
+                                                        <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeFile(index)}
+                                                                className="p-1.5 bg-red-500 rounded-lg text-white hover:bg-red-600 transition"
+                                                            >
+                                                                <XMarkIcon className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                        <div className="absolute top-1 left-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-white font-medium">
+                                                            #{index + 1}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
-                                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        multiple // Enable multiple file selection
+                                        onChange={handleFileSelect}
+                                        className="hidden"
+                                    />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
+                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Title {selectedFiles.length > 1 && '(Base Title)'}</label>
                                         <input
                                             type="text"
                                             value={formData.title}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                            placeholder="e.g. Abstract Waves"
+                                            placeholder={selectedFiles.length > 1 ? "e.g. Nature Pack (will become Nature Pack 1, 2...)" : "e.g. Abstract Waves"}
                                             required
                                         />
                                     </div>
@@ -422,9 +493,20 @@ export default function Wallpapers() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting}
-                                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:shadow-violet-500/30 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:shadow-violet-500/30 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden"
                             >
-                                {isSubmitting ? 'Uploading...' : 'Upload Wallpaper'}
+                                <span className="relative z-10">
+                                    {isSubmitting
+                                        ? `Uploading ${uploadProgress}%...`
+                                        : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} Wallpapers` : 'Wallpaper'}`
+                                    }
+                                </span>
+                                {isSubmitting && (
+                                    <div
+                                        className="absolute inset-0 bg-white/20 transition-all duration-300 ease-out"
+                                        style={{ width: `${uploadProgress}%` }}
+                                    />
+                                )}
                             </button>
                         </div>
                     </div>
