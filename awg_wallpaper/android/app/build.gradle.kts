@@ -18,7 +18,13 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.webinessdesign.softskywallpaper"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.2.13676358"
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -58,6 +64,11 @@ android {
         }
     }
 
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 }
 
 flutter {

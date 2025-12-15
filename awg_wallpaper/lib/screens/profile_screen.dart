@@ -233,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       Text(
-                        'Version 1.0.0',
+                        'Version 3.0.0',
                         style: TextStyle(
                           color: AppTheme.textMuted.withOpacity(0.5),
                           fontSize: 12,

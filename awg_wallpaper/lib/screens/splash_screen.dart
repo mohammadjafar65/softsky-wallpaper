@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
-import '../config/theme.dart';
 import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,11 +14,11 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
+  late Animation<double> _bgFade;
   late Animation<double> _logoFade;
-  late Animation<double> _text1Fade;
-  late Animation<Offset> _text1Slide;
-  late Animation<double> _text2Fade;
-  late Animation<Offset> _text2Slide;
+  late Animation<double> _logoScale;
+  late Animation<double> _textFade;
+  late Animation<double> _taglineFade;
 
   @override
   void initState() {
@@ -28,51 +26,47 @@ class _SplashScreenState extends State<SplashScreen>
     _enableSecureMode();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     );
 
-    // Staggered Animations
+    // Background fade: 0.0 -> 0.3
+    _bgFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+      ),
+    );
 
-    // Logo: 0.0 -> 0.4
+    // Logo (character) fade: 0.2 -> 0.5
     _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+        curve: const Interval(0.2, 0.5, curve: Curves.easeOut),
       ),
     );
 
-    // Text 1 ("SoftSky"): 0.3 -> 0.7
-    _text1Fade = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // Logo scale: 0.2 -> 0.5
+    _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
-      ),
-    );
-    _text1Slide = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
+        curve: const Interval(0.2, 0.5, curve: Curves.easeOutBack),
       ),
     );
 
-    // Text 2 ("Wallpapers"): 0.5 -> 0.9
-    _text2Fade = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // "Soft Sky" text fade: 0.4 -> 0.7
+    _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.5, 0.9, curve: Curves.easeOut),
+        curve: const Interval(0.4, 0.7, curve: Curves.easeOut),
       ),
     );
-    _text2Slide = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(
+
+    // Tagline fade: 0.6 -> 0.9
+    _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.5, 0.9, curve: Curves.easeOut),
+        curve: const Interval(0.6, 0.9, curve: Curves.easeOut),
       ),
     );
 
@@ -81,13 +75,21 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _enableSecureMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
   }
 
   void _startAnimations() async {
     await Future.delayed(const Duration(milliseconds: 200));
     _controller.forward();
 
-    await Future.delayed(const Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 3000));
     if (mounted) {
       Navigator.pushReplacement(
         context,
@@ -112,68 +114,79 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppTheme.primaryGradient,
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: const Color(0xFF1E3A5F),
+      body: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Stack(
+            fit: StackFit.expand,
             children: [
-              // Animated Text 1: "SoftSky"
-              SlideTransition(
-                position: _text1Slide,
-                child: FadeTransition(
-                  opacity: _text1Fade,
-                  child: Text(
-                    'SoftSky',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                      shadows: [
-                        const Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 4.0,
-                          color: Color.fromRGBO(0, 0, 0, 0.1),
-                        ),
-                      ],
-                    ),
-                  ),
+              // Background image with water ripples
+              FadeTransition(
+                opacity: _bgFade,
+                child: Image.asset(
+                  'assets/images/splash_bg.png',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
                 ),
               ),
 
-              // Animated Text 2: "Wallpapers"
-              SlideTransition(
-                position: _text2Slide,
-                child: FadeTransition(
-                  opacity: _text2Fade,
-                  child: Text(
-                    'Wallpapers',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                      shadows: [
-                        const Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 4.0,
-                          color: Color.fromRGBO(0, 0, 0, 0.1),
+              // Content
+              SafeArea(
+                child: Column(
+                  children: [
+                    const Spacer(flex: 2),
+
+                    // Character logo
+                    FadeTransition(
+                      opacity: _logoFade,
+                      child: ScaleTransition(
+                        scale: _logoScale,
+                        child: Image.asset(
+                          'assets/images/splash_logo.png',
+                          width: MediaQuery.of(context).size.width * 0.65,
+                          fit: BoxFit.contain,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+
+                    const Spacer(flex: 1),
+
+                    // "Soft Sky" text
+                    FadeTransition(
+                      opacity: _textFade,
+                      child: Image.asset(
+                        'assets/images/splash_text.png',
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Tagline
+                    FadeTransition(
+                      opacity: _taglineFade,
+                      child: Text(
+                        'Aesthetic wallpapers for a peaceful phone',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withOpacity(0.8),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+
+                    const Spacer(flex: 1),
+                  ],
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }

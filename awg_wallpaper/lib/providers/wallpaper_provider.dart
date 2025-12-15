@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/wallpaper.dart';
 import '../models/wallpaper_pack.dart';
 import '../models/category.dart';
-import '../config/constants.dart';
+
 import '../services/api_service.dart';
 
 class WallpaperProvider extends ChangeNotifier {

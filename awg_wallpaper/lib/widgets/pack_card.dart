@@ -122,25 +122,25 @@ class PackCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.wallpaper_rounded,
-                          size: 12,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${pack.wallpaperCount} Wallpapers',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                    // const SizedBox(height: 4),
+                    // Row(
+                    //   children: [
+                    //     Icon(
+                    //       Icons.wallpaper_rounded,
+                    //       size: 12,
+                    //       color: Colors.white.withOpacity(0.8),
+                    //     ),
+                    //     const SizedBox(width: 4),
+                    //     Text(
+                    //       '${pack.wallpaperCount} Wallpapers',
+                    //       style: TextStyle(
+                    //         color: Colors.white.withOpacity(0.8),
+                    //         fontSize: 12,
+                    //         fontWeight: FontWeight.w500,
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
                   ],
                 ),
               ),
