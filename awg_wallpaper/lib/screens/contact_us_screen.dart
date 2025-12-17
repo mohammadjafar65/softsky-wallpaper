@@ -10,7 +10,8 @@ class ContactUsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Contact Us', style: TextStyle(color: AppTheme.textPrimary)),
+        title: const Text('Contact Us',
+            style: TextStyle(color: AppTheme.textPrimary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppTheme.textPrimary),
@@ -42,16 +43,16 @@ class ContactUsScreen extends StatelessWidget {
               context,
               icon: Icons.email_rounded,
               title: 'Email Support',
-              subtitle: 'support@softskywallpaper.com', // Placeholder
+              subtitle: 'support@softskywallpaper.studio', // Placeholder
               onTap: () => _launchEmail(),
             ),
             const SizedBox(height: 16),
-             _buildContactMethod(
+            _buildContactMethod(
               context,
               icon: Icons.web_rounded,
               title: 'Visit Website',
-              subtitle: 'www.softskywallpaper.com', // Placeholder
-              onTap: () => _launchUrl('https://google.com'), // Placeholder
+              subtitle: 'www.softsky.studio', // Placeholder
+              onTap: () => _launchUrl('https://softsky.studio/'), // Placeholder
             ),
           ],
         ),
@@ -59,7 +60,11 @@ class ContactUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactMethod(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+  Widget _buildContactMethod(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String subtitle,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -109,7 +114,8 @@ class ContactUsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textMuted, size: 16),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                color: AppTheme.textMuted, size: 16),
           ],
         ),
       ),
@@ -124,7 +130,7 @@ class ContactUsScreen extends StatelessWidget {
     );
     await _launchUrl(emailLaunchUri.toString());
   }
-  
+
   Future<void> _launchUrl(String url) async {
     if (!await launchUrl(Uri.parse(url))) {
       // Handle error

@@ -37,9 +37,8 @@ export default function Subscriptions() {
 
     const gradientColors: Record<string, string> = {
         free: 'from-slate-500 to-slate-600',
-        weekly: 'from-blue-500 to-indigo-600',
         monthly: 'from-violet-500 to-purple-600',
-        yearly: 'from-fuchsia-500 to-pink-600',
+        annual: 'from-fuchsia-500 to-pink-600',
         lifetime: 'from-amber-400 to-orange-500',
     };
 

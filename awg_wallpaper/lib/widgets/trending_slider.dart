@@ -81,14 +81,14 @@ class _TrendingSliderState extends State<TrendingSlider> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 5),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(15),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.black.withOpacity(0.2),
+          //     blurRadius: 10,
+          //     offset: const Offset(0, 5),
+          //   ),
+          // ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),

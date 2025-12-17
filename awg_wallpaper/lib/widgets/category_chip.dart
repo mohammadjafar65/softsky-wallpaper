@@ -6,7 +6,7 @@ class CategoryChip extends StatelessWidget {
   final Category category;
   final bool isSelected;
   final VoidCallback onTap;
-  
+
   const CategoryChip({
     super.key,
     required this.category,
@@ -25,7 +25,7 @@ class CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.primaryVariant],
+                  colors: [AppTheme.primary, AppTheme.primary],
                 )
               : null,
           color: isSelected ? null : AppTheme.surfaceVariant,
@@ -36,24 +36,19 @@ class CategoryChip extends StatelessWidget {
                   color: AppTheme.surfaceVariant, // Fixed: was surfaceLight
                   width: 1,
                 ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
+          // boxShadow: isSelected
+          //     ? [
+          //         BoxShadow(
+          //           color: AppTheme.primary.withOpacity(0.4),
+          //           blurRadius: 12,
+          //           offset: const Offset(0, 4),
+          //         ),
+          //       ]
+          //     : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              category.icon,
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(width: 8),
             Text(
               category.name,
               style: TextStyle(
@@ -61,6 +56,11 @@ class CategoryChip extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              category.icon,
+              style: const TextStyle(fontSize: 14),
             ),
           ],
         ),

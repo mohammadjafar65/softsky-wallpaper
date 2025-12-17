@@ -8,7 +8,7 @@ export interface IUser extends Document {
     authProvider: 'email' | 'google' | 'admin';
     role: 'user' | 'admin';
     subscription: {
-        plan: 'free' | 'weekly' | 'monthly' | 'yearly' | 'lifetime';
+        plan: 'free' | 'monthly' | 'annual' | 'lifetime';
         expiryDate?: Date;
         purchaseToken?: string;
     };

@@ -10,7 +10,7 @@ export interface IUser extends Document {
     authProvider: 'email' | 'google' | 'admin';
     role: 'user' | 'admin';
     subscription: {
-        plan: 'free' | 'weekly' | 'monthly' | 'yearly' | 'lifetime';
+        plan: 'free' | 'monthly' | 'annual' | 'lifetime';
         expiryDate?: Date;
         purchaseToken?: string;
     };
@@ -31,7 +31,7 @@ const userSchema = new Schema<IUser>({
     authProvider: { type: String, enum: ['email', 'google', 'admin'], default: 'email' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     subscription: {
-        plan: { type: String, enum: ['free', 'weekly', 'monthly', 'yearly', 'lifetime'], default: 'free' },
+        plan: { type: String, enum: ['free', 'monthly', 'annual', 'lifetime'], default: 'free' },
         expiryDate: { type: Date },
         purchaseToken: { type: String },
     },

@@ -12,7 +12,7 @@ class WallpaperCard extends StatefulWidget {
   final VoidCallback onTap;
   final bool showBookmark;
   final double? height;
-  
+
   const WallpaperCard({
     super.key,
     required this.wallpaper,
@@ -25,10 +25,11 @@ class WallpaperCard extends StatefulWidget {
   State<WallpaperCard> createState() => _WallpaperCardState();
 }
 
-class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProviderStateMixin {
+class _WallpaperCardState extends State<WallpaperCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -40,23 +41,23 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
       CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
     );
   }
-  
+
   @override
   void dispose() {
     _scaleController.dispose();
     super.dispose();
   }
-  
+
   void _onTapDown(TapDownDetails details) {
     _scaleController.forward();
     HapticFeedback.lightImpact();
   }
-  
+
   void _onTapUp(TapUpDetails details) {
     _scaleController.reverse();
     widget.onTap();
   }
-  
+
   void _onTapCancel() {
     _scaleController.reverse();
   }
@@ -80,7 +81,7 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
           child: Container(
             height: widget.height,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -108,10 +109,11 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: AppTheme.surfaceVariant,
-                    child: const Icon(Icons.error_outline, color: AppTheme.textMuted),
+                    child: const Icon(Icons.error_outline,
+                        color: AppTheme.textMuted),
                   ),
                 ),
-                
+
                 // Subtle gradient for text visibility at bottom
                 Positioned(
                   bottom: 0,
@@ -131,26 +133,28 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
                     ),
                   ),
                 ),
-                
+
                 // Pro Badge (Minimal)
                 if (widget.wallpaper.isPro)
                   Positioned(
                     top: 10,
                     left: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppTheme.gold,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.star_rounded, size: 10, color: Colors.white),
+                          Icon(Icons.star_rounded,
+                              size: 10, color: Colors.white),
                           SizedBox(width: 2),
                           Text(
                             'PRO',
                             style: TextStyle(
-                              fontSize: 10, 
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -159,7 +163,7 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
                       ),
                     ),
                   ),
-                  
+
                 // Bookmark Icon
                 if (widget.showBookmark)
                   Positioned(
@@ -167,9 +171,11 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
                     right: 8,
                     child: Consumer<BookmarkProvider>(
                       builder: (context, provider, child) {
-                        final isBookmarked = provider.isBookmarked(widget.wallpaper.id);
+                        final isBookmarked =
+                            provider.isBookmarked(widget.wallpaper.id);
                         return GestureDetector(
-                          onTap: () => provider.toggleBookmark(widget.wallpaper),
+                          onTap: () =>
+                              provider.toggleBookmark(widget.wallpaper),
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
@@ -177,9 +183,12 @@ class _WallpaperCardState extends State<WallpaperCard> with SingleTickerProvider
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isBookmarked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              isBookmarked
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
                               size: 18,
-                              color: isBookmarked ? AppTheme.error : Colors.white,
+                              color:
+                                  isBookmarked ? AppTheme.error : Colors.white,
                             ),
                           ),
                         );

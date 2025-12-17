@@ -8,7 +8,7 @@ import '../providers/bookmark_provider.dart';
 class WideWallpaperCard extends StatelessWidget {
   final Wallpaper wallpaper;
   final VoidCallback onTap;
-  
+
   const WideWallpaperCard({
     super.key,
     required this.wallpaper,
@@ -60,7 +60,7 @@ class WideWallpaperCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Gradient overlay
                 Container(
                   decoration: BoxDecoration(
@@ -68,83 +68,48 @@ class WideWallpaperCard extends StatelessWidget {
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        Colors.black.withOpacity(0.6),
+                        Colors.black.withOpacity(0.4),
                         Colors.transparent,
-                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.2),
                       ],
                     ),
                   ),
                 ),
-                
-                // Desktop icon
+
+                // Pro badge (Moved to Top Left and always visible)
                 Positioned(
                   top: 16,
                   left: 16,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 10,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.accent.withOpacity(0.9),
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.gold, Color(0xFFFFB700)],
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.desktop_windows_rounded,
-                          color: Colors.black, // Dark icon on pastel blue
-                          size: 14,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'WIDE',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    child: const Text(
+                      'PRO',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-                
-                // Pro badge
-                if (wallpaper.isPro)
-                  Positioned(
-                    top: 16,
-                    right: 60,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.gold, Color(0xFFFFB700)],
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'PRO',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                
+
                 // Bookmark button
                 Positioned(
                   top: 12,
                   right: 12,
                   child: Consumer<BookmarkProvider>(
                     builder: (context, bookmarkProvider, child) {
-                      final isBookmarked = bookmarkProvider.isBookmarked(wallpaper.id);
+                      final isBookmarked =
+                          bookmarkProvider.isBookmarked(wallpaper.id);
                       return GestureDetector(
                         onTap: () {
                           bookmarkProvider.toggleBookmark(wallpaper);
@@ -168,39 +133,6 @@ class WideWallpaperCard extends StatelessWidget {
                         ),
                       );
                     },
-                  ),
-                ),
-                
-                // Title at bottom left
-                Positioned(
-                  left: 16,
-                  bottom: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        wallpaper.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black54,
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'For Desktop & Tablets',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],

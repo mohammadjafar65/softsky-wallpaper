@@ -15,63 +15,68 @@ class WideWallpapersScreen extends StatelessWidget {
         bottom: false,
         child: Consumer<WallpaperProvider>(
           builder: (context, provider, child) {
-            return CustomScrollView(
-              slivers: [
-                // Header
-                SliverToBoxAdapter(
-                  child: _buildHeader(context),
-                ),
-                
-                // Info card
-                SliverToBoxAdapter(
-                  child: _buildInfoCard(),
-                ),
-                
-                // Section title
-                SliverToBoxAdapter(
-                  child: _buildSectionTitle(provider),
-                ),
-                
-                // Wide wallpapers list
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final wideWallpapers = provider.wideWallpapers;
-                        final wallpaper = wideWallpapers[index];
-                        return WideWallpaperCard(
-                          wallpaper: wallpaper,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => WallpaperDetailScreen(
-                                  wallpapers: wideWallpapers,
-                                  initialIndex: index,
+            return RefreshIndicator(
+              onRefresh: () => provider.refresh(),
+              color: AppTheme.primary,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  // Header
+                  SliverToBoxAdapter(
+                    child: _buildHeader(context),
+                  ),
+
+                  // Info card
+                  SliverToBoxAdapter(
+                    child: _buildInfoCard(),
+                  ),
+
+                  // Section title
+                  SliverToBoxAdapter(
+                    child: _buildSectionTitle(provider),
+                  ),
+
+                  // Wide wallpapers list
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final wideWallpapers = provider.wideWallpapers;
+                          final wallpaper = wideWallpapers[index];
+                          return WideWallpaperCard(
+                            wallpaper: wallpaper,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => WallpaperDetailScreen(
+                                    wallpapers: wideWallpapers,
+                                    initialIndex: index,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      childCount: provider.wideWallpapers.length,
+                              );
+                            },
+                          );
+                        },
+                        childCount: provider.wideWallpapers.length,
+                      ),
                     ),
                   ),
-                ),
-                
-                // Bottom padding for nav bar
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 100),
-                ),
-              ],
+
+                  // Bottom padding for nav bar
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 100),
+                  ),
+                ],
+              ),
             );
           },
         ),
       ),
     );
   }
-  
+
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
@@ -81,8 +86,8 @@ class WideWallpapersScreen extends StatelessWidget {
           Text(
             'Wide Wallpapers',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -93,7 +98,7 @@ class WideWallpapersScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildInfoCard() {
     return Container(
       margin: const EdgeInsets.all(20),
@@ -153,7 +158,7 @@ class WideWallpapersScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSectionTitle(WallpaperProvider provider) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),

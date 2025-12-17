@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
               SafeArea(
                 child: Column(
                   children: [
-                    const Spacer(flex: 2),
+                    const Spacer(flex: 4),
 
                     // Character logo
                     FadeTransition(

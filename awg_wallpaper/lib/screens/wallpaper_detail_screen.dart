@@ -398,7 +398,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
@@ -419,27 +419,30 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Premium Wallpaper',
                 style: TextStyle(
-                  color: AppTheme.textPrimary, // Fixed text color
+                  color: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.color, // Fixed text color
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Unlock this wallpaper and thousands more with Pro subscription',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppTheme.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontSize: 14,
                 ),
               ),
               const SizedBox(height: 24),
               _buildProFeature(Icons.image_rounded, 'All premium wallpapers'),
               _buildProFeature(Icons.block_rounded, 'Ad-free experience'),
-              _buildProFeature(Icons.hd_rounded, '4K downloads'),
+              // _buildProFeature(Icons.hd_rounded, '4K downloads'),
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
@@ -493,8 +496,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(
-                color: AppTheme.textPrimary, fontSize: 13), // Fixed
+            style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 13), // Fixed
           ),
         ],
       ),
@@ -561,12 +565,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showInfoSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor ??
+          Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 70),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -577,11 +582,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
-            const Text('Wallpaper Info',
+            Text('Wallpaper Info',
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary)),
+                    color: Theme.of(context).textTheme.bodyLarge?.color)),
             const SizedBox(height: 16),
             _infoRow('Title', _currentWallpaper.title),
             _infoRow('Category', _currentWallpaper.category),
@@ -603,11 +608,12 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style:
-                  const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+              style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                  fontSize: 14)),
           Text(value,
-              style: const TextStyle(
-                  color: AppTheme.textPrimary,
+              style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.w500,
                   fontSize: 14)),
         ],
@@ -618,12 +624,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showDownloadSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor ??
+          Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 70),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -651,12 +658,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showApplySheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor ??
+          Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 70),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -667,11 +675,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            const Text('Set Wallpaper',
+            Text('Set Wallpaper',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary)),
+                    color: Theme.of(context).textTheme.bodyLarge?.color)),
             const SizedBox(height: 20),
             _sheetItem(Icons.home_rounded, 'Home Screen', () {
               Navigator.pop(ctx);
@@ -703,8 +711,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
       title: Text(
         text,
-        style: const TextStyle(
-            fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
+        style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).textTheme.bodyLarge?.color),
       ),
       onTap: onTap,
     );
@@ -713,12 +722,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showOptionsSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor ??
+          Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 70),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -900,7 +910,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
-          backgroundColor: AppTheme.surface,
+          backgroundColor: Theme.of(context).dialogBackgroundColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
@@ -910,8 +920,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               children: [
                 const CircularProgressIndicator(color: AppTheme.primary),
                 const SizedBox(height: 16),
-                const Text('Downloading...',
-                    style: TextStyle(color: AppTheme.textPrimary)),
+                Text('Downloading...',
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color)),
               ],
             ),
           ),
@@ -927,7 +938,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
-          backgroundColor: AppTheme.surface,
+          backgroundColor: Theme.of(context).dialogBackgroundColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
@@ -937,8 +948,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               children: [
                 const CircularProgressIndicator(color: AppTheme.primary),
                 const SizedBox(height: 16),
-                const Text('Applying wallpaper...',
-                    style: TextStyle(color: AppTheme.textPrimary)),
+                Text('Applying wallpaper...',
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color)),
               ],
             ),
           ),
@@ -951,28 +963,29 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.settings_rounded,
-                  color: AppTheme.textPrimary, size: 40),
+              Icon(Icons.settings_rounded,
+                  color: Theme.of(context).iconTheme.color, size: 40),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Manual Setup',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary),
+                    color: Theme.of(context).textTheme.bodyLarge?.color),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'We saved the wallpaper to your gallery. Please set it manually from there.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color),
               ),
               const SizedBox(height: 20),
               TextButton(
@@ -991,7 +1004,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: Theme.of(context).dialogBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -1004,10 +1017,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               Text(
                 msg,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary),
+                    color: Theme.of(context).textTheme.bodyLarge?.color),
               ),
               const SizedBox(height: 20),
               TextButton(

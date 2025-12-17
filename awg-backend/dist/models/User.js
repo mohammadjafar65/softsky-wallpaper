@@ -47,7 +47,7 @@ const userSchema = new mongoose_1.Schema({
     authProvider: { type: String, enum: ['email', 'google', 'admin'], default: 'email' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     subscription: {
-        plan: { type: String, enum: ['free', 'weekly', 'monthly', 'yearly', 'lifetime'], default: 'free' },
+        plan: { type: String, enum: ['free', 'monthly', 'annual', 'lifetime'], default: 'free' },
         expiryDate: { type: Date },
         purchaseToken: { type: String },
     },

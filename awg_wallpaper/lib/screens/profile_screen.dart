@@ -233,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       Text(
-                        'Version 3.0.0',
+                        'Version 3.0.2',
                         style: TextStyle(
                           color: AppTheme.textMuted.withOpacity(0.5),
                           fontSize: 12,
@@ -373,8 +373,8 @@ class ProfileScreen extends StatelessWidget {
       children: [
         _buildStatItem('Saved', '${bookmarkProvider.bookmarkCount}', isDark),
         _buildDivider(isDark),
-        _buildStatItem('Downloads', '0', isDark),
-        _buildDivider(isDark),
+        // _buildStatItem('Downloads', '0', isDark),
+        // _buildDivider(isDark),
         _buildStatItem(
             'Plan', subscriptionProvider.isPro ? 'PRO' : 'Free', isDark),
       ],

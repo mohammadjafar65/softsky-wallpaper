@@ -13,7 +13,7 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  SubscriptionPlan _selectedPlan = SubscriptionPlan.yearly;
+  SubscriptionPlan _selectedPlan = SubscriptionPlan.annual;
   bool _isProcessing = false;
 
   @override
@@ -28,7 +28,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
           return Stack(
@@ -62,23 +62,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppTheme.surface,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(12),
                                 border:
                                     Border.all(color: AppTheme.surfaceVariant),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.close_rounded,
-                                color: AppTheme.textPrimary,
+                                color: Theme.of(context).iconTheme.color,
                               ),
                             ),
                           ),
                           TextButton(
                             onPressed: () => _restorePurchases(provider),
-                            child: const Text(
+                            child: Text(
                               'Restore',
                               style: TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -147,20 +150,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Upgrade to Pro',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: Theme.of(context).textTheme.headlineLarge?.color,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Unlock all wallpapers & remove ads',
             style: TextStyle(
               fontSize: 16,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ],
@@ -187,9 +190,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     const SizedBox(width: 12),
                     Text(
                       feature,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -203,11 +206,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget _buildPlanCards() {
     return Column(
       children: [
-        _buildPlanCard(SubscriptionPlan.weekly, false),
-        const SizedBox(height: 12),
         _buildPlanCard(SubscriptionPlan.monthly, false),
         const SizedBox(height: 12),
-        _buildPlanCard(SubscriptionPlan.yearly, true),
+        _buildPlanCard(SubscriptionPlan.annual, true),
         const SizedBox(height: 12),
         _buildPlanCard(SubscriptionPlan.lifetime, false),
       ],
@@ -224,11 +225,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color:
-              isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.surface,
+          color: isSelected
+              ? AppTheme.primary.withOpacity(0.1)
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primary : AppTheme.surfaceVariant,
+            color: isSelected
+                ? AppTheme.primary
+                : Theme.of(context).dividerColor.withOpacity(0.1),
             width: 2,
           ),
         ),
@@ -240,7 +244,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? AppTheme.primary : AppTheme.textMuted,
+                  color: isSelected
+                      ? AppTheme.primary
+                      : Theme.of(context).disabledColor,
                   width: 2,
                 ),
               ),
@@ -264,10 +270,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 children: [
                   Text(
                     details['name'] as String,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   if (isBestValue) ...[
@@ -280,7 +286,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
-                        'BEST VALUE',
+                        'Best Buy',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -297,17 +303,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               children: [
                 Text(
                   details['price'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
                 Text(
                   details['period'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppTheme.textMuted,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],
@@ -325,7 +331,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: AppTheme.textPrimary, // Black button for contrast
+          color: Theme.of(context).textTheme.bodyLarge?.color, // Adapt to theme
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -335,11 +341,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
           ],
         ),
-        child: const Text(
+        child: Text(
           'Start Subscription',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white,
+            color: Theme.of(context).scaffoldBackgroundColor, // Inverse color
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -349,12 +355,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildTerms() {
-    return const Text(
+    return Text(
       'Recurring billing. Cancel anytime.',
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: 12,
-        color: AppTheme.textMuted,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
       ),
     );
   }

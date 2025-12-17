@@ -5,25 +5,22 @@ import 'package:hive/hive.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../services/api_service.dart';
 
-enum SubscriptionPlan { free, weekly, monthly, yearly, lifetime }
+enum SubscriptionPlan { free, monthly, annual, lifetime }
 
 /// Google Play Product IDs - Update these to match your Play Console products
 class ProductIds {
-  static const String weekly = 'ssw_pro_weekly';
   static const String monthly = 'ssw_pro_monthly';
-  static const String yearly = 'ssw_pro_yearly';
+  static const String annual = 'ssw_pro_annual';
   static const String lifetime = 'ssw_pro_lifetime';
 
-  static const Set<String> allIds = {weekly, monthly, yearly, lifetime};
+  static const Set<String> allIds = {monthly, annual, lifetime};
 
   static SubscriptionPlan planFromId(String productId) {
     switch (productId) {
-      case weekly:
-        return SubscriptionPlan.weekly;
       case monthly:
         return SubscriptionPlan.monthly;
-      case yearly:
-        return SubscriptionPlan.yearly;
+      case annual:
+        return SubscriptionPlan.annual;
       case lifetime:
         return SubscriptionPlan.lifetime;
       default:
@@ -33,12 +30,10 @@ class ProductIds {
 
   static String idFromPlan(SubscriptionPlan plan) {
     switch (plan) {
-      case SubscriptionPlan.weekly:
-        return weekly;
       case SubscriptionPlan.monthly:
         return monthly;
-      case SubscriptionPlan.yearly:
-        return yearly;
+      case SubscriptionPlan.annual:
+        return annual;
       case SubscriptionPlan.lifetime:
         return lifetime;
       case SubscriptionPlan.free:
@@ -206,13 +201,10 @@ class SubscriptionProvider extends ChangeNotifier {
 
     // Set expiry date based on plan
     switch (plan) {
-      case SubscriptionPlan.weekly:
-        _expiryDate = DateTime.now().add(const Duration(days: 7));
-        break;
       case SubscriptionPlan.monthly:
         _expiryDate = DateTime.now().add(const Duration(days: 30));
         break;
-      case SubscriptionPlan.yearly:
+      case SubscriptionPlan.annual:
         _expiryDate = DateTime.now().add(const Duration(days: 365));
         break;
       case SubscriptionPlan.lifetime:
@@ -335,18 +327,6 @@ class SubscriptionProvider extends ChangeNotifier {
       'features': ['Limited wallpapers', 'Ads enabled', 'Basic quality'],
       'savings': '',
     },
-    SubscriptionPlan.weekly: {
-      'name': 'Weekly',
-      'price': '\INR 5.00',
-      'period': '/week',
-      'features': [
-        'All wallpapers',
-        'No ads',
-        'HD quality',
-        'New content first'
-      ],
-      'savings': '',
-    },
     SubscriptionPlan.monthly: {
       'name': 'Monthly',
       'price': '\INR 29.99',
@@ -358,11 +338,11 @@ class SubscriptionProvider extends ChangeNotifier {
         'New content first',
         'Priority support'
       ],
-      'savings': 'Save 37%',
+      'savings': '',
     },
-    SubscriptionPlan.yearly: {
-      'name': 'Yearly',
-      'price': '\INR 59.89',
+    SubscriptionPlan.annual: {
+      'name': 'Annual',
+      'price': '\INR 299.00',
       'period': '/year',
       'features': [
         'All wallpapers',
@@ -372,12 +352,13 @@ class SubscriptionProvider extends ChangeNotifier {
         'Priority support',
         'Exclusive packs'
       ],
-      'savings': 'Save 50%',
+      'savings': 'Save 17%',
       'popular': true,
     },
     SubscriptionPlan.lifetime: {
       'name': 'Lifetime',
-      'price': '\INR 299.99',
+      'price':
+          '\INR 499.00', // Increasing slightly or keeping 299? Lifetime was 299.
       'period': 'one-time',
       'features': [
         'All wallpapers forever',

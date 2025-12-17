@@ -85,9 +85,8 @@ export default function Users() {
                         >
                             <option value="all">All Plans</option>
                             <option value="free">Free</option>
-                            <option value="weekly">Weekly</option>
                             <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
+                            <option value="annual">Annual</option>
                             <option value="lifetime">Lifetime</option>
                         </select>
                     </div>
@@ -157,8 +156,8 @@ export default function Users() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${user.subscription.plan === 'free'
-                                                    ? 'bg-slate-800/50 border-slate-700 text-slate-400'
-                                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                                                ? 'bg-slate-800/50 border-slate-700 text-slate-400'
+                                                : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                                                 }`}>
                                                 {user.subscription.plan}
                                             </span>
@@ -202,8 +201,8 @@ export default function Users() {
                                 key={i}
                                 onClick={() => setPage(i + 1)}
                                 className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${page === i + 1
-                                        ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
-                                        : 'bg-slate-900/50 text-slate-500 hover:bg-slate-800 border border-slate-700/50'
+                                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
+                                    : 'bg-slate-900/50 text-slate-500 hover:bg-slate-800 border border-slate-700/50'
                                     }`}
                             >
                                 {i + 1}

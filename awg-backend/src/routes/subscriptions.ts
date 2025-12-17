@@ -26,13 +26,10 @@ router.post('/verify', authenticate, async (req: AuthRequest, res) => {
         // Calculate expiry date based on plan
         let expiryDate: Date;
         switch (plan) {
-            case 'weekly':
-                expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-                break;
             case 'monthly':
                 expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
                 break;
-            case 'yearly':
+            case 'annual':
                 expiryDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
                 break;
             case 'lifetime':
@@ -99,8 +96,12 @@ router.post('/restore', authenticate, async (req: AuthRequest, res) => {
     try {
         const { purchaseToken, plan } = req.body;
 
+        if (!purchaseToken || !plan) {
+            return res.status(400).json({ error: 'Purchase token and plan are required' });
+        }
+
         // TODO: Verify purchase history with Google Play API
-        // For now, just return current subscription status
+        // For now, we trust the client provided data to restore logic (similar to verify)
 
         const user = await User.findById(req.user?.id);
 
@@ -108,8 +109,33 @@ router.post('/restore', authenticate, async (req: AuthRequest, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Calculate expiry date based on plan
+        let expiryDate: Date;
+        switch (plan) {
+            case 'monthly':
+                expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                break;
+            case 'annual':
+                expiryDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+                break;
+            case 'lifetime':
+                expiryDate = new Date('2100-01-01');
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid plan' });
+        }
+
+        // Update user subscription
+        user.subscription = {
+            plan,
+            expiryDate,
+            purchaseToken,
+        };
+
+        await user.save();
+
         res.json({
-            message: 'Subscription restored',
+            message: 'Subscription restored successfully',
             subscription: user.subscription,
         });
     } catch (error) {

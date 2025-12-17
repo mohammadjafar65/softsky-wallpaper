@@ -159,29 +159,10 @@ class HomeScreen extends StatelessWidget {
           final category = provider.categories[index];
           final isSelected = provider.selectedCategory == category.id;
 
-          return GestureDetector(
+          return CategoryChip(
+            category: category,
+            isSelected: isSelected,
             onTap: () => provider.setSelectedCategory(category.id),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-              decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primary : AppTheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color:
-                      isSelected ? AppTheme.primary : AppTheme.surfaceVariant,
-                ),
-              ),
-              child: Text(
-                category.name,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppTheme.textSecondary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ),
           );
         },
       ),
@@ -227,7 +208,7 @@ class HomeScreen extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       sliver: SliverMasonryGrid.count(
-        crossAxisCount: 2,
+        crossAxisCount: 3,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         itemBuilder: (context, index) {

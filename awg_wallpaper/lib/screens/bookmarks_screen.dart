@@ -22,7 +22,7 @@ class BookmarksScreen extends StatelessWidget {
                 SliverToBoxAdapter(
                   child: _buildHeader(context, provider),
                 ),
-                
+
                 // Empty state or grid
                 if (provider.bookmarks.isEmpty)
                   SliverFillRemaining(
@@ -33,7 +33,7 @@ class BookmarksScreen extends StatelessWidget {
                   SliverToBoxAdapter(
                     child: _buildSectionTitle(provider),
                   ),
-                  
+
                   // Bookmarks grid
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -46,8 +46,10 @@ class BookmarksScreen extends StatelessWidget {
                           crossAxisSpacing: 16,
                           itemBuilder: (context, index) {
                             final wallpaper = bookmarks[index];
-                            final height = index % 3 == 0 ? 280.0 : (index % 3 == 1 ? 220.0 : 250.0);
-                            
+                            final height = index % 3 == 0
+                                ? 280.0
+                                : (index % 3 == 1 ? 220.0 : 250.0);
+
                             return WallpaperCard(
                               wallpaper: wallpaper,
                               height: height,
@@ -70,7 +72,7 @@ class BookmarksScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-                
+
                 // Bottom padding for nav bar
                 const SliverToBoxAdapter(
                   child: SizedBox(height: 100),
@@ -82,7 +84,7 @@ class BookmarksScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildHeader(BuildContext context, BookmarkProvider provider) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
@@ -95,8 +97,8 @@ class BookmarksScreen extends StatelessWidget {
               Text(
                 'Saved',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -125,7 +127,7 @@ class BookmarksScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSectionTitle(BookmarkProvider provider) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
@@ -151,7 +153,7 @@ class BookmarksScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -194,7 +196,7 @@ class BookmarksScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   void _showClearConfirmation(BuildContext context, BookmarkProvider provider) {
     showDialog(
       context: context,

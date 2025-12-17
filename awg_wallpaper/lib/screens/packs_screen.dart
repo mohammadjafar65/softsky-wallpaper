@@ -142,51 +142,47 @@ class _PacksScreenState extends State<PacksScreen> {
                 //   ),
                 // ],
 
-                // Free Packs Section
-                SliverToBoxAdapter(
-                  child: _buildSectionHeader(
-                    context,
-                    'Free Collections',
-                    Icons.folder_special_rounded,
-                    AppTheme.success,
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildHorizontalList(context, provider.freePacks),
-                ),
+                // Removed Free Packs Section per user request
 
-                // All Packs Grid
+                // All Packs List (Full Width)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.grid_view_rounded,
-                            color: AppTheme.primary,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'All Collections',
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.grid_view_rounded,
+                                color: AppTheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'All Collections',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                _buildAllPacksGrid(context, provider.packs),
+                _buildAllPacksList(context, provider.packs),
 
                 // Bottom padding for nav bar
                 const SliverToBoxAdapter(
@@ -200,95 +196,30 @@ class _PacksScreenState extends State<PacksScreen> {
     );
   }
 
-  Widget _buildSectionHeader(
-      BuildContext context, String title, IconData icon, Color color) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Removed _buildSectionHeader and _buildHorizontalList helper methods as they are no longer used
 
-  Widget _buildHorizontalList(BuildContext context, List packs) {
-    return SizedBox(
-      height: 200, // Reduced height slightly as card is optimized
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: packs.length,
-        itemBuilder: (context, index) {
-          final pack = packs[index];
-          return Container(
-            margin: const EdgeInsets.only(
-                right: 16), // Margin handled here or in card
-            // We need to ensure PackCard doesn't double margin if isLarge is false
-            // The current PackCard implementation adds right margin 16 if !isLarge.
-            // So we don't need extra margin here if we rely on that.
-            // Let's rely on PackCard's internal margin for now to keep it consistent.
-            child: PackCard(
-              pack: pack,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        PackDetailScreen(packId: pack.id, packName: pack.name),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildAllPacksGrid(BuildContext context, List packs) {
+  Widget _buildAllPacksList(BuildContext context, List packs) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.75, // Taller aspect ratio for better look
-        ),
+      sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final pack = packs[index];
-            return PackCard(
-              pack: pack,
-              isLarge: true, // Use large styling, but grid constrains width
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        PackDetailScreen(packId: pack.id, packName: pack.name),
-                  ),
-                );
-              },
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: PackCard(
+                pack: pack,
+                isLarge: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PackDetailScreen(
+                          packId: pack.id, packName: pack.name),
+                    ),
+                  );
+                },
+              ),
             );
           },
           childCount: packs.length,

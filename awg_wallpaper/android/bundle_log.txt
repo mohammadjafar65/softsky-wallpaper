@@ -1,0 +1,2900 @@
+﻿> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources
+
+> Task :gradle:compileKotlin
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:11:37 'ApkVariant' is deprecated. Deprecated in Java
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:609:69 'ApkVariant' is deprecated. Deprecated in Java
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt:186:64 Unchecked cast: NamedDomainObjectContainer<out BuildType> to NamedDomainObjectContainer<BuildType>
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt:187:69 Unchecked cast: NamedDomainObjectContainer<out BuildType> to NamedDomainObjectContainer<BuildType>
+
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy NO-SOURCE
+> Task :gradle:classes
+> Task :gradle:jar
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :app:cleanMergeReleaseAssets
+> Task :app:mergeReleaseShaders UP-TO-DATE
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:compileFlutterBuildRelease
+> Task :app:packJniLibsflutterBuildRelease
+> Task :firebase_auth:preBuild UP-TO-DATE
+> Task :firebase_auth:preReleaseBuild UP-TO-DATE
+> Task :firebase_auth:mergeReleaseShaders UP-TO-DATE
+> Task :firebase_auth:compileReleaseShaders NO-SOURCE
+> Task :firebase_auth:generateReleaseAssets UP-TO-DATE
+> Task :firebase_auth:mergeReleaseAssets UP-TO-DATE
+> Task :firebase_core:preBuild UP-TO-DATE
+> Task :firebase_core:preReleaseBuild UP-TO-DATE
+> Task :firebase_core:mergeReleaseShaders UP-TO-DATE
+> Task :firebase_core:compileReleaseShaders NO-SOURCE
+> Task :firebase_core:generateReleaseAssets UP-TO-DATE
+> Task :firebase_core:mergeReleaseAssets UP-TO-DATE
+> Task :google_sign_in_android:preBuild UP-TO-DATE
+> Task :google_sign_in_android:preReleaseBuild UP-TO-DATE
+> Task :google_sign_in_android:mergeReleaseShaders UP-TO-DATE
+> Task :google_sign_in_android:compileReleaseShaders NO-SOURCE
+> Task :google_sign_in_android:generateReleaseAssets UP-TO-DATE
+> Task :google_sign_in_android:mergeReleaseAssets UP-TO-DATE
+> Task :in_app_purchase_android:preBuild UP-TO-DATE
+> Task :in_app_purchase_android:preReleaseBuild UP-TO-DATE
+> Task :in_app_purchase_android:mergeReleaseShaders UP-TO-DATE
+> Task :in_app_purchase_android:compileReleaseShaders NO-SOURCE
+> Task :in_app_purchase_android:generateReleaseAssets UP-TO-DATE
+> Task :in_app_purchase_android:mergeReleaseAssets UP-TO-DATE
+> Task :in_app_review:preBuild UP-TO-DATE
+> Task :in_app_review:preReleaseBuild UP-TO-DATE
+> Task :in_app_review:mergeReleaseShaders UP-TO-DATE
+> Task :in_app_review:compileReleaseShaders NO-SOURCE
+> Task :in_app_review:generateReleaseAssets UP-TO-DATE
+> Task :in_app_review:mergeReleaseAssets UP-TO-DATE
+> Task :path_provider_android:preBuild UP-TO-DATE
+> Task :path_provider_android:preReleaseBuild UP-TO-DATE
+> Task :path_provider_android:mergeReleaseShaders UP-TO-DATE
+> Task :path_provider_android:compileReleaseShaders NO-SOURCE
+> Task :path_provider_android:generateReleaseAssets UP-TO-DATE
+> Task :path_provider_android:mergeReleaseAssets UP-TO-DATE
+> Task :share_plus:preBuild UP-TO-DATE
+> Task :share_plus:preReleaseBuild UP-TO-DATE
+> Task :share_plus:mergeReleaseShaders UP-TO-DATE
+> Task :share_plus:compileReleaseShaders NO-SOURCE
+> Task :share_plus:generateReleaseAssets UP-TO-DATE
+> Task :share_plus:mergeReleaseAssets UP-TO-DATE
+> Task :sqflite_android:preBuild UP-TO-DATE
+> Task :sqflite_android:preReleaseBuild UP-TO-DATE
+> Task :sqflite_android:mergeReleaseShaders UP-TO-DATE
+> Task :sqflite_android:compileReleaseShaders NO-SOURCE
+> Task :sqflite_android:generateReleaseAssets UP-TO-DATE
+> Task :sqflite_android:mergeReleaseAssets UP-TO-DATE
+> Task :url_launcher_android:preBuild UP-TO-DATE
+> Task :url_launcher_android:preReleaseBuild UP-TO-DATE
+> Task :url_launcher_android:mergeReleaseShaders UP-TO-DATE
+> Task :url_launcher_android:compileReleaseShaders NO-SOURCE
+> Task :url_launcher_android:generateReleaseAssets UP-TO-DATE
+> Task :url_launcher_android:mergeReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :firebase_auth:generateReleaseBuildConfig UP-TO-DATE
+> Task :firebase_auth:generateReleaseResValues UP-TO-DATE
+> Task :firebase_auth:generateReleaseResources UP-TO-DATE
+> Task :firebase_auth:packageReleaseResources UP-TO-DATE
+> Task :firebase_auth:parseReleaseLocalResources UP-TO-DATE
+> Task :firebase_auth:generateReleaseRFile UP-TO-DATE
+> Task :firebase_auth:javaPreCompileRelease UP-TO-DATE
+> Task :firebase_core:generateReleaseBuildConfig UP-TO-DATE
+> Task :firebase_core:generateReleaseResValues UP-TO-DATE
+> Task :firebase_core:generateReleaseResources UP-TO-DATE
+> Task :firebase_core:packageReleaseResources UP-TO-DATE
+> Task :firebase_core:parseReleaseLocalResources UP-TO-DATE
+> Task :firebase_core:generateReleaseRFile UP-TO-DATE
+> Task :firebase_core:javaPreCompileRelease UP-TO-DATE
+> Task :firebase_core:compileReleaseJavaWithJavac
+> Task :firebase_core:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :firebase_core:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :google_sign_in_android:generateReleaseResValues UP-TO-DATE
+> Task :google_sign_in_android:generateReleaseResources UP-TO-DATE
+> Task :google_sign_in_android:packageReleaseResources UP-TO-DATE
+> Task :google_sign_in_android:parseReleaseLocalResources UP-TO-DATE
+> Task :google_sign_in_android:generateReleaseRFile UP-TO-DATE
+> Task :google_sign_in_android:javaPreCompileRelease UP-TO-DATE
+> Task :firebase_core:bundleLibCompileToJarRelease
+> Task :google_sign_in_android:compileReleaseJavaWithJavac
+
+> Task :firebase_auth:compileReleaseJavaWithJavac
+.\gradlew.bat : Note: 
+Some input files use or 
+override a deprecated API.
+At line:1 char:1
++ .\gradlew.bat 
+bundleRelease 
+--console=plain 2>&1 | 
+Out-File -Encoding ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (N  
+  ote: Some inpu...depr   
+ ecated API.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+
+> Task :firebase_auth:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :firebase_auth:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :google_sign_in_android:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :google_sign_in_android:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :in_app_purchase_android:generateReleaseBuildConfig UP-TO-DATE
+> Task :in_app_purchase_android:generateReleaseResValues UP-TO-DATE
+> Task :in_app_purchase_android:generateReleaseResources UP-TO-DATE
+> Task :in_app_purchase_android:packageReleaseResources UP-TO-DATE
+> Task :in_app_purchase_android:parseReleaseLocalResources UP-TO-DATE
+> Task :in_app_purchase_android:generateReleaseRFile UP-TO-DATE
+> Task :in_app_purchase_android:javaPreCompileRelease UP-TO-DATE
+> Task :in_app_purchase_android:compileReleaseJavaWithJavac
+> Task :in_app_purchase_android:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :in_app_purchase_android:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :in_app_review:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :in_app_review:generateReleaseResValues UP-TO-DATE
+> Task :in_app_review:generateReleaseResources UP-TO-DATE
+> Task :in_app_review:packageReleaseResources UP-TO-DATE
+> Task :in_app_review:parseReleaseLocalResources UP-TO-DATE
+> Task :in_app_review:generateReleaseRFile UP-TO-DATE
+> Task :in_app_review:javaPreCompileRelease UP-TO-DATE
+> Task :path_provider_android:generateReleaseResValues UP-TO-DATE
+> Task :path_provider_android:generateReleaseResources UP-TO-DATE
+> Task :path_provider_android:packageReleaseResources UP-TO-DATE
+> Task :path_provider_android:parseReleaseLocalResources UP-TO-DATE
+> Task :path_provider_android:generateReleaseRFile UP-TO-DATE
+> Task :path_provider_android:javaPreCompileRelease UP-TO-DATE
+> Task :path_provider_android:compileReleaseJavaWithJavac
+> Task :path_provider_android:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :path_provider_android:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :share_plus:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :share_plus:generateReleaseResValues UP-TO-DATE
+> Task :share_plus:generateReleaseResources UP-TO-DATE
+> Task :share_plus:packageReleaseResources UP-TO-DATE
+> Task :share_plus:parseReleaseLocalResources UP-TO-DATE
+> Task :share_plus:generateReleaseRFile UP-TO-DATE
+> Task :share_plus:javaPreCompileRelease UP-TO-DATE
+> Task :sqflite_android:generateReleaseResValues UP-TO-DATE
+> Task :sqflite_android:generateReleaseResources UP-TO-DATE
+> Task :sqflite_android:packageReleaseResources UP-TO-DATE
+> Task :sqflite_android:parseReleaseLocalResources UP-TO-DATE
+> Task :sqflite_android:generateReleaseRFile UP-TO-DATE
+> Task :sqflite_android:javaPreCompileRelease UP-TO-DATE
+> Task :sqflite_android:compileReleaseJavaWithJavac
+> Task :sqflite_android:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :sqflite_android:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :url_launcher_android:generateReleaseBuildConfig UP-TO-DATE
+> Task :url_launcher_android:generateReleaseResValues UP-TO-DATE
+> Task :url_launcher_android:generateReleaseResources UP-TO-DATE
+> Task :url_launcher_android:packageReleaseResources UP-TO-DATE
+> Task :url_launcher_android:parseReleaseLocalResources UP-TO-DATE
+> Task :url_launcher_android:generateReleaseRFile UP-TO-DATE
+> Task :url_launcher_android:javaPreCompileRelease UP-TO-DATE
+
+> Task :in_app_review:compileReleaseKotlin
+e: Daemon compilation 
+failed: null
+java.lang.Exception
+	at org.jetbrains.kotlin.d
+aemon.common.CompileServic
+e$CallResult$Error.get(Com
+pileService.kt:69)
+	at org.jetbrains.kotlin.d
+aemon.common.CompileServic
+e$CallResult$Error.get(Com
+pileService.kt:65)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleKotlin
+CompilerWork.compileWithDa
+emon(GradleKotlinCompilerW
+ork.kt:240)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleKotlin
+CompilerWork.compileWithDa
+emonOrFallbackImpl(GradleK
+otlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleKotlin
+CompilerWork.run(GradleKot
+linCompilerWork.kt:111)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleCompil
+erRunnerWithWorkers$Gradle
+KotlinCompilerWorkAction.e
+xecute(GradleCompilerRunne
+rWithWorkers.kt:74)
+	at org.gradle.workers.int
+ernal.DefaultWorkerServer.
+execute(DefaultWorkerServe
+r.java:63)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1$1.create(NoIsolatio
+nWorkerFactory.java:66)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1$1.create(NoIsolatio
+nWorkerFactory.java:62)
+	at org.gradle.internal.cl
+assloader.ClassLoaderUtils
+.executeInClassloader(Clas
+sLoaderUtils.java:100)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1.lambda$execute$0(No
+IsolationWorkerFactory.jav
+a:62)
+	at org.gradle.workers.int
+ernal.AbstractWorker$1.cal
+l(AbstractWorker.java:44)
+	at org.gradle.workers.int
+ernal.AbstractWorker$1.cal
+l(AbstractWorker.java:41)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$CallableBuildOp
+erationWorker.execute(Defa
+ultBuildOperationRunner.ja
+va:210)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$CallableBuildOp
+erationWorker.execute(Defa
+ultBuildOperationRunner.ja
+va:205)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$2.execute(Defau
+ltBuildOperationRunner.jav
+a:67)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$2.execute(Defau
+ltBuildOperationRunner.jav
+a:60)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner.execute(Default
+BuildOperationRunner.java:
+167)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner.execute(Default
+BuildOperationRunner.java:
+60)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner.call(DefaultBui
+ldOperationRunner.java:54)
+	at org.gradle.workers.int
+ernal.AbstractWorker.execu
+teWrappedInBuildOperation(
+AbstractWorker.java:41)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1.execute(NoIsolation
+WorkerFactory.java:59)
+	at org.gradle.workers.int
+ernal.DefaultWorkerExecuto
+r.lambda$submitWork$0(Defa
+ultWorkerExecutor.java:174
+)
+	at java.base/java.util.co
+ncurrent.FutureTask.run(Fu
+tureTask.java:264)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+runExecution(DefaultCondit
+ionalExecutionQueue.java:1
+94)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+access$700(DefaultConditio
+nalExecutionQueue.java:127
+)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner$
+1.run(DefaultConditionalEx
+ecutionQueue.java:169)
+	at org.gradle.internal.Fa
+ctories$1.create(Factories
+.java:31)
+	at org.gradle.internal.wo
+rk.DefaultWorkerLeaseServi
+ce.withLocks(DefaultWorker
+LeaseService.java:263)
+	at org.gradle.internal.wo
+rk.DefaultWorkerLeaseServi
+ce.runAsWorkerThread(Defau
+ltWorkerLeaseService.java:
+127)
+	at org.gradle.internal.wo
+rk.DefaultWorkerLeaseServi
+ce.runAsWorkerThread(Defau
+ltWorkerLeaseService.java:
+132)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+runBatch(DefaultConditiona
+lExecutionQueue.java:164)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+run(DefaultConditionalExec
+utionQueue.java:133)
+	at java.base/java.util.co
+ncurrent.Executors$Runnabl
+eAdapter.call(Executors.ja
+va:539)
+	at java.base/java.util.co
+ncurrent.FutureTask.run(Fu
+tureTask.java:264)
+	at org.gradle.internal.co
+ncurrent.ExecutorPolicy$Ca
+tchAndRecordFailures.onExe
+cute(ExecutorPolicy.java:6
+4)
+	at org.gradle.internal.co
+ncurrent.AbstractManagedEx
+ecutor$1.run(AbstractManag
+edExecutor.java:48)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r.runWorker(ThreadPoolExec
+utor.java:1136)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r$Worker.run(ThreadPoolExe
+cutor.java:635)
+	at java.base/java.lang.Th
+read.run(Thread.java:842)
+Caused by: 
+java.lang.AssertionError: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\in_app_review\k
+otlin\compileReleaseKotlin
+\cacheable\caches-jvm\jvm\
+kotlin: class-fq-name-to-s
+ource.tab, 
+source-to-classes.tab, int
+ernal-name-to-source.tab
+	at org.jetbrains.kotlin.c
+om.google.common.io.Closer
+.close(Closer.java:218)
+	at org.jetbrains.kotlin.i
+ncremental.IncrementalCach
+esManager.close(Incrementa
+lCachesManager.kt:55)
+	at kotlin.io.CloseableKt.
+closeFinally(Closeable.kt:
+46)
+	at org.jetbrains.kotlin.i
+ncremental.IncrementalComp
+ilerRunner.compileNonIncre
+mentally(IncrementalCompil
+erRunner.kt:293)
+	at org.jetbrains.kotlin.i
+ncremental.IncrementalComp
+ilerRunner.compile(Increme
+ntalCompilerRunner.kt:128)
+	at org.jetbrains.kotlin.d
+aemon.CompileServiceImplBa
+se.execIncrementalCompiler
+(CompileServiceImpl.kt:684
+)
+	at org.jetbrains.kotlin.d
+aemon.CompileServiceImplBa
+se.access$execIncrementalC
+ompiler(CompileServiceImpl
+.kt:94)
+	at org.jetbrains.kotlin.d
+aemon.CompileServiceImpl.c
+ompile(CompileServiceImpl.
+kt:1810)
+	at java.base/jdk.internal
+.reflect.DirectMethodHandl
+eAccessor.invoke(Unknown 
+Source)
+	at java.base/java.lang.re
+flect.Method.invoke(Unknow
+n Source)
+	at java.rmi/sun.rmi.serve
+r.UnicastServerRef.dispatc
+h(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.Transport$1.run(Unkno
+wn Source)
+	at java.rmi/sun.rmi.trans
+port.Transport$1.run(Unkno
+wn Source)
+	at java.base/java.securit
+y.AccessController.doPrivi
+leged(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.Transport.serviceCall
+(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport.hand
+leMessages(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport$Conn
+ectionHandler.run0(Unknown
+ Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport$Conn
+ectionHandler.lambda$run$0
+(Unknown Source)
+	at java.base/java.securit
+y.AccessController.doPrivi
+leged(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport$Conn
+ectionHandler.run(Unknown 
+Source)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r.runWorker(Unknown 
+Source)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r$Worker.run(Unknown 
+Source)
+	at java.base/java.lang.Th
+read.run(Unknown Source)
+Caused by: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\in_app_review\k
+otlin\compileReleaseKotlin
+\cacheable\caches-jvm\jvm\
+kotlin: class-fq-name-to-s
+ource.tab, 
+source-to-classes.tab, int
+ernal-name-to-source.tab
+	at org.jetbrains.kotlin.i
+ncremental.storage.BasicMa
+psOwner.forEachMapSafe(Bas
+icMapsOwner.kt:95)
+	at org.jetbrains.kotlin.i
+ncremental.storage.BasicMa
+psOwner.close(BasicMapsOwn
+er.kt:53)
+	at org.jetbrains.kotlin.c
+om.google.common.io.Closer
+.close(Closer.java:205)
+	... 22 more
+	Suppressed: java.lang.Ill
+egalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\in_app_review\kotlin\
+compileReleaseKotlin\cache
+able\caches-jvm\jvm\kotlin
+\class-fq-name-to-source.t
+ab] is already registered
+		at org.jetbrains.kotlin.
+com.intellij.util.io.FileP
+ageCache.registerPagedFile
+Storage(FilePageCache.java
+:410)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Paged
+FileStorage.<init>(PagedFi
+leStorage.java:72)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Resiz
+eableMappedFile.<init>(Res
+izeableMappedFile.java:68)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentBTreeEnumerator.<init
+>(PersistentBTreeEnumerato
+r.java:128)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentEnumerator.createDefa
+ultEnumerator(PersistentEn
+umerator.java:52)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:165)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:140)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.buildImple
+mentation(PersistentMapBui
+lder.java:88)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.build(Pers
+istentMapBuilder.java:71)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:46)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:72)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.createMap(LazyStorag
+e.kt:62)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.getStorageOrCreateNe
+w(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.set(LazyStorage.kt:8
+0)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.applyChanges(InM
+emoryStorage.kt:108)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.close(InMemorySt
+orage.kt:136)
+		at org.jetbrains.kotlin.
+incremental.storage.Persis
+tentStorageWrapper.close(P
+ersistentStorage.kt:124)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\in_app_
+review\kotlin\compileRelea
+seKotlin\cacheable\caches-
+jvm\jvm\kotlin\class-fq-na
+me-to-source.tab] 
+registration stack trace
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:437)
+			... 43 more
+	Suppressed: java.lang.Ill
+egalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\in_app_review\kotlin\
+compileReleaseKotlin\cache
+able\caches-jvm\jvm\kotlin
+\source-to-classes.tab] 
+is already registered
+		at org.jetbrains.kotlin.
+com.intellij.util.io.FileP
+ageCache.registerPagedFile
+Storage(FilePageCache.java
+:410)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Paged
+FileStorage.<init>(PagedFi
+leStorage.java:72)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Resiz
+eableMappedFile.<init>(Res
+izeableMappedFile.java:68)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentBTreeEnumerator.<init
+>(PersistentBTreeEnumerato
+r.java:128)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentEnumerator.createDefa
+ultEnumerator(PersistentEn
+umerator.java:52)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:165)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:140)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.buildImple
+mentation(PersistentMapBui
+lder.java:88)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.build(Pers
+istentMapBuilder.java:71)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:46)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:72)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.createMap(LazyStorag
+e.kt:62)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.getStorageOrCreateNe
+w(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.set(LazyStorage.kt:8
+0)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.applyChanges(InM
+emoryStorage.kt:108)
+		at org.jetbrains.kotlin.
+incremental.storage.Append
+ableInMemoryStorage.applyC
+hanges(InMemoryStorage.kt:
+179)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.close(InMemorySt
+orage.kt:136)
+		at org.jetbrains.kotlin.
+incremental.storage.Append
+ableSetBasicMap.close(Basi
+cMap.kt:157)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\in_app_
+review\kotlin\compileRelea
+seKotlin\cacheable\caches-
+jvm\jvm\kotlin\source-to-c
+lasses.tab] registration 
+stack trace
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:437)
+			... 44 more
+	Suppressed: java.lang.Ill
+egalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\in_app_review\kotlin\
+compileReleaseKotlin\cache
+able\caches-jvm\jvm\kotlin
+\internal-name-to-source.t
+ab] is already registered
+		at org.jetbrains.kotlin.
+com.intellij.util.io.FileP
+ageCache.registerPagedFile
+Storage(FilePageCache.java
+:410)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Paged
+FileStorage.<init>(PagedFi
+leStorage.java:72)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Resiz
+eableMappedFile.<init>(Res
+izeableMappedFile.java:68)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentBTreeEnumerator.<init
+>(PersistentBTreeEnumerato
+r.java:128)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentEnumerator.createDefa
+ultEnumerator(PersistentEn
+umerator.java:52)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:165)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:140)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.buildImple
+mentation(PersistentMapBui
+lder.java:88)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.build(Pers
+istentMapBuilder.java:71)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:46)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:72)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.createMap(LazyStorag
+e.kt:62)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.getStorageOrCreateNe
+w(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.set(LazyStorage.kt:8
+0)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.applyChanges(InM
+emoryStorage.kt:108)
+		at org.jetbrains.kotlin.
+incremental.storage.Append
+ableInMemoryStorage.applyC
+hanges(InMemoryStorage.kt:
+179)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.close(InMemorySt
+orage.kt:136)
+		at org.jetbrains.kotlin.
+incremental.storage.Persis
+tentStorageWrapper.close(P
+ersistentStorage.kt:124)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\in_app_
+review\kotlin\compileRelea
+seKotlin\cacheable\caches-
+jvm\jvm\kotlin\internal-na
+me-to-source.tab] 
+registration stack trace
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:437)
+			... 44 more
+	Suppressed: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\in_app_review\k
+otlin\compileReleaseKotlin
+\cacheable\caches-jvm\look
+ups: id-to-file.tab, 
+file-to-id.tab
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:95)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.close(BasicMapsOw
+ner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.LookupStorage.
+close(LookupStorage.kt:155
+)
+		... 23 more
+		Suppressed: java.lang.Il
+legalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\in_app_review\kotlin\
+compileReleaseKotlin\cache
+able\caches-jvm\lookups\id
+-to-file.tab] is already 
+registered
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:410)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Page
+dFileStorage.<init>(PagedF
+ileStorage.java:72)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Resi
+zeableMappedFile.<init>(Re
+sizeableMappedFile.java:68
+)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentBTreeEnumerator.<ini
+t>(PersistentBTreeEnumerat
+or.java:128)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentEnumerator.createDef
+aultEnumerator(PersistentE
+numerator.java:52)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:165)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:140)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.buildImpl
+ementation(PersistentMapBu
+ilder.java:88)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.build(Per
+sistentMapBuilder.java:71)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:46)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:72)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.createMap(LazyStora
+ge.kt:62)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.getStorageOrCreateN
+ew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.set(LazyStorage.kt:
+80)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.applyChanges(In
+MemoryStorage.kt:108)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.close(InMemoryS
+torage.kt:136)
+			at org.jetbrains.kotlin
+.incremental.storage.Persi
+stentStorageWrapper.close(
+PersistentStorage.kt:124)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner.forEachMapSafe(B
+asicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\in_app_
+review\kotlin\compileRelea
+seKotlin\cacheable\caches-
+jvm\lookups\id-to-file.tab
+] registration stack trace
+				at org.jetbrains.kotli
+n.com.intellij.util.io.Fil
+ePageCache.registerPagedFi
+leStorage(FilePageCache.ja
+va:437)
+				... 44 more
+		Suppressed: java.lang.Il
+legalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\in_app_review\kotlin\
+compileReleaseKotlin\cache
+able\caches-jvm\lookups\fi
+le-to-id.tab] is already 
+registered
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:410)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Page
+dFileStorage.<init>(PagedF
+ileStorage.java:72)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Resi
+zeableMappedFile.<init>(Re
+sizeableMappedFile.java:68
+)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentBTreeEnumerator.<ini
+t>(PersistentBTreeEnumerat
+or.java:128)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentEnumerator.createDef
+aultEnumerator(PersistentE
+numerator.java:52)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:165)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:140)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.buildImpl
+ementation(PersistentMapBu
+ilder.java:88)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.build(Per
+sistentMapBuilder.java:71)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:46)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:72)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.createMap(LazyStora
+ge.kt:62)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.getStorageOrCreateN
+ew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.set(LazyStorage.kt:
+80)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.applyChanges(In
+MemoryStorage.kt:108)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.close(InMemoryS
+torage.kt:136)
+			at org.jetbrains.kotlin
+.incremental.storage.Persi
+stentStorageWrapper.close(
+PersistentStorage.kt:124)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner.forEachMapSafe(B
+asicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\in_app_
+review\kotlin\compileRelea
+seKotlin\cacheable\caches-
+jvm\lookups\file-to-id.tab
+] registration stack trace
+				at org.jetbrains.kotli
+n.com.intellij.util.io.Fil
+ePageCache.registerPagedFi
+leStorage(FilePageCache.ja
+va:437)
+				... 44 more
+	Suppressed: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\in_app_review\k
+otlin\compileReleaseKotlin
+\cacheable\caches-jvm\inpu
+ts: source-to-output.tab
+Failed to compile with Kotlin daemon: java.lang.Exception
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:69)
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:65)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:240)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:74)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:63)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:66)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:62)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:100)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:62)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+		... 25 more
+		Suppressed: java.lang.Il
+legalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\in_app_review\kotlin\
+compileReleaseKotlin\cache
+able\caches-jvm\inputs\sou
+rce-to-output.tab] is 
+already registered
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:410)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Page
+dFileStorage.<init>(PagedF
+ileStorage.java:72)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Resi
+zeableMappedFile.<init>(Re
+sizeableMappedFile.java:68
+)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentBTreeEnumerator.<ini
+t>(PersistentBTreeEnumerat
+or.java:128)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentEnumerator.createDef
+aultEnumerator(PersistentE
+numerator.java:52)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:165)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:140)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.buildImpl
+ementation(PersistentMapBu
+ilder.java:88)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.build(Per
+sistentMapBuilder.java:71)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:46)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:72)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.createMap(LazyStora
+ge.kt:62)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.getStorageOrCreateN
+ew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.set(LazyStorage.kt:
+80)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.applyChanges(In
+MemoryStorage.kt:108)
+			at org.jetbrains.kotlin
+.incremental.storage.Appen
+dableInMemoryStorage.apply
+Changes(InMemoryStorage.kt
+:179)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.close(InMemoryS
+torage.kt:136)
+			at org.jetbrains.kotlin
+.incremental.storage.Appen
+dableSetBasicMap.close(Bas
+icMap.kt:157)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner.forEachMapSafe(B
+asicMapsOwner.kt:87)
+			... 24 more
+			Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\in_app_
+review\kotlin\compileRelea
+seKotlin\cacheable\caches-
+jvm\inputs\source-to-outpu
+t.tab] registration stack 
+trace
+				at org.jetbrains.kotli
+n.com.intellij.util.io.Fil
+ePageCache.registerPagedFi
+leStorage(FilePageCache.ja
+va:437)
+				... 44 more
+
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:59)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:174)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:31)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.lang.AssertionError: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin: class-fq-name-to-source.tab, source-to-classes.tab, internal-name-to-source.tab
+	at org.jetbrains.kotlin.com.google.common.io.Closer.close(Closer.java:218)
+	at org.jetbrains.kotlin.incremental.IncrementalCachesManager.close(IncrementalCachesManager.kt:55)
+	at kotlin.io.CloseableKt.closeFinally(Closeable.kt:46)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compileNonIncrementally(IncrementalCompilerRunner.kt:293)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compile(IncrementalCompilerRunner.kt:128)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.execIncrementalCompiler(CompileServiceImpl.kt:684)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.access$execIncrementalCompiler(CompileServiceImpl.kt:94)
+	at org.jetbrains.kotlin.daemon.CompileServiceImpl.compile(CompileServiceImpl.kt:1810)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin: class-fq-name-to-source.tab, source-to-classes.tab, internal-name-to-source.tab
+	at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:95)
+	at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.close(BasicMapsOwner.kt:53)
+	at org.jetbrains.kotlin.com.google.common.io.Closer.close(Closer.java:205)
+	... 22 more
+	Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\class-fq-name-to-source.tab] is already registered
+		at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+		at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+		at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+		at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\class-fq-name-to-source.tab] registration stack trace
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+			... 43 more
+	Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\source-to-classes.tab] is already registered
+		at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+		at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+		at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+		at org.jetbrains.kotlin.incremental.storage.AppendableInMemoryStorage.applyChanges(InMemoryStorage.kt:179)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+		at org.jetbrains.kotlin.incremental.storage.AppendableSetBasicMap.close(BasicMap.kt:157)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\source-to-classes.tab] registration stack trace
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+			... 44 more
+	Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\internal-name-to-source.tab] is already registered
+		at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+		at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+		at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+		at org.jetbrains.kotlin.incremental.storage.AppendableInMemoryStorage.applyChanges(InMemoryStorage.kt:179)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+		at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\internal-name-to-source.tab] registration stack trace
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+			... 44 more
+	Suppressed: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups: id-to-file.tab, file-to-id.tab
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:95)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.close(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.LookupStorage.close(LookupStorage.kt:155)
+		... 23 more
+		Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\id-to-file.tab] is already registered
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+			at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+			at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+			at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\id-to-file.tab] registration stack trace
+				at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+				... 44 more
+		Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\file-to-id.tab] is already registered
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+			at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+			at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+			at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\file-to-id.tab] registration stack trace
+				at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+				... 44 more
+	Suppressed: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\inputs: source-to-output.tab
+		... 25 more
+		Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\inputs\source-to-output.tab] is already registered
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+			at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+			at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+			at org.jetbrains.kotlin.incremental.storage.AppendableInMemoryStorage.applyChanges(InMemoryStorage.kt:179)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+			at org.jetbrains.kotlin.incremental.storage.AppendableSetBasicMap.close(BasicMap.kt:157)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+			... 24 more
+			Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\in_app_review\kotlin\compileReleaseKotlin\cacheable\caches-jvm\inputs\source-to-output.tab] registration stack trace
+				at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+				... 44 more
+Using fallback strategy: Compile without Kotlin daemon
+Try ./gradlew --stop if this issue persists
+If it does not look related to your configuration, please file an issue with logs to https://kotl.in/issue
+
+> Task :url_launcher_android:compileReleaseJavaWithJavac
+> Task :url_launcher_android:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :url_launcher_android:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :firebase_auth:writeReleaseAarMetadata UP-TO-DATE
+> Task :firebase_core:writeReleaseAarMetadata UP-TO-DATE
+> Task :google_sign_in_android:writeReleaseAarMetadata UP-TO-DATE
+> Task :in_app_purchase_android:writeReleaseAarMetadata UP-TO-DATE
+> Task :in_app_review:writeReleaseAarMetadata UP-TO-DATE
+> Task :path_provider_android:writeReleaseAarMetadata UP-TO-DATE
+> Task :share_plus:writeReleaseAarMetadata UP-TO-DATE
+> Task :sqflite_android:writeReleaseAarMetadata UP-TO-DATE
+> Task :url_launcher_android:writeReleaseAarMetadata UP-TO-DATE
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:copyFlutterAssetsRelease
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:processReleaseGoogleServices UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
+> Task :app:generateReleaseResources UP-TO-DATE
+> Task :app:mergeReleaseResources UP-TO-DATE
+> Task :app:packageReleaseResources UP-TO-DATE
+> Task :app:parseReleaseLocalResources UP-TO-DATE
+> Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :firebase_auth:extractDeepLinksRelease UP-TO-DATE
+> Task :firebase_auth:processReleaseManifest UP-TO-DATE
+> Task :firebase_core:extractDeepLinksRelease UP-TO-DATE
+> Task :firebase_core:processReleaseManifest UP-TO-DATE
+> Task :google_sign_in_android:extractDeepLinksRelease UP-TO-DATE
+> Task :google_sign_in_android:processReleaseManifest UP-TO-DATE
+> Task :in_app_purchase_android:extractDeepLinksRelease UP-TO-DATE
+> Task :in_app_purchase_android:processReleaseManifest UP-TO-DATE
+> Task :in_app_review:extractDeepLinksRelease UP-TO-DATE
+> Task :in_app_review:processReleaseManifest UP-TO-DATE
+> Task :path_provider_android:extractDeepLinksRelease UP-TO-DATE
+> Task :path_provider_android:processReleaseManifest UP-TO-DATE
+> Task :share_plus:extractDeepLinksRelease UP-TO-DATE
+> Task :share_plus:processReleaseManifest UP-TO-DATE
+> Task :sqflite_android:extractDeepLinksRelease UP-TO-DATE
+> Task :sqflite_android:processReleaseManifest UP-TO-DATE
+> Task :url_launcher_android:extractDeepLinksRelease UP-TO-DATE
+> Task :url_launcher_android:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseMainManifest UP-TO-DATE
+> Task :app:outputReleaseAppLinkSettings UP-TO-DATE
+> Task :app:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseManifestForPackage UP-TO-DATE
+> Task :app:processReleaseResources UP-TO-DATE
+> Task :google_sign_in_android:bundleLibCompileToJarRelease
+> Task :path_provider_android:bundleLibCompileToJarRelease
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :in_app_purchase_android:bundleLibCompileToJarRelease
+> Task :firebase_auth:bundleLibCompileToJarRelease
+> Task :url_launcher_android:bundleLibCompileToJarRelease
+> Task :firebase_auth:prepareReleaseArtProfile UP-TO-DATE
+> Task :sqflite_android:bundleLibCompileToJarRelease
+> Task :firebase_core:prepareReleaseArtProfile UP-TO-DATE
+> Task :google_sign_in_android:prepareReleaseArtProfile UP-TO-DATE
+> Task :in_app_purchase_android:prepareReleaseArtProfile UP-TO-DATE
+> Task :in_app_review:prepareReleaseArtProfile UP-TO-DATE
+> Task :path_provider_android:prepareReleaseArtProfile UP-TO-DATE
+> Task :share_plus:prepareReleaseArtProfile UP-TO-DATE
+> Task :sqflite_android:prepareReleaseArtProfile UP-TO-DATE
+> Task :url_launcher_android:prepareReleaseArtProfile UP-TO-DATE
+
+> Task :share_plus:compileReleaseKotlin
+w: file:///C:/Users/mansu/AppData/Local/Pub/Cache/hosted/pub.dev/share_plus-7.2.2/android/src/main/kotlin/dev/fluttercommunity/plus/share/Share.kt:141:55 'fun queryIntentActivities(p0: Intent, p1: Int): (Mutable)List<ResolveInfo!>' is deprecated. Deprecated in Java.
+w: file:///C:/Users/mansu/AppData/Local/Pub/Cache/hosted/pub.dev/share_plus-7.2.2/android/src/main/kotlin/dev/fluttercommunity/plus/share/SharePlusPendingIntent.kt:31:20 'fun <T : Parcelable!> getParcelableExtra(p0: String!): T?' is deprecated. Deprecated in Java.
+e: Daemon compilation 
+failed: null
+java.lang.Exception
+	at org.jetbrains.kotlin.d
+aemon.common.CompileServic
+e$CallResult$Error.get(Com
+pileService.kt:69)
+	at org.jetbrains.kotlin.d
+aemon.common.CompileServic
+e$CallResult$Error.get(Com
+pileService.kt:65)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleKotlin
+CompilerWork.compileWithDa
+emon(GradleKotlinCompilerW
+ork.kt:240)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleKotlin
+CompilerWork.compileWithDa
+emonOrFallbackImpl(GradleK
+otlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleKotlin
+CompilerWork.run(GradleKot
+linCompilerWork.kt:111)
+	at org.jetbrains.kotlin.c
+ompilerRunner.GradleCompil
+erRunnerWithWorkers$Gradle
+KotlinCompilerWorkAction.e
+xecute(GradleCompilerRunne
+rWithWorkers.kt:74)
+	at org.gradle.workers.int
+ernal.DefaultWorkerServer.
+execute(DefaultWorkerServe
+r.java:63)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1$1.create(NoIsolatio
+nWorkerFactory.java:66)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1$1.create(NoIsolatio
+nWorkerFactory.java:62)
+	at org.gradle.internal.cl
+assloader.ClassLoaderUtils
+.executeInClassloader(Clas
+sLoaderUtils.java:100)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1.lambda$execute$0(No
+IsolationWorkerFactory.jav
+a:62)
+	at org.gradle.workers.int
+ernal.AbstractWorker$1.cal
+l(AbstractWorker.java:44)
+	at org.gradle.workers.int
+ernal.AbstractWorker$1.cal
+l(AbstractWorker.java:41)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$CallableBuildOp
+erationWorker.execute(Defa
+ultBuildOperationRunner.ja
+va:210)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$CallableBuildOp
+erationWorker.execute(Defa
+ultBuildOperationRunner.ja
+va:205)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$2.execute(Defau
+ltBuildOperationRunner.jav
+a:67)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner$2.execute(Defau
+ltBuildOperationRunner.jav
+a:60)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner.execute(Default
+BuildOperationRunner.java:
+167)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner.execute(Default
+BuildOperationRunner.java:
+60)
+	at org.gradle.internal.op
+erations.DefaultBuildOpera
+tionRunner.call(DefaultBui
+ldOperationRunner.java:54)
+	at org.gradle.workers.int
+ernal.AbstractWorker.execu
+teWrappedInBuildOperation(
+AbstractWorker.java:41)
+	at org.gradle.workers.int
+ernal.NoIsolationWorkerFac
+tory$1.execute(NoIsolation
+WorkerFactory.java:59)
+	at org.gradle.workers.int
+ernal.DefaultWorkerExecuto
+r.lambda$submitWork$0(Defa
+ultWorkerExecutor.java:174
+)
+	at java.base/java.util.co
+ncurrent.FutureTask.run(Fu
+tureTask.java:264)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+runExecution(DefaultCondit
+ionalExecutionQueue.java:1
+94)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+access$700(DefaultConditio
+nalExecutionQueue.java:127
+)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner$
+1.run(DefaultConditionalEx
+ecutionQueue.java:169)
+	at org.gradle.internal.Fa
+ctories$1.create(Factories
+.java:31)
+	at org.gradle.internal.wo
+rk.DefaultWorkerLeaseServi
+ce.withLocks(DefaultWorker
+LeaseService.java:263)
+	at org.gradle.internal.wo
+rk.DefaultWorkerLeaseServi
+ce.runAsWorkerThread(Defau
+ltWorkerLeaseService.java:
+127)
+	at org.gradle.internal.wo
+rk.DefaultWorkerLeaseServi
+ce.runAsWorkerThread(Defau
+ltWorkerLeaseService.java:
+132)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+runBatch(DefaultConditiona
+lExecutionQueue.java:164)
+	at org.gradle.internal.wo
+rk.DefaultConditionalExecu
+tionQueue$ExecutionRunner.
+run(DefaultConditionalExec
+utionQueue.java:133)
+	at java.base/java.util.co
+ncurrent.Executors$Runnabl
+eAdapter.call(Executors.ja
+va:539)
+	at java.base/java.util.co
+ncurrent.FutureTask.run(Fu
+tureTask.java:264)
+	at org.gradle.internal.co
+ncurrent.ExecutorPolicy$Ca
+tchAndRecordFailures.onExe
+cute(ExecutorPolicy.java:6
+4)
+	at org.gradle.internal.co
+ncurrent.AbstractManagedEx
+ecutor$1.run(AbstractManag
+edExecutor.java:48)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r.runWorker(ThreadPoolExec
+utor.java:1136)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r$Worker.run(ThreadPoolExe
+cutor.java:635)
+	at java.base/java.lang.Th
+read.run(Thread.java:842)
+Caused by: 
+java.lang.AssertionError: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\share_plus\kotl
+in\compileReleaseKotlin\ca
+cheable\caches-jvm\jvm\kot
+lin: class-fq-name-to-sour
+ce.tab, 
+source-to-classes.tab, int
+ernal-name-to-source.tab
+	at org.jetbrains.kotlin.c
+om.google.common.io.Closer
+.close(Closer.java:218)
+	at org.jetbrains.kotlin.i
+ncremental.IncrementalCach
+esManager.close(Incrementa
+lCachesManager.kt:55)
+	at kotlin.io.CloseableKt.
+closeFinally(Closeable.kt:
+46)
+	at org.jetbrains.kotlin.i
+ncremental.IncrementalComp
+ilerRunner.compileNonIncre
+mentally(IncrementalCompil
+erRunner.kt:293)
+	at org.jetbrains.kotlin.i
+ncremental.IncrementalComp
+ilerRunner.compile(Increme
+ntalCompilerRunner.kt:128)
+	at org.jetbrains.kotlin.d
+aemon.CompileServiceImplBa
+se.execIncrementalCompiler
+(CompileServiceImpl.kt:684
+)
+	at org.jetbrains.kotlin.d
+aemon.CompileServiceImplBa
+se.access$execIncrementalC
+ompiler(CompileServiceImpl
+.kt:94)
+	at org.jetbrains.kotlin.d
+aemon.CompileServiceImpl.c
+ompile(CompileServiceImpl.
+kt:1810)
+	at java.base/jdk.internal
+.reflect.DirectMethodHandl
+eAccessor.invoke(Unknown 
+Source)
+	at java.base/java.lang.re
+flect.Method.invoke(Unknow
+n Source)
+	at java.rmi/sun.rmi.serve
+r.UnicastServerRef.dispatc
+h(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.Transport$1.run(Unkno
+wn Source)
+	at java.rmi/sun.rmi.trans
+port.Transport$1.run(Unkno
+wn Source)
+	at java.base/java.securit
+y.AccessController.doPrivi
+leged(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.Transport.serviceCall
+(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport.hand
+leMessages(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport$Conn
+ectionHandler.run0(Unknown
+ Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport$Conn
+ectionHandler.lambda$run$0
+(Unknown Source)
+	at java.base/java.securit
+y.AccessController.doPrivi
+leged(Unknown Source)
+	at java.rmi/sun.rmi.trans
+port.tcp.TCPTransport$Conn
+ectionHandler.run(Unknown 
+Source)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r.runWorker(Unknown 
+Source)
+	at java.base/java.util.co
+ncurrent.ThreadPoolExecuto
+r$Worker.run(Unknown 
+Source)
+	at java.base/java.lang.Th
+read.run(Unknown Source)
+Caused by: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\share_plus\kotl
+in\compileReleaseKotlin\ca
+cheable\caches-jvm\jvm\kot
+lin: class-fq-name-to-sour
+ce.tab, 
+source-to-classes.tab, int
+ernal-name-to-source.tab
+	at org.jetbrains.kotlin.i
+ncremental.storage.BasicMa
+psOwner.forEachMapSafe(Bas
+icMapsOwner.kt:95)
+	at org.jetbrains.kotlin.i
+ncremental.storage.BasicMa
+psOwner.close(BasicMapsOwn
+er.kt:53)
+	at org.jetbrains.kotlin.c
+om.google.common.io.Closer
+.close(Closer.java:205)
+	... 22 more
+	Suppressed: java.lang.Ill
+egalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\share_plus\kotlin\com
+pileReleaseKotlin\cacheabl
+e\caches-jvm\jvm\kotlin\cl
+ass-fq-name-to-source.tab]
+ is already registered
+		at org.jetbrains.kotlin.
+com.intellij.util.io.FileP
+ageCache.registerPagedFile
+Storage(FilePageCache.java
+:410)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Paged
+FileStorage.<init>(PagedFi
+leStorage.java:72)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Resiz
+eableMappedFile.<init>(Res
+izeableMappedFile.java:68)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentBTreeEnumerator.<init
+>(PersistentBTreeEnumerato
+r.java:128)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentEnumerator.createDefa
+ultEnumerator(PersistentEn
+umerator.java:52)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:165)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:140)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.buildImple
+mentation(PersistentMapBui
+lder.java:88)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.build(Pers
+istentMapBuilder.java:71)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:46)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:72)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.createMap(LazyStorag
+e.kt:62)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.getStorageOrCreateNe
+w(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.set(LazyStorage.kt:8
+0)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.applyChanges(InM
+emoryStorage.kt:108)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.close(InMemorySt
+orage.kt:136)
+		at org.jetbrains.kotlin.
+incremental.storage.Persis
+tentStorageWrapper.close(P
+ersistentStorage.kt:124)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\share_p
+lus\kotlin\compileReleaseK
+otlin\cacheable\caches-jvm
+\jvm\kotlin\class-fq-name-
+to-source.tab] 
+registration stack trace
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:437)
+			... 43 more
+	Suppressed: java.lang.Ill
+egalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\share_plus\kotlin\com
+pileReleaseKotlin\cacheabl
+e\caches-jvm\jvm\kotlin\so
+urce-to-classes.tab] is 
+already registered
+		at org.jetbrains.kotlin.
+com.intellij.util.io.FileP
+ageCache.registerPagedFile
+Storage(FilePageCache.java
+:410)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Paged
+FileStorage.<init>(PagedFi
+leStorage.java:72)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Resiz
+eableMappedFile.<init>(Res
+izeableMappedFile.java:68)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentBTreeEnumerator.<init
+>(PersistentBTreeEnumerato
+r.java:128)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentEnumerator.createDefa
+ultEnumerator(PersistentEn
+umerator.java:52)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:165)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:140)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.buildImple
+mentation(PersistentMapBui
+lder.java:88)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.build(Pers
+istentMapBuilder.java:71)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:46)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:72)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.createMap(LazyStorag
+e.kt:62)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.getStorageOrCreateNe
+w(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.set(LazyStorage.kt:8
+0)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.applyChanges(InM
+emoryStorage.kt:108)
+		at org.jetbrains.kotlin.
+incremental.storage.Append
+ableInMemoryStorage.applyC
+hanges(InMemoryStorage.kt:
+179)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.close(InMemorySt
+orage.kt:136)
+		at org.jetbrains.kotlin.
+incremental.storage.Append
+ableSetBasicMap.close(Basi
+cMap.kt:157)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\share_p
+lus\kotlin\compileReleaseK
+otlin\cacheable\caches-jvm
+\jvm\kotlin\source-to-clas
+ses.tab] registration 
+stack trace
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:437)
+			... 44 more
+	Suppressed: java.lang.Ill
+egalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\share_plus\kotlin\com
+pileReleaseKotlin\cacheabl
+e\caches-jvm\jvm\kotlin\in
+ternal-name-to-source.tab]
+ is already registered
+		at org.jetbrains.kotlin.
+com.intellij.util.io.FileP
+ageCache.registerPagedFile
+Storage(FilePageCache.java
+:410)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Paged
+FileStorage.<init>(PagedFi
+leStorage.java:72)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Resiz
+eableMappedFile.<init>(Res
+izeableMappedFile.java:68)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentBTreeEnumerator.<init
+>(PersistentBTreeEnumerato
+r.java:128)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentEnumerator.createDefa
+ultEnumerator(PersistentEn
+umerator.java:52)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:165)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapImpl.<init>(Persis
+tentMapImpl.java:140)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.buildImple
+mentation(PersistentMapBui
+lder.java:88)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentMapBuilder.build(Pers
+istentMapBuilder.java:71)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:46)
+		at org.jetbrains.kotlin.
+com.intellij.util.io.Persi
+stentHashMap.<init>(Persis
+tentHashMap.java:72)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.createMap(LazyStorag
+e.kt:62)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.getStorageOrCreateNe
+w(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.
+incremental.storage.LazySt
+orage.set(LazyStorage.kt:8
+0)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.applyChanges(InM
+emoryStorage.kt:108)
+		at org.jetbrains.kotlin.
+incremental.storage.Append
+ableInMemoryStorage.applyC
+hanges(InMemoryStorage.kt:
+179)
+		at org.jetbrains.kotlin.
+incremental.storage.InMemo
+ryStorage.close(InMemorySt
+orage.kt:136)
+		at org.jetbrains.kotlin.
+incremental.storage.Persis
+tentStorageWrapper.close(P
+ersistentStorage.kt:124)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner$close$1.invoke(Ba
+sicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\share_p
+lus\kotlin\compileReleaseK
+otlin\cacheable\caches-jvm
+\jvm\kotlin\internal-name-
+to-source.tab] 
+registration stack trace
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:437)
+			... 44 more
+	Suppressed: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\share_plus\kotl
+in\compileReleaseKotlin\ca
+cheable\caches-jvm\lookups
+: id-to-file.tab, 
+file-to-id.tab
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.forEachMapSafe(Ba
+sicMapsOwner.kt:95)
+		at org.jetbrains.kotlin.
+incremental.storage.BasicM
+apsOwner.close(BasicMapsOw
+ner.kt:53)
+		at org.jetbrains.kotlin.
+incremental.LookupStorage.
+close(LookupStorage.kt:155
+)
+		... 23 more
+		Suppressed: java.lang.Il
+legalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\share_plus\kotlin\com
+pileReleaseKotlin\cacheabl
+e\caches-jvm\lookups\id-to
+-file.tab] is already 
+registered
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:410)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Page
+dFileStorage.<init>(PagedF
+ileStorage.java:72)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Resi
+zeableMappedFile.<init>(Re
+sizeableMappedFile.java:68
+)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentBTreeEnumerator.<ini
+t>(PersistentBTreeEnumerat
+or.java:128)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentEnumerator.createDef
+aultEnumerator(PersistentE
+numerator.java:52)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:165)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:140)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.buildImpl
+ementation(PersistentMapBu
+ilder.java:88)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.build(Per
+sistentMapBuilder.java:71)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:46)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:72)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.createMap(LazyStora
+ge.kt:62)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.getStorageOrCreateN
+ew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.set(LazyStorage.kt:
+80)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.applyChanges(In
+MemoryStorage.kt:108)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.close(InMemoryS
+torage.kt:136)
+			at org.jetbrains.kotlin
+.incremental.storage.Persi
+stentStorageWrapper.close(
+PersistentStorage.kt:124)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner.forEachMapSafe(B
+asicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\share_p
+lus\kotlin\compileReleaseK
+otlin\cacheable\caches-jvm
+\lookups\id-to-file.tab] 
+registration stack trace
+				at org.jetbrains.kotli
+n.com.intellij.util.io.Fil
+ePageCache.registerPagedFi
+leStorage(FilePageCache.ja
+va:437)
+				... 44 more
+		Suppressed: java.lang.Il
+legalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\share_plus\kotlin\com
+pileReleaseKotlin\cacheabl
+e\caches-jvm\lookups\file-
+to-id.tab] is already 
+registered
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:410)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Page
+dFileStorage.<init>(PagedF
+ileStorage.java:72)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Resi
+zeableMappedFile.<init>(Re
+sizeableMappedFile.java:68
+)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentBTreeEnumerator.<ini
+t>(PersistentBTreeEnumerat
+or.java:128)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentEnumerator.createDef
+aultEnumerator(PersistentE
+numerator.java:52)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:165)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:140)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.buildImpl
+ementation(PersistentMapBu
+ilder.java:88)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.build(Per
+sistentMapBuilder.java:71)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:46)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:72)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.createMap(LazyStora
+ge.kt:62)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.getStorageOrCreateN
+ew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.set(LazyStorage.kt:
+80)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.applyChanges(In
+MemoryStorage.kt:108)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.close(InMemoryS
+torage.kt:136)
+			at org.jetbrains.kotlin
+.incremental.storage.Persi
+stentStorageWrapper.close(
+PersistentStorage.kt:124)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner.forEachMapSafe(B
+asicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\share_p
+lus\kotlin\compileReleaseK
+otlin\cacheable\caches-jvm
+\lookups\file-to-id.tab] 
+registration stack trace
+				at org.jetbrains.kotli
+n.com.intellij.util.io.Fil
+ePageCache.registerPagedFi
+leStorage(FilePageCache.ja
+va:437)
+				... 44 more
+	Suppressed: 
+java.lang.Exception: 
+Could not close 
+incremental caches in 
+D:\02 Persional Projects\s
+oftsky-wallpaper\awg_wallp
+aper\build\share_plus\kotl
+in\compileReleaseKotlin\ca
+cheable\caches-jvm\inputs:
+ source-to-output.tab
+		... 25 more
+		Suppressed: java.lang.Il
+legalStateException: 
+Storage for [D:\02 
+Persional Projects\softsky
+-wallpaper\awg_wallpaper\b
+uild\share_plus\kotlin\com
+pileReleaseKotlin\cacheabl
+e\caches-jvm\inputs\source
+-to-output.tab] is 
+already registered
+			at org.jetbrains.kotlin
+.com.intellij.util.io.File
+PageCache.registerPagedFil
+eStorage(FilePageCache.jav
+a:410)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Page
+dFileStorage.<init>(PagedF
+ileStorage.java:72)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Resi
+zeableMappedFile.<init>(Re
+sizeableMappedFile.java:68
+)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentBTreeEnumerator.<ini
+t>(PersistentBTreeEnumerat
+or.java:128)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentEnumerator.createDef
+aultEnumerator(PersistentE
+numerator.java:52)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:165)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapImpl.<init>(Persi
+stentMapImpl.java:140)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.buildImpl
+ementation(PersistentMapBu
+ilder.java:88)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentMapBuilder.build(Per
+sistentMapBuilder.java:71)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:46)
+			at org.jetbrains.kotlin
+.com.intellij.util.io.Pers
+istentHashMap.<init>(Persi
+stentHashMap.java:72)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.createMap(LazyStora
+ge.kt:62)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.getStorageOrCreateN
+ew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin
+.incremental.storage.LazyS
+torage.set(LazyStorage.kt:
+80)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.applyChanges(In
+MemoryStorage.kt:108)
+			at org.jetbrains.kotlin
+.incremental.storage.Appen
+dableInMemoryStorage.apply
+Changes(InMemoryStorage.kt
+:179)
+			at org.jetbrains.kotlin
+.incremental.storage.InMem
+oryStorage.close(InMemoryS
+torage.kt:136)
+			at org.jetbrains.kotlin
+.incremental.storage.Appen
+dableSetBasicMap.close(Bas
+icMap.kt:157)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner$close$1.invoke(B
+asicMapsOwner.kt:53)
+			at org.jetbrains.kotlin
+.incremental.storage.Basic
+MapsOwner.forEachMapSafe(B
+asicMapsOwner.kt:87)
+			... 24 more
+			Suppressed: 
+java.lang.Exception: 
+Storage[D:\02 Persional Pr
+ojects\softsky-wallpaper\a
+wg_wallpaper\build\share_p
+lus\kotlin\compileReleaseK
+otlin\cacheable\caches-jvm
+\inputs\source-to-output.t
+ab] registration stack 
+trace
+				at org.jetbrains.kotli
+n.com.intellij.util.io.Fil
+ePageCache.registerPagedFi
+leStorage(FilePageCache.ja
+va:437)
+				... 44 more
+
+Failed to compile with Kotlin daemon: java.lang.Exception
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:69)
+	at org.jetbrains.kotlin.daemon.common.CompileService$CallResult$Error.get(CompileService.kt:65)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:240)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:74)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:63)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:66)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:62)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:100)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:62)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:59)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:174)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:31)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.lang.AssertionError: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin: class-fq-name-to-source.tab, source-to-classes.tab, internal-name-to-source.tab
+	at org.jetbrains.kotlin.com.google.common.io.Closer.close(Closer.java:218)
+	at org.jetbrains.kotlin.incremental.IncrementalCachesManager.close(IncrementalCachesManager.kt:55)
+	at kotlin.io.CloseableKt.closeFinally(Closeable.kt:46)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compileNonIncrementally(IncrementalCompilerRunner.kt:293)
+	at org.jetbrains.kotlin.incremental.IncrementalCompilerRunner.compile(IncrementalCompilerRunner.kt:128)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.execIncrementalCompiler(CompileServiceImpl.kt:684)
+	at org.jetbrains.kotlin.daemon.CompileServiceImplBase.access$execIncrementalCompiler(CompileServiceImpl.kt:94)
+	at org.jetbrains.kotlin.daemon.CompileServiceImpl.compile(CompileServiceImpl.kt:1810)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport$1.run(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.Transport.serviceCall(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+Caused by: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin: class-fq-name-to-source.tab, source-to-classes.tab, internal-name-to-source.tab
+	at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:95)
+	at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.close(BasicMapsOwner.kt:53)
+	at org.jetbrains.kotlin.com.google.common.io.Closer.close(Closer.java:205)
+	... 22 more
+	Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\class-fq-name-to-source.tab] is already registered
+		at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+		at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+		at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+		at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\class-fq-name-to-source.tab] registration stack trace
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+			... 43 more
+	Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\source-to-classes.tab] is already registered
+		at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+		at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+		at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+		at org.jetbrains.kotlin.incremental.storage.AppendableInMemoryStorage.applyChanges(InMemoryStorage.kt:179)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+		at org.jetbrains.kotlin.incremental.storage.AppendableSetBasicMap.close(BasicMap.kt:157)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\source-to-classes.tab] registration stack trace
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+			... 44 more
+	Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\internal-name-to-source.tab] is already registered
+		at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+		at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+		at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+		at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+		at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+		at org.jetbrains.kotlin.incremental.storage.AppendableInMemoryStorage.applyChanges(InMemoryStorage.kt:179)
+		at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+		at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+		... 24 more
+		Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\jvm\kotlin\internal-name-to-source.tab] registration stack trace
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+			... 44 more
+	Suppressed: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups: id-to-file.tab, file-to-id.tab
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:95)
+		at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.close(BasicMapsOwner.kt:53)
+		at org.jetbrains.kotlin.incremental.LookupStorage.close(LookupStorage.kt:155)
+		... 23 more
+		Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\id-to-file.tab] is already registered
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+			at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+			at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+			at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\id-to-file.tab] registration stack trace
+				at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+				... 44 more
+		Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\file-to-id.tab] is already registered
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+			at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+			at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+			at org.jetbrains.kotlin.incremental.storage.PersistentStorageWrapper.close(PersistentStorage.kt:124)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+			... 25 more
+			Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\lookups\file-to-id.tab] registration stack trace
+				at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+				... 44 more
+	Suppressed: java.lang.Exception: Could not close incremental caches in D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\inputs: source-to-output.tab
+		... 25 more
+		Suppressed: java.lang.IllegalStateException: Storage for [D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\inputs\source-to-output.tab] is already registered
+			at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:410)
+			at org.jetbrains.kotlin.com.intellij.util.io.PagedFileStorage.<init>(PagedFileStorage.java:72)
+			at org.jetbrains.kotlin.com.intellij.util.io.ResizeableMappedFile.<init>(ResizeableMappedFile.java:68)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentBTreeEnumerator.<init>(PersistentBTreeEnumerator.java:128)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentEnumerator.createDefaultEnumerator(PersistentEnumerator.java:52)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:165)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapImpl.<init>(PersistentMapImpl.java:140)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.buildImplementation(PersistentMapBuilder.java:88)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentMapBuilder.build(PersistentMapBuilder.java:71)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:46)
+			at org.jetbrains.kotlin.com.intellij.util.io.PersistentHashMap.<init>(PersistentHashMap.java:72)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.createMap(LazyStorage.kt:62)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.getStorageOrCreateNew(LazyStorage.kt:59)
+			at org.jetbrains.kotlin.incremental.storage.LazyStorage.set(LazyStorage.kt:80)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.applyChanges(InMemoryStorage.kt:108)
+			at org.jetbrains.kotlin.incremental.storage.AppendableInMemoryStorage.applyChanges(InMemoryStorage.kt:179)
+			at org.jetbrains.kotlin.incremental.storage.InMemoryStorage.close(InMemoryStorage.kt:136)
+			at org.jetbrains.kotlin.incremental.storage.AppendableSetBasicMap.close(BasicMap.kt:157)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner$close$1.invoke(BasicMapsOwner.kt:53)
+			at org.jetbrains.kotlin.incremental.storage.BasicMapsOwner.forEachMapSafe(BasicMapsOwner.kt:87)
+			... 24 more
+			Suppressed: java.lang.Exception: Storage[D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\build\share_plus\kotlin\compileReleaseKotlin\cacheable\caches-jvm\inputs\source-to-output.tab] registration stack trace
+				at org.jetbrains.kotlin.com.intellij.util.io.FilePageCache.registerPagedFileStorage(FilePageCache.java:437)
+				... 44 more
+Using fallback strategy: Compile without Kotlin daemon
+Try ./gradlew --stop if this issue persists
+If it does not look related to your configuration, please file an issue with logs to https://kotl.in/issue
+
+> Task :app:mergeReleaseArtProfile UP-TO-DATE
+> Task :firebase_core:bundleLibRuntimeToJarRelease
+> Task :path_provider_android:bundleLibRuntimeToJarRelease
+> Task :google_sign_in_android:bundleLibRuntimeToJarRelease
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :firebase_auth:processReleaseJavaRes NO-SOURCE
+> Task :firebase_auth:bundleLibRuntimeToJarRelease
+> Task :sqflite_android:bundleLibRuntimeToJarRelease
+> Task :url_launcher_android:bundleLibRuntimeToJarRelease
+> Task :firebase_core:processReleaseJavaRes NO-SOURCE
+> Task :google_sign_in_android:processReleaseJavaRes NO-SOURCE
+> Task :in_app_purchase_android:processReleaseJavaRes NO-SOURCE
+> Task :path_provider_android:processReleaseJavaRes NO-SOURCE
+> Task :sqflite_android:processReleaseJavaRes NO-SOURCE
+> Task :in_app_purchase_android:bundleLibRuntimeToJarRelease
+> Task :url_launcher_android:processReleaseJavaRes NO-SOURCE
+> Task :app:mergeReleaseStartupProfile UP-TO-DATE
+> Task :app:configureCMakeRelease[arm64-v8a]
+> Task :app:buildCMakeRelease[arm64-v8a]
+> Task :app:configureCMakeRelease[armeabi-v7a]
+> Task :app:buildCMakeRelease[armeabi-v7a]
+> Task :app:configureCMakeRelease[x86_64]
+> Task :app:buildCMakeRelease[x86_64]
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :firebase_auth:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :firebase_auth:mergeReleaseNativeLibs NO-SOURCE
+> Task :firebase_auth:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :firebase_core:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :firebase_core:mergeReleaseNativeLibs NO-SOURCE
+> Task :firebase_core:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :google_sign_in_android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :google_sign_in_android:mergeReleaseNativeLibs NO-SOURCE
+> Task :google_sign_in_android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :in_app_purchase_android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :in_app_purchase_android:mergeReleaseNativeLibs NO-SOURCE
+> Task :in_app_purchase_android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :in_app_review:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :in_app_review:mergeReleaseNativeLibs NO-SOURCE
+> Task :in_app_review:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :path_provider_android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :path_provider_android:mergeReleaseNativeLibs NO-SOURCE
+> Task :path_provider_android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :share_plus:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :share_plus:mergeReleaseNativeLibs NO-SOURCE
+> Task :share_plus:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :sqflite_android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :sqflite_android:mergeReleaseNativeLibs NO-SOURCE
+> Task :sqflite_android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :url_launcher_android:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :url_launcher_android:mergeReleaseNativeLibs NO-SOURCE
+> Task :url_launcher_android:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs UP-TO-DATE
+> Task :app:stripReleaseDebugSymbols UP-TO-DATE
+> Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:collectReleaseDependencies
+> Task :app:configureReleaseDependencies
+> Task :app:extractReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:parseReleaseIntegrityConfig UP-TO-DATE
+> Task :app:validateSigningRelease UP-TO-DATE
+> Task :in_app_review:compileReleaseJavaWithJavac NO-SOURCE
+> Task :in_app_review:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :in_app_review:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :in_app_review:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :in_app_review:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :in_app_review:processReleaseJavaRes
+
+> Task :share_plus:compileReleaseKotlin
+exception: c:\Users\mansu\
+AppData\Local\Pub\Cache\ho
+sted\pub.dev\share_plus-7.
+2.2\android\src\main\kotli
+n\dev\fluttercommunity\plu
+s\share\Share.kt:141:55: 
+warning: 'fun 
+queryIntentActivities(p0: 
+Intent, p1: Int): (Mutable
+)List<ResolveInfo!>' is 
+deprecated. Deprecated in 
+Java.
+exception:         val 
+resInfoList = getContext()
+.packageManager.queryInten
+tActivities(
+exception:                
+                          
+             
+^^^^^^^^^^^^^^^^^^^^^
+exception: c:\Users\mansu\
+AppData\Local\Pub\Cache\ho
+sted\pub.dev\share_plus-7.
+2.2\android\src\main\kotli
+n\dev\fluttercommunity\plu
+s\share\SharePlusPendingIn
+tent.kt:31:20: warning: 
+'fun <T : Parcelable!> 
+getParcelableExtra(p0: 
+String!): T?' is 
+deprecated. Deprecated in 
+Java.
+exception:             int
+ent.getParcelableExtra<Com
+ponentName>(Intent.EXTRA_C
+HOSEN_COMPONENT)
+exception:                
+    ^^^^^^^^^^^^^^^^^^
+
+> Task :share_plus:compileReleaseJavaWithJavac NO-SOURCE
+> Task :share_plus:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :share_plus:exportReleaseConsumerProguardFiles UP-TO-DATE
+> Task :share_plus:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :share_plus:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :share_plus:processReleaseJavaRes
+> Task :app:compileReleaseKotlin
+> Task :app:compileReleaseJavaWithJavac
+> Task :app:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :app:processReleaseJavaRes
+> Task :app:mergeReleaseJavaResource UP-TO-DATE
+> Task :app:expandReleaseArtProfileWildcards
+
+> Task :app:minifyReleaseWithR8
+Supplied proguard configuration does not exist: D:\02 Persional Projects\softsky-wallpaper\awg_wallpaper\android\app\proguard-rules.pro
+
+> Task :app:buildReleasePreBundle
+> Task :app:compileReleaseArtProfile UP-TO-DATE
+> Task :app:packageReleaseBundle
+> Task :app:signReleaseBundle
+> Task :app:produceReleaseBundleIdeListingFile
+> Task :app:createReleaseBundleListingFileRedirect UP-TO-DATE
+> Task :app:bundleRelease
+
+[Incubating] Problems report is available at: file:///D:/02%20Persional%20Projects/softsky-wallpaper/awg_wallpaper/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 48s
+237 actionable tasks: 50 executed, 187 up-to-date

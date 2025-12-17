@@ -1,0 +1,89 @@
+﻿> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources
+
+> Task :gradle:compileKotlin
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:11:37 'ApkVariant' is deprecated. Deprecated in Java
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:609:69 'ApkVariant' is deprecated. Deprecated in Java
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt:186:64 Unchecked cast: NamedDomainObjectContainer<out BuildType> to NamedDomainObjectContainer<BuildType>
+w: file:///C:/Users/mansu/develop/flutter/packages/flutter_tools/gradle/src/main/kotlin/plugins/PluginHandler.kt:187:69 Unchecked cast: NamedDomainObjectContainer<out BuildType> to NamedDomainObjectContainer<BuildType>
+
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy NO-SOURCE
+> Task :gradle:classes
+> Task :gradle:jar
+
+> Configure project :app
+w: file:///D:/02%20Persional%20Projects/softsky-wallpaper/awg_wallpaper/android/app/build.gradle.kts:29:9: 'jvmTarget: String' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+
+> Task :app:ReleaseMinSdkCheck
+
+> Task :app:compileFlutterBuildRelease
+.\gradlew.bat : lib/provid
+ers/wallpaper_provider.dar
+t:7:8: Error: Error when 
+reading 'lib/config/consta
+nts.dart': The system 
+cannot find the file 
+specified.
+At line:1 char:1
++ .\gradlew.bat 
+assembleRelease 
+--console=plain 2>&1 | 
+Out-File -Encodi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (l  
+  ib/providers/w...file   
+  specified.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+
+import '../config/constant
+s.dart';
+       ^
+Target 
+kernel_snapshot_program 
+failed: Exception
+
+
+> Task :app:compileFlutterBuildRelease FAILED
+
+[Incubating] Problems report is available at: file:///D:/02%20Persional%20Projects/softsky-wallpaper/awg_wallpaper/build/reports/problems/problems-report.html
+
+FAILURE: Build failed 
+with an exception.
+
+* What went wrong:
+Execution failed for task 
+':app:compileFlutterBuildR
+elease'.
+> Process 'command 'C:\Use
+rs\mansu\develop\flutter\b
+in\flutter.bat'' finished 
+with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace 
+option to get the stack 
+trace.
+> Run with --info or 
+--debug option to get 
+more log output.
+> Run with --scan to get 
+full insights.
+> Get more help at 
+https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 22s
+6 actionable tasks: 5 executed, 1 up-to-date
