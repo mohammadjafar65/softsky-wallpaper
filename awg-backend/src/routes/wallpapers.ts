@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import Wallpaper from '../models/Wallpaper';
+import User from '../models/User';
 import Category from '../models/Category';
 import Pack from '../models/Pack';
 import { authenticate, requireAdmin, AuthRequest, optionalAuth } from '../middleware/auth';
@@ -300,7 +301,7 @@ router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) 
 });
 
 // Track download
-router.post('/:id/download', async (req, res) => {
+router.post('/:id/download', optionalAuth, async (req: AuthRequest, res) => {
     try {
         const wallpaper = await Wallpaper.findByIdAndUpdate(
             req.params.id,
@@ -310,6 +311,13 @@ router.post('/:id/download', async (req, res) => {
 
         if (!wallpaper) {
             return res.status(404).json({ error: 'Wallpaper not found' });
+        }
+
+        // If user is authenticated, track their download
+        if (req.user?.id) {
+            await User.findByIdAndUpdate(req.user.id, {
+                $inc: { downloads: 1 }
+            });
         }
 
         res.json({ downloads: wallpaper.downloads });

@@ -155,12 +155,21 @@ export default function Users() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border capitalize ${user.subscription.plan === 'free'
-                                                ? 'bg-slate-800/50 border-slate-700 text-slate-400'
-                                                : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                                }`}>
-                                                {user.subscription.plan}
-                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border capitalize w-fit ${user.subscription.plan === 'free' || (user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime')
+                                                        ? 'bg-slate-800/50 border-slate-700 text-slate-400'
+                                                        : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                                                    }`}>
+                                                    {user.subscription.plan === 'free' || (user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime')
+                                                        ? (user.subscription.plan !== 'free' ? `${user.subscription.plan} (Expired)` : 'free')
+                                                        : user.subscription.plan}
+                                                </span>
+                                                {user.subscription.expiryDate && user.subscription.plan !== 'free' && user.subscription.plan !== 'lifetime' && (
+                                                    <span className="text-[10px] text-slate-500 mt-1">
+                                                        Expires: {new Date(user.subscription.expiryDate).toLocaleDateString()}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-slate-300 font-medium font-mono">{user.downloads}</span>

@@ -7,6 +7,7 @@ import {
     FolderIcon,
     CreditCardIcon,
     ArrowRightIcon,
+    ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 
 interface Stats {
@@ -14,6 +15,7 @@ interface Stats {
     totalCategories: number;
     totalUsers: number;
     proUsers: number;
+    totalWallpaperDownloads: number;
 }
 
 export default function Dashboard() {
@@ -23,6 +25,7 @@ export default function Dashboard() {
         totalCategories: 0,
         totalUsers: 0,
         proUsers: 0,
+        totalWallpaperDownloads: 0,
     });
     const [isLoading, setIsLoading] = useState(true);
 
@@ -43,6 +46,7 @@ export default function Dashboard() {
                 totalCategories: categoriesRes.data.categories?.length || 0,
                 totalUsers: usersRes.data.totalUsers || 0,
                 proUsers: usersRes.data.proUsers || 0,
+                totalWallpaperDownloads: usersRes.data.totalWallpaperDownloads || 0,
             });
         } catch (error) {
             console.error('Failed to fetch stats:', error);
@@ -83,6 +87,14 @@ export default function Dashboard() {
             color: 'text-amber-400',
             bg: 'bg-amber-500/10',
             border: 'border-amber-500/20'
+        },
+        {
+            name: 'Total Downloads',
+            value: stats.totalWallpaperDownloads,
+            icon: ArrowDownTrayIcon,
+            color: 'text-rose-400',
+            bg: 'bg-rose-500/10',
+            border: 'border-rose-500/20'
         },
     ];
 

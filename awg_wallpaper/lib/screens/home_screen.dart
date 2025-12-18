@@ -35,9 +35,9 @@ class HomeScreen extends StatelessWidget {
                   ),
 
                   // Today Trending Carousel
-                  SliverToBoxAdapter(
-                    child: _buildTrendingCarousel(context, provider),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: _buildTrendingCarousel(context, provider),
+                  // ),
 
                   // Categories
                   SliverToBoxAdapter(
@@ -121,31 +121,31 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTrendingCarousel(
-      BuildContext context, WallpaperProvider provider) {
-    if (provider.wallpapers.isEmpty) return const SizedBox.shrink();
+  // Widget _buildTrendingCarousel(
+  //     BuildContext context, WallpaperProvider provider) {
+  //   if (provider.wallpapers.isEmpty) return const SizedBox.shrink();
 
-    // Take first 5 items as "Trending" for demo
-    final trending = provider.wallpapers.take(5).toList();
+  //   // Take first 5 items as "Trending" for demo
+  //   final trending = provider.wallpapers.take(5).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Text(
-            'Trending Today',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-        ),
-        TrendingSlider(wallpapers: trending),
-      ],
-    );
-  }
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       const Padding(
+  //         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  //         child: Text(
+  //           'Trending Today',
+  //           style: TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //             color: AppTheme.textPrimary,
+  //           ),
+  //         ),
+  //       ),
+  //       TrendingSlider(wallpapers: trending),
+  //     ],
+  //   );
+  // }
 
   Widget _buildCategories(BuildContext context, WallpaperProvider provider) {
     return Container(

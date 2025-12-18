@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import User from '../models/User';
+import Wallpaper from '../models/Wallpaper';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -143,23 +144,58 @@ router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) 
 router.get('/stats/overview', authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const totalUsers = await User.countDocuments({ role: 'user' });
-        const proUsers = await User.countDocuments({
+
+        // Count active pro users (not expired)
+        const activeProQuery = {
             role: 'user',
-            'subscription.plan': { $ne: 'free' }
-        });
+            'subscription.plan': { $ne: 'free' },
+            $or: [
+                { 'subscription.plan': 'lifetime' },
+                { 'subscription.expiryDate': { $gt: new Date() } }
+            ]
+        };
+
+        const proUsers = await User.countDocuments(activeProQuery);
+
+        // Get total wallpaper downloads
+        const wallpaperStats = await Wallpaper.aggregate([
+            { $group: { _id: null, totalDownloads: { $sum: '$downloads' } } }
+        ]);
+        const totalWallpaperDownloads = wallpaperStats[0]?.totalDownloads || 0;
+
+        // Get new users this month
         const newUsersThisMonth = await User.countDocuments({
             role: 'user',
             createdAt: { $gte: new Date(new Date().setDate(1)) }
         });
 
+        // Subscription breakdown
         const subscriptionStats = await User.aggregate([
             { $match: { role: 'user' } },
-            { $group: { _id: '$subscription.plan', count: { $sum: 1 } } }
+            {
+                $project: {
+                    plan: {
+                        $cond: {
+                            if: {
+                                $or: [
+                                    { $eq: ['$subscription.plan', 'free'] },
+                                    { $eq: ['$subscription.plan', 'lifetime'] },
+                                    { $gt: ['$subscription.expiryDate', new Date()] }
+                                ]
+                            },
+                            then: '$subscription.plan',
+                            else: 'free' // Treat expired as free for stats
+                        }
+                    }
+                }
+            },
+            { $group: { _id: '$plan', count: { $sum: 1 } } }
         ]);
 
         res.json({
             totalUsers,
             proUsers,
+            totalWallpaperDownloads,
             freeUsers: totalUsers - proUsers,
             newUsersThisMonth,
             subscriptionBreakdown: subscriptionStats.reduce((acc, curr) => {

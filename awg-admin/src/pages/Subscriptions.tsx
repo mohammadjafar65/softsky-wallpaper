@@ -5,7 +5,8 @@ import {
     StarIcon,
     ChartBarIcon,
     CreditCardIcon,
-    TicketIcon
+    TicketIcon,
+    ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 
 interface Stats {
@@ -13,6 +14,7 @@ interface Stats {
     proUsers: number;
     freeUsers: number;
     newUsersThisMonth: number;
+    totalWallpaperDownloads: number;
     subscriptionBreakdown: Record<string, number>;
 }
 
@@ -47,6 +49,7 @@ export default function Subscriptions() {
         { label: 'Pro Subscribers', value: stats?.proUsers || 0, icon: StarIcon, color: 'text-amber-400', bg: 'bg-amber-500/10' },
         { label: 'Free Users', value: stats?.freeUsers || 0, icon: TicketIcon, color: 'text-slate-400', bg: 'bg-slate-500/10' },
         { label: 'New This Month', value: stats?.newUsersThisMonth || 0, icon: ChartBarIcon, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+        { label: 'Total Downloads', value: stats?.totalWallpaperDownloads || 0, icon: ArrowDownTrayIcon, color: 'text-rose-400', bg: 'bg-rose-500/10' },
     ];
 
     return (
