@@ -208,7 +208,7 @@ class HomeScreen extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       sliver: SliverMasonryGrid.count(
-        crossAxisCount: 3,
+        crossAxisCount: 2,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         itemBuilder: (context, index) {

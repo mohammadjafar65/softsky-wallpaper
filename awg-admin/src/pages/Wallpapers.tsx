@@ -9,14 +9,17 @@ import {
     PhotoIcon,
     CloudArrowUpIcon,
     ArrowDownTrayIcon,
+    CheckCircleIcon,
+    PencilIcon,
 } from '@heroicons/react/24/outline';
+import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
 interface Wallpaper {
     id: string;
     title: string;
     imageUrl: string;
     thumbnailUrl: string;
-    category: { name: string; slug: string };
+    category: { name: string; slug: string; id: string };
     isPro: boolean;
     downloads: number;
 }
@@ -42,11 +45,16 @@ export default function Wallpapers() {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // Edit Mode State
+    const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
         title: '',
-        category: '',
+        categories: [] as string[],
         tags: '',
         isPro: false,
         isWide: false,
@@ -126,10 +134,20 @@ export default function Wallpapers() {
         });
     };
 
+    const toggleCategorySelection = (catId: string) => {
+        setFormData(prev => {
+            if (prev.categories.includes(catId)) {
+                return { ...prev, categories: prev.categories.filter(id => id !== catId) };
+            } else {
+                return { ...prev, categories: [...prev.categories, catId] };
+            }
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedFiles.length === 0 || !formData.title || !formData.category) {
-            toast.error('Please fill all required fields and select at least one file');
+        if (selectedFiles.length === 0 || !formData.title || formData.categories.length === 0) {
+            toast.error('Please fill all required fields, select at least one category, and one file');
             return;
         }
 
@@ -137,34 +155,41 @@ export default function Wallpapers() {
         setUploadProgress(0);
         let successCount = 0;
         let failCount = 0;
+        const totalOperations = selectedFiles.length * formData.categories.length;
+        let completedOperations = 0;
 
         try {
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
-                const data = new FormData();
-                data.append('image', file);
 
-                // Generate title: "Title" or "Title 1", "Title 2"...
-                const title = selectedFiles.length > 1
-                    ? `${formData.title} ${i + 1}`
-                    : formData.title;
+                // For each selected category, upload the wallpaper
+                for (const catId of formData.categories) {
+                    const data = new FormData();
+                    data.append('image', file);
 
-                data.append('title', title);
-                data.append('category', formData.category);
-                data.append('tags', formData.tags);
-                data.append('isPro', formData.isPro.toString());
-                data.append('isWide', formData.isWide.toString());
-                if (formData.packId) data.append('packId', formData.packId);
+                    // Generate title: "Title" or "Title 1", "Title 2"...
+                    const titleBase = selectedFiles.length > 1
+                        ? `${formData.title} ${i + 1}`
+                        : formData.title;
 
-                try {
-                    await wallpapersApi.create(data);
-                    successCount++;
-                } catch (error) {
-                    console.error(`Failed to upload ${file.name}`, error);
-                    failCount++;
+                    data.append('title', titleBase);
+                    data.append('category', catId); // Upload for this specific category
+                    data.append('tags', formData.tags);
+                    data.append('isPro', formData.isPro.toString());
+                    data.append('isWide', formData.isWide.toString());
+                    if (formData.packId) data.append('packId', formData.packId);
+
+                    try {
+                        await wallpapersApi.create(data);
+                        successCount++;
+                    } catch (error) {
+                        console.error(`Failed to upload ${file.name} to category ${catId}`, error);
+                        failCount++;
+                    }
+
+                    completedOperations++;
+                    setUploadProgress(Math.round((completedOperations / totalOperations) * 100));
                 }
-
-                setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
             }
 
             if (successCount > 0) {
@@ -193,36 +218,114 @@ export default function Wallpapers() {
             await wallpapersApi.delete(id);
             toast.success('Wallpaper deleted successfully!');
             fetchWallpapers();
+            // Remove from selection if present
+            if (selectedIds.has(id)) {
+                const newSet = new Set(selectedIds);
+                newSet.delete(id);
+                setSelectedIds(newSet);
+            }
         } catch (error) {
             toast.error('Failed to delete wallpaper');
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+        if (!confirm(`Are you sure you want to delete ${selectedIds.size} wallpapers?`)) return;
+
+        let deletedCount = 0;
+        for (const id of selectedIds) {
+            try {
+                await wallpapersApi.delete(id);
+                deletedCount++;
+            } catch (error) {
+                console.error(`Failed to delete ${id}`, error);
+            }
+        }
+
+        toast.success(`Deleted ${deletedCount} wallpapers`);
+        setSelectedIds(new Set());
+        fetchWallpapers();
+    }
+
+    const toggleSelection = (id: string, multiSelect: boolean) => {
+        const newSet = new Set(multiSelect ? selectedIds : []);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        setSelectedIds(newSet);
+    };
+
+    const handleEditClick = (wallpaper: Wallpaper) => {
+        setEditingWallpaper(wallpaper);
+        setFormData({
+            title: wallpaper.title,
+            categories: [wallpaper.category.id], // Pre-select existing category
+            tags: '',
+            isPro: wallpaper.isPro,
+            isWide: false,
+            packId: '',
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingWallpaper) return;
+
+        try {
+            await wallpapersApi.update(editingWallpaper.id, {
+                title: formData.title,
+            });
+            toast.success("Wallpaper updated");
+            setShowEditModal(false);
+            setEditingWallpaper(null);
+            fetchWallpapers();
+        } catch (e) {
+            toast.error("Failed to update");
+        }
+    };
+
     const resetForm = () => {
-        setFormData({ title: '', category: '', tags: '', isPro: false, isWide: false, packId: '' });
+        setFormData({ title: '', categories: [], tags: '', isPro: false, isWide: false, packId: '' });
         setSelectedFiles([]);
         setPreviewUrls([]);
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-20 md:pb-0">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Wallpapers</h1>
-                    <p className="text-slate-400 mt-2">Manage your wallpaper collection</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Wallpapers</h1>
+                    <p className="text-slate-400 mt-2 text-sm md:text-base">Manage your wallpaper collection</p>
                 </div>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-lg shadow-violet-500/25 transition-all transform hover:scale-105"
-                >
-                    <PlusIcon className="w-5 h-5" />
-                    Upload New
-                </button>
+                <div className="flex gap-2">
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-medium transition-all"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                            <span className="hidden md:inline">Delete ({selectedIds.size})</span>
+                            <span className="md:hidden">({selectedIds.size})</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-lg shadow-violet-500/25 transition-all transform hover:scale-105"
+                    >
+                        <PlusIcon className="w-5 h-5" />
+                        <span className="hidden md:inline">Upload New</span>
+                        <span className="md:hidden">New</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 p-4 bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl">
                 <div className="relative flex-1 w-full">
                     <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
@@ -247,7 +350,7 @@ export default function Wallpapers() {
 
             {/* Grid */}
             {isLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {[...Array(8)].map((_, i) => (
                         <div key={i} className="aspect-[9/16] bg-slate-800/50 rounded-2xl animate-pulse border border-white/5" />
                     ))}
@@ -261,12 +364,27 @@ export default function Wallpapers() {
                     <p className="text-slate-400">Upload your first wallpaper to get started</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {wallpapers.map((wallpaper) => (
                         <div
                             key={wallpaper.id}
-                            className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-slate-800 shadow-2xl transition-all duration-300 hover:shadow-violet-500/10 hover:-translate-y-1"
+                            className={`group relative aspect-[9/16] rounded-2xl overflow-hidden bg-slate-800 shadow-2xl transition-all duration-300 hover:shadow-violet-500/10 ${selectedIds.has(wallpaper.id) ? 'ring-2 ring-violet-500' : ''}`}
                         >
+                            {/* Selection Checkbox Area */}
+                            <div
+                                className="absolute top-2 left-2 z-20 cursor-pointer p-2 -ml-2 -mt-2"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSelection(wallpaper.id, true);
+                                }}
+                            >
+                                {selectedIds.has(wallpaper.id) ? (
+                                    <CheckCircleIconSolid className="w-6 h-6 text-violet-500 bg-white rounded-full" />
+                                ) : (
+                                    <CheckCircleIcon className="w-6 h-6 text-white/70 hover:text-white drop-shadow-md" />
+                                )}
+                            </div>
+
                             <img
                                 src={wallpaper.thumbnailUrl}
                                 alt={wallpaper.title}
@@ -274,25 +392,37 @@ export default function Wallpapers() {
                             />
                             {/* Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="absolute bottom-0 left-0 right-0 p-5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                    <h3 className="text-white font-bold truncate text-lg shadow-sm">{wallpaper.title}</h3>
+                                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                    <h3 className="text-white font-bold truncate text-sm md:text-lg shadow-sm">{wallpaper.title}</h3>
                                     <div className="flex items-center justify-between mt-2">
-                                        <span className="text-slate-300 text-sm font-medium bg-black/30 px-2 py-0.5 rounded-lg backdrop-blur-sm">
+                                        <span className="text-slate-300 text-xs font-medium bg-black/30 px-2 py-0.5 rounded-lg backdrop-blur-sm">
                                             {wallpaper.category?.name}
                                         </span>
                                         {wallpaper.isPro && (
-                                            <span className="px-2 py-0.5 text-xs font-bold bg-amber-500 text-black rounded-md shadow-lg shadow-amber-500/20">PRO</span>
+                                            <span className="px-2 py-0.5 text-[10px] uppercase font-bold bg-amber-500 text-black rounded-md shadow-lg shadow-amber-500/20">PRO</span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2 mt-3 text-slate-400 text-xs font-medium">
                                         <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                                        <span>{wallpaper.downloads} downloads</span>
+                                        <span>{wallpaper.downloads}</span>
                                     </div>
                                 </div>
-                                <div className="absolute top-4 right-4 flex gap-2 transform -translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+                                <div className="absolute top-2 right-2 flex gap-2 transform -translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                                     <button
-                                        onClick={() => handleDelete(wallpaper.id)}
-                                        className="p-2.5 bg-red-500/90 backdrop-blur-md rounded-xl text-white hover:bg-red-600 transition shadow-lg shadow-red-500/20"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditClick(wallpaper);
+                                        }}
+                                        className="p-2 bg-blue-500/90 backdrop-blur-md rounded-xl text-white hover:bg-blue-600 transition shadow-lg shadow-blue-500/20"
+                                    >
+                                        <PencilIcon className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(wallpaper.id);
+                                        }}
+                                        className="p-2 bg-red-500/90 backdrop-blur-md rounded-xl text-white hover:bg-red-600 transition shadow-lg shadow-red-500/20"
                                     >
                                         <TrashIcon className="w-4 h-4" />
                                     </button>
@@ -313,7 +443,7 @@ export default function Wallpapers() {
                     >
                         Previous
                     </button>
-                    <div className="flex gap-1">
+                    <div className="hidden md:flex gap-1">
                         {[...Array(totalPages)].map((_, i) => (
                             <button
                                 key={i}
@@ -327,6 +457,10 @@ export default function Wallpapers() {
                             </button>
                         ))}
                     </div>
+                    {/* Mobile friendly simple pagination */}
+                    <span className="md:hidden text-slate-400 text-sm">
+                        Page {page} of {totalPages}
+                    </span>
                     <button
                         onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                         disabled={page === totalPages}
@@ -419,18 +553,26 @@ export default function Wallpapers() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Category</label>
-                                        <select
-                                            value={formData.category}
-                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium appearance-none"
-                                            required
-                                        >
-                                            <option value="">Select category</option>
-                                            {categories.map((cat) => (
-                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                            ))}
-                                        </select>
+                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Categories</label>
+                                        <div className="w-full h-32 overflow-y-auto px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 scrollbar-thin scrollbar-thumb-slate-700">
+                                            <div className="space-y-2">
+                                                {categories.map((cat) => (
+                                                    <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
+                                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.categories.includes(cat.id) ? 'bg-violet-600 border-violet-600' : 'border-slate-600 group-hover:border-violet-500'}`}>
+                                                            {formData.categories.includes(cat.id) && <span className="text-white text-xs font-bold">✓</span>}
+                                                        </div>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="hidden"
+                                                            checked={formData.categories.includes(cat.id)}
+                                                            onChange={() => toggleCategorySelection(cat.id)}
+                                                        />
+                                                        <span className={`text-sm ${formData.categories.includes(cat.id) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>{cat.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-1">Select multiple to upload copies to each</p>
                                     </div>
                                 </div>
 
@@ -497,8 +639,8 @@ export default function Wallpapers() {
                             >
                                 <span className="relative z-10">
                                     {isSubmitting
-                                        ? `Uploading ${uploadProgress}%...`
-                                        : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length} Wallpapers` : 'Wallpaper'}`
+                                        ? `Uploading... ${uploadProgress}%`
+                                        : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length * (formData.categories.length || 1)} Wallpapers` : 'Wallpaper'}`
                                     }
                                 </span>
                                 {isSubmitting && (
@@ -512,6 +654,42 @@ export default function Wallpapers() {
                     </div>
                 </div>
             )}
+
+            {/* Edit Modal */}
+            {showEditModal && editingWallpaper && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
+                    <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-white/10 shadow-2xl overflow-hidden animate-scale-up">
+                        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
+                            <h2 className="text-xl font-bold text-white">Edit Wallpaper</h2>
+                            <button onClick={() => setShowEditModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="p-8">
+                            <form onSubmit={handleEditSubmit} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
+                                        required
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full py-4 rounded-xl bg-violet-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:bg-violet-700 transition-all"
+                                >
+                                    Save Changes
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+

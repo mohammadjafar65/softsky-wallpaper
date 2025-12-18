@@ -134,54 +134,72 @@ class _SplashScreenState extends State<SplashScreen>
 
               // Content
               SafeArea(
-                child: Column(
-                  children: [
-                    const Spacer(flex: 4),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Spacer(flex: 4),
 
-                    // Character logo
-                    FadeTransition(
-                      opacity: _logoFade,
-                      child: ScaleTransition(
-                        scale: _logoScale,
+                      // Character logo
+                      // FadeTransition(
+                      //   opacity: _logoFade,
+                      //   child: ScaleTransition(
+                      //     scale: _logoScale,
+                      //     child: Image.asset(
+                      //       'assets/images/splash_logo.png',
+                      //       width: MediaQuery.of(context).size.width * 0.65,
+                      //       fit: BoxFit.contain,
+                      //     ),
+                      //   ),
+                      // ),
+
+                      const Spacer(flex: 1),
+
+                      // "Soft Sky" text
+                      FadeTransition(
+                        opacity: _textFade,
                         child: Image.asset(
-                          'assets/images/splash_logo.png',
-                          width: MediaQuery.of(context).size.width * 0.65,
+                          'assets/images/splash_text.png',
+                          width: MediaQuery.of(context).size.width * 0.3,
                           fit: BoxFit.contain,
                         ),
                       ),
-                    ),
 
-                    const Spacer(flex: 1),
+                      const SizedBox(height: 12),
 
-                    // "Soft Sky" text
-                    FadeTransition(
-                      opacity: _textFade,
-                      child: Image.asset(
-                        'assets/images/splash_text.png',
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Tagline
-                    FadeTransition(
-                      opacity: _taglineFade,
-                      child: Text(
-                        'Aesthetic wallpapers for a peaceful phone',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white.withOpacity(0.8),
-                          letterSpacing: 0.5,
+                      // Tagline
+                      FadeTransition(
+                        opacity: _taglineFade,
+                        child: Text(
+                          'Aesthetic wallpapers for',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white.withOpacity(0.8),
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
-                    ),
 
-                    const Spacer(flex: 1),
-                  ],
+                      FadeTransition(
+                        opacity: _taglineFade,
+                        child: Text(
+                          'a peaceful phone',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white.withOpacity(0.8),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(flex: 1),
+                    ],
+                  ),
                 ),
               ),
             ],

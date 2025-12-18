@@ -138,32 +138,43 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.gold.withOpacity(0.1),
+              color: AppTheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.star_rounded,
-              color: AppTheme.gold,
-              size: 48,
+            child: Icon(
+              Icons.diamond_outlined,
+              color: AppTheme.primary,
+              size: 56,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Text(
-            'Upgrade to Pro',
+            'Unlock Premium',
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 32,
               fontWeight: FontWeight.bold,
               color: Theme.of(context).textTheme.headlineLarge?.color,
+              letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Unlock all wallpapers & remove ads',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Get unlimited access to all wallpapers,\nremove ads, and unlock 4K collections.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.5,
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.color
+                    ?.withOpacity(0.8),
+              ),
             ),
           ),
         ],
@@ -173,33 +184,52 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildFeaturesList() {
     final features = [
-      'Access all premium wallpapers',
-      'Ad-free experience',
-      // '4K ultra HD downloads',
-      'Priority support',
+      'Unlock all Premium Collections',
+      'Remove all ads',
+      'High-speed downloads',
+      'Priority 24/7 support',
     ];
 
-    return Column(
-      children: features
-          .map((feature) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded,
-                        color: AppTheme.success, size: 20),
-                    const SizedBox(width: 12),
-                    Text(
-                      feature,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                        fontWeight: FontWeight.w500,
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        children: features
+            .map((feature) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.success.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.check_rounded,
+                            color: AppTheme.success, size: 16),
                       ),
-                    ),
-                  ],
-                ),
-              ))
-          .toList(),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          feature,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ))
+            .toList(),
+      ),
     );
   }
 
@@ -207,119 +237,173 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return Column(
       children: [
         _buildPlanCard(SubscriptionPlan.monthly, false),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         _buildPlanCard(SubscriptionPlan.annual, true),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         _buildPlanCard(SubscriptionPlan.lifetime, false),
       ],
     );
   }
 
-  Widget _buildPlanCard(SubscriptionPlan plan, bool isBestValue) {
+  Widget _buildPlanCard(SubscriptionPlan plan, bool isAnnual) {
     final isSelected = _selectedPlan == plan;
     final details = SubscriptionProvider.planDetails[plan]!;
 
+    // Annual plan gets special styling
+    final Color borderColor = isSelected
+        ? AppTheme.primary
+        : (isAnnual
+            ? AppTheme.primary.withOpacity(0.3)
+            : Theme.of(context).dividerColor.withOpacity(0.1));
+
+    final Color backgroundColor = isSelected
+        ? AppTheme.primary.withOpacity(0.05)
+        : Theme.of(context).cardColor;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedPlan = plan),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primary.withOpacity(0.1)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? AppTheme.primary
-                : Theme.of(context).dividerColor.withOpacity(0.1),
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? AppTheme.primary
-                      : Theme.of(context).disabledColor,
-                  width: 2,
-                ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: borderColor,
+                width: isSelected || isAnnual ? 2 : 1,
               ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    )
-                  : null,
+              boxShadow: isSelected || isAnnual
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
+                  : [],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    details['name'] as String,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
+            child: Row(
+              children: [
+                // Radio Indicator
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? AppTheme.primary
+                          : Theme.of(context).disabledColor,
+                      width: 2,
                     ),
                   ),
-                  if (isBestValue) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.gold,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'Best Buy',
+                  child: isSelected
+                      ? Center(
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        details['name'] as String,
                         style: TextStyle(
-                          fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontSize: 18,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Unlock all features', // Or dynamic description
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.color
+                              ?.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      details['price'] as String,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: isAnnual
+                            ? AppTheme.primary
+                            : Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    Text(
+                      details['period'] as String,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withOpacity(0.7),
                       ),
                     ),
                   ],
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  details['price'] as String,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-                Text(
-                  details['period'] as String,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+
+          // Savings Badge for Annual Plan
+          if (isAnnual)
+            Positioned(
+              top: -12,
+              right: 20,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primary, Color(0xFF9C27B0)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'SAVE 50%',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -10,7 +10,7 @@ enum SubscriptionPlan { free, monthly, annual, lifetime }
 /// Google Play Product IDs - Update these to match your Play Console products
 class ProductIds {
   static const String monthly = 'ssw_pro_monthly';
-  static const String annual = 'ssw_pro_annual';
+  static const String annual = 'ssw_pro_yearly';
   static const String lifetime = 'ssw_pro_lifetime';
 
   static const Set<String> allIds = {monthly, annual, lifetime};
@@ -329,39 +329,31 @@ class SubscriptionProvider extends ChangeNotifier {
     },
     SubscriptionPlan.monthly: {
       'name': 'Monthly',
-      'price': '\INR 29.99',
+      'price': '\$2.98',
       'period': '/month',
       'features': [
-        'All wallpapers',
+        'Pro Wallpapers',
         'No ads',
         'HD quality',
-        'New content first',
-        'Priority support'
+        'Priority support',
+        'Exclusive packs'
       ],
       'savings': '',
     },
     SubscriptionPlan.annual: {
       'name': 'Annual',
-      'price': '\INR 299.00',
+      'price': '\$9.98',
       'period': '/year',
-      'features': [
-        'All wallpapers',
-        'No ads',
-        '4K quality',
-        'New content first',
-        'Priority support',
-        'Exclusive packs'
-      ],
-      'savings': 'Save 17%',
-      'popular': true,
+      'features': ['Pro Wallpapers', 'No ads', '4K quality', 'Exclusive packs'],
+      'savings': 'Save 50%',
     },
     SubscriptionPlan.lifetime: {
       'name': 'Lifetime',
       'price':
-          '\INR 499.00', // Increasing slightly or keeping 299? Lifetime was 299.
+          '\$19.98', // Increasing slightly or keeping 299? Lifetime was 299.
       'period': 'one-time',
       'features': [
-        'All wallpapers forever',
+        'Pro Wallpapers',
         'No ads ever',
         '4K quality',
         'All future updates',
@@ -369,6 +361,7 @@ class SubscriptionProvider extends ChangeNotifier {
         'All exclusive packs'
       ],
       'savings': 'Best Value',
+      'popular': true,
     },
   };
 
