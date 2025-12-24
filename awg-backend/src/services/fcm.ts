@@ -138,7 +138,7 @@ export const sendNotificationToUser = async (
     title: string,
     body: string,
     data?: Record<string, string>
-): Promise<{ success: boolean; error?: string }> => {
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
     try {
         const User = require('../models/User').default;
         const user = await User.findById(userId);
