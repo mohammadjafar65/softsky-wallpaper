@@ -14,10 +14,7 @@
         "resolveJsonModule": true,
         "declaration": true,
         "declarationMap": true,
-        "sourceMap": true,
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "strictPropertyInitialization": false
+        "sourceMap": true
     },
     "include": [
         "src/**/*"
