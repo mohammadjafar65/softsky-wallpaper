@@ -1,4 +1,4 @@
-import mongoose, { Document } from 'mongoose';
+import { Document } from 'mongoose';
 export interface IPack extends Document {
     name: string;
     description: string;
@@ -10,10 +10,6 @@ export interface IPack extends Document {
     createdAt: Date;
     updatedAt: Date;
 }
-declare const _default: mongoose.Model<IPack, {}, {}, {}, mongoose.Document<unknown, {}, IPack, {}, {}> & IPack & Required<{
-    _id: mongoose.Types.ObjectId;
-}> & {
-    __v: number;
-}, any>;
+declare const _default: any;
 export default _default;
 //# sourceMappingURL=Pack.d.ts.map

@@ -1,40 +1,47 @@
-import { Router } from 'express';
-import User from '../models/User';
-import Wallpaper from '../models/Wallpaper';
-import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
+import { Router } from "express";
+import { AppDataSource } from "../data-source";
+import { User } from "../entities/User";
+import { Wallpaper } from "../entities/Wallpaper";
+import { authenticate, requireAdmin, AuthRequest } from "../middleware/auth";
+import { Like, Not, IsNull, MoreThan } from "typeorm";
 
 const router = Router();
 
 // Get all users (admin only)
-router.get('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.get("/", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 20;
         const search = req.query.search as string;
         const plan = req.query.plan as string;
 
-        const query: any = { role: 'user' };
+        const userRepository = AppDataSource.getRepository(User);
+
+        const queryBuilder = userRepository
+            .createQueryBuilder("user")
+            .where("user.role = :role", { role: "user" });
 
         if (search) {
-            query.$or = [
-                { email: { $regex: search, $options: 'i' } },
-                { displayName: { $regex: search, $options: 'i' } },
-            ];
+            queryBuilder.andWhere(
+                "(user.email LIKE :search OR user.displayName LIKE :search)",
+                { search: `%${search}%` }
+            );
         }
 
-        if (plan && plan !== 'all') {
-            query['subscription.plan'] = plan;
+        if (plan && plan !== "all") {
+            queryBuilder.andWhere("user.subscriptionPlan = :plan", { plan });
         }
 
-        const total = await User.countDocuments(query);
-        const users = await User.find(query)
-            .sort({ createdAt: -1 })
+        const total = await queryBuilder.getCount();
+        const users = await queryBuilder
+            .orderBy("user.createdAt", "DESC")
             .skip((page - 1) * limit)
-            .limit(limit);
+            .take(limit)
+            .getMany();
 
         res.json({
-            users: users.map(u => ({
-                id: u._id,
+            users: users.map((u) => ({
+                id: u.id,
                 email: u.email,
                 displayName: u.displayName,
                 photoUrl: u.photoUrl,
@@ -52,62 +59,71 @@ router.get('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
             },
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get users' });
+        console.error("Get users error:", error);
+        res.status(500).json({ error: "Failed to get users" });
     }
 });
 
 // Get single user (admin only)
-router.get('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.get("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({
+            where: { id: parseInt(req.params.id) },
+        });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: "User not found" });
         }
 
         res.json({
-            id: user._id,
+            id: user.id,
             email: user.email,
             displayName: user.displayName,
             photoUrl: user.photoUrl,
             authProvider: user.authProvider,
             role: user.role,
             subscription: user.subscription,
-            favorites: user.favorites,
+            favorites: [], // TODO: Implement favorites relation
             downloads: user.downloads,
             isActive: user.isActive,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get user' });
+        res.status(500).json({ error: "Failed to get user" });
     }
 });
 
 // Update user (admin only)
-router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const { displayName, isActive, subscription } = req.body;
 
-        const user = await User.findById(req.params.id);
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({
+            where: { id: parseInt(req.params.id) },
+        });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: "User not found" });
         }
 
         if (displayName) user.displayName = displayName;
-        if (isActive !== undefined) user.isActive = isActive === true || isActive === 'true';
+        if (isActive !== undefined)
+            user.isActive = isActive === true || isActive === "true";
         if (subscription) {
-            if (subscription.plan) user.subscription.plan = subscription.plan;
-            if (subscription.expiryDate) user.subscription.expiryDate = new Date(subscription.expiryDate);
+            if (subscription.plan) user.subscriptionPlan = subscription.plan;
+            if (subscription.expiryDate)
+                user.subscriptionExpiryDate = new Date(subscription.expiryDate);
         }
 
-        await user.save();
+        await userRepository.save(user);
 
         res.json({
-            message: 'User updated successfully',
+            message: "User updated successfully",
             user: {
-                id: user._id,
+                id: user.id,
                 email: user.email,
                 displayName: user.displayName,
                 subscription: user.subscription,
@@ -115,82 +131,88 @@ router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => 
             },
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to update user' });
+        res.status(500).json({ error: "Failed to update user" });
     }
 });
 
 // Delete user (admin only)
-router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.delete("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({
+            where: { id: parseInt(req.params.id) },
+        });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: "User not found" });
         }
 
-        if (user.role === 'admin') {
-            return res.status(400).json({ error: 'Cannot delete admin user' });
+        if (user.role === "admin") {
+            return res.status(400).json({ error: "Cannot delete admin user" });
         }
 
-        await User.findByIdAndDelete(req.params.id);
+        await userRepository.delete(req.params.id);
 
-        res.json({ message: 'User deleted successfully' });
+        res.json({ message: "User deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to delete user' });
+        res.status(500).json({ error: "Failed to delete user" });
     }
 });
 
 // Get user stats (admin only)
-router.get('/stats/overview', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.get("/stats/overview", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-        const totalUsers = await User.countDocuments({ role: 'user' });
+        const userRepository = AppDataSource.getRepository(User);
+        const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
 
-        // Count active pro users (not expired)
-        const activeProQuery = {
-            role: 'user',
-            'subscription.plan': { $ne: 'free' },
-            $or: [
-                { 'subscription.plan': 'lifetime' },
-                { 'subscription.expiryDate': { $gt: new Date() } }
-            ]
-        };
+        // Total users
+        const totalUsers = await userRepository.count({ where: { role: "user" } });
 
-        const proUsers = await User.countDocuments(activeProQuery);
+        // Active pro users (not expired)
+        const now = new Date();
+        const proUsers = await userRepository
+            .createQueryBuilder("user")
+            .where("user.role = :role", { role: "user" })
+            .andWhere("user.subscriptionPlan != :free", { free: "free" })
+            .andWhere(
+                "(user.subscriptionPlan = :lifetime OR user.subscriptionExpiryDate > :now)",
+                { lifetime: "lifetime", now }
+            )
+            .getCount();
 
-        // Get total wallpaper downloads
-        const wallpaperStats = await Wallpaper.aggregate([
-            { $group: { _id: null, totalDownloads: { $sum: '$downloads' } } }
-        ]);
-        const totalWallpaperDownloads = wallpaperStats[0]?.totalDownloads || 0;
+        // Total wallpaper downloads
+        const wallpaperStats = await wallpaperRepository
+            .createQueryBuilder("wallpaper")
+            .select("SUM(wallpaper.downloads)", "totalDownloads")
+            .getRawOne();
+        const totalWallpaperDownloads = parseInt(wallpaperStats?.totalDownloads || "0");
 
-        // Get new users this month
-        const newUsersThisMonth = await User.countDocuments({
-            role: 'user',
-            createdAt: { $gte: new Date(new Date().setDate(1)) }
+        // New users this month
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const newUsersThisMonth = await userRepository.count({
+            where: {
+                role: "user",
+                createdAt: MoreThan(firstDayOfMonth),
+            },
         });
 
-        // Subscription breakdown
-        const subscriptionStats = await User.aggregate([
-            { $match: { role: 'user' } },
-            {
-                $project: {
-                    plan: {
-                        $cond: {
-                            if: {
-                                $or: [
-                                    { $eq: ['$subscription.plan', 'free'] },
-                                    { $eq: ['$subscription.plan', 'lifetime'] },
-                                    { $gt: ['$subscription.expiryDate', new Date()] }
-                                ]
-                            },
-                            then: '$subscription.plan',
-                            else: 'free' // Treat expired as free for stats
-                        }
-                    }
-                }
-            },
-            { $group: { _id: '$plan', count: { $sum: 1 } } }
-        ]);
+        // Subscription breakdown with proper expiry handling
+        const subscriptionStats = await userRepository
+            .createQueryBuilder("user")
+            .select(
+                `CASE 
+                    WHEN user.subscription_plan = 'free' THEN 'free'
+                    WHEN user.subscription_plan = 'lifetime' THEN 'lifetime'
+                    WHEN user.subscription_expiry_date > :now THEN user.subscription_plan
+                    ELSE 'free'
+                END`,
+                "plan"
+            )
+            .addSelect("COUNT(*)", "count")
+            .where("user.role = :role", { role: "user" })
+            .setParameter("now", now)
+            .groupBy("plan")
+            .getRawMany();
 
         res.json({
             totalUsers,
@@ -198,41 +220,48 @@ router.get('/stats/overview', authenticate, requireAdmin, async (req: AuthReques
             totalWallpaperDownloads,
             freeUsers: totalUsers - proUsers,
             newUsersThisMonth,
-            subscriptionBreakdown: subscriptionStats.reduce((acc, curr) => {
-                acc[curr._id] = curr.count;
-                return acc;
-            }, {} as Record<string, number>),
+            subscriptionBreakdown: subscriptionStats.reduce(
+                (acc: Record<string, number>, curr: { plan: string; count: string }) => {
+                    acc[curr.plan] = parseInt(curr.count);
+                    return acc;
+                },
+                {} as Record<string, number>
+            ),
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get user stats' });
+        console.error("Get user stats error:", error);
+        res.status(500).json({ error: "Failed to get user stats" });
     }
 });
 
 // Update FCM token for current user
-router.post('/fcm-token', authenticate, async (req: AuthRequest, res) => {
+router.post("/fcm-token", authenticate, async (req: AuthRequest, res) => {
     try {
         const { fcmToken } = req.body;
 
         if (!fcmToken) {
-            return res.status(400).json({ error: 'FCM token is required' });
+            return res.status(400).json({ error: "FCM token is required" });
         }
 
-        const user = await User.findById(req.user!.id);
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({
+            where: { id: parseInt(req.user!.id) },
+        });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: "User not found" });
         }
 
         user.fcmToken = fcmToken;
-        await user.save();
+        await userRepository.save(user);
 
         res.json({
             success: true,
-            message: 'FCM token updated successfully',
+            message: "FCM token updated successfully",
         });
     } catch (error) {
-        console.error('Error updating FCM token:', error);
-        res.status(500).json({ error: 'Failed to update FCM token' });
+        console.error("Error updating FCM token:", error);
+        res.status(500).json({ error: "Failed to update FCM token" });
     }
 });
 

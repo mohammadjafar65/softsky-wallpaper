@@ -13,10 +13,6 @@ export interface IWallpaper extends Document {
     createdAt: Date;
     updatedAt: Date;
 }
-declare const _default: mongoose.Model<IWallpaper, {}, {}, {}, mongoose.Document<unknown, {}, IWallpaper, {}, {}> & IWallpaper & Required<{
-    _id: mongoose.Types.ObjectId;
-}> & {
-    __v: number;
-}, any>;
+declare const _default: any;
 export default _default;
 //# sourceMappingURL=Wallpaper.d.ts.map
