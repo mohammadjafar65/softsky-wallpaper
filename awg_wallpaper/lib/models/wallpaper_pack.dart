@@ -40,22 +40,31 @@ class WallpaperPack {
   factory WallpaperPack.fromJson(Map<String, dynamic> json) {
     return WallpaperPack(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      name: json['name'] as String,
-      description: json['description'] as String,
-      coverImage: json['coverImage'] as String,
-      wallpapers: json['wallpapers'] != null
+      name: json['name']?.toString() ?? 'Untitled Pack',
+      description: json['description']?.toString() ?? '',
+      coverImage: json['coverImage']?.toString() ?? '',
+      wallpapers: json['wallpapers'] != null && json['wallpapers'] is List
           ? (json['wallpapers'] as List)
-              .map((w) => Wallpaper.fromJson(w as Map<String, dynamic>))
+              .map((w) {
+                try {
+                  return Wallpaper.fromJson(w as Map<String, dynamic>);
+                } catch (e) {
+                  print('Error parsing wallpaper in pack: $e');
+                  return null;
+                }
+              })
+              .whereType<Wallpaper>() // Filter out nulls
               .toList()
           : [],
       isPro: json['isPro'] as bool? ?? false,
       // Try multiple possible keys for the count
       wallpaperCount: json['wallpaperCount'] as int? ??
           json['wallpapersCount'] as int? ??
-          json['count'] as int?,
-      author: json['author'] as String?,
+          json['count'] as int? ??
+          0,
+      author: json['author']?.toString(),
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
+          ? DateTime.tryParse(json['createdAt'].toString())
           : null,
     );
   }

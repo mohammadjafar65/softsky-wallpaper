@@ -16,7 +16,8 @@ class WallpaperProvider extends ChangeNotifier {
   List<Category> _categories = [];
   String _selectedCategory = 'all';
   int _totalWallpapers = 0;
-  bool _isLoading = false;
+  int _totalProWallpapers = 0;
+  bool _isLoading = true; // Start with loading state
   String? _error;
 
   // Pagination
@@ -29,11 +30,13 @@ class WallpaperProvider extends ChangeNotifier {
 
   List<Wallpaper> get wallpapers => _selectedCategory == 'all'
       ? _wallpapers
-          .where((w) => !w.isWide && (w.packId == null || w.packId!.isEmpty))
+          .where((w) =>
+              !w.isPro && !w.isWide && (w.packId == null || w.packId!.isEmpty))
           .toList()
       : _wallpapers
           .where((w) =>
               w.category == _selectedCategory &&
+              !w.isPro &&
               !w.isWide &&
               (w.packId == null || w.packId!.isEmpty))
           .toList();
@@ -46,6 +49,7 @@ class WallpaperProvider extends ChangeNotifier {
   List<Category> get categories => _categories;
   String get selectedCategory => _selectedCategory;
   int get totalWallpapers => _totalWallpapers;
+  int get totalProWallpapers => _totalProWallpapers;
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
   String? get error => _error;
@@ -90,7 +94,10 @@ class WallpaperProvider extends ChangeNotifier {
       final results = await Future.wait([
         _apiService.getCategories(),
         _apiService.getWallpapers(page: 1, limit: 30, isWide: false),
+
         _apiService.getWallpapers(page: 1, limit: 20, isWide: true),
+        _apiService.getWallpapers(
+            page: 1, limit: 1, isPro: true), // Fetch just for count
       ]);
 
       // 1. Categories
@@ -117,6 +124,10 @@ class WallpaperProvider extends ChangeNotifier {
       // Calculate total wallpapers
       _totalWallpapers =
           wallpapersResponse.total + wideWallpapersResponse.total;
+
+      // 4. Pro Wallpapers Count
+      final proWallpapersResponse = results[3] as WallpapersResponse;
+      _totalProWallpapers = proWallpapersResponse.total;
 
       // Save to cache
       _saveToCache();

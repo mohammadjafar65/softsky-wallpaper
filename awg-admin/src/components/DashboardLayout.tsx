@@ -10,6 +10,7 @@ import {
     ArrowRightOnRectangleIcon,
     Bars3CenterLeftIcon,
     XMarkIcon,
+    BellIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
@@ -19,6 +20,7 @@ const navigation = [
     { name: 'Packs', href: '/packs', icon: FolderIcon },
     { name: 'Users', href: '/users', icon: UsersIcon },
     { name: 'Subscriptions', href: '/subscriptions', icon: CreditCardIcon },
+    { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ];
 
 export default function DashboardLayout() {

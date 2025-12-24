@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:upgrader/upgrader.dart';
 import 'config/theme.dart';
 import 'providers/wallpaper_provider.dart';
 import 'providers/bookmark_provider.dart';
@@ -12,6 +13,7 @@ import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/pack_provider.dart';
 import 'screens/splash_screen.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,14 @@ void main() async {
   // Initialize Firebase
   try {
     await Firebase.initializeApp();
+
+    // Initialize notification service
+    try {
+      await NotificationService().initialize();
+      debugPrint('Notification service initialized');
+    } catch (e) {
+      debugPrint('Notification service init failed: $e');
+    }
   } catch (e) {
     debugPrint('Firebase init failed: $e');
     runApp(MaterialApp(
@@ -110,7 +120,12 @@ class AWGWallpaperApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
-            home: const SecureApp(child: SplashScreen()),
+            home: UpgradeAlert(
+              upgrader: Upgrader(
+                durationUntilAlertAgain: const Duration(hours: 12),
+              ),
+              child: const SecureApp(child: SplashScreen()),
+            ),
           );
         },
       ),

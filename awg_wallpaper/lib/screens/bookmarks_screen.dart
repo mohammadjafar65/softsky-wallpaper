@@ -5,6 +5,7 @@ import '../config/theme.dart';
 import '../providers/bookmark_provider.dart';
 import '../widgets/wallpaper_card.dart';
 import 'wallpaper_detail_screen.dart';
+import '../utils/date_formatter.dart';
 
 class BookmarksScreen extends StatelessWidget {
   const BookmarksScreen({super.key});
@@ -30,9 +31,9 @@ class BookmarksScreen extends StatelessWidget {
                   )
                 else ...[
                   // Section title
-                  SliverToBoxAdapter(
-                    child: _buildSectionTitle(provider),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: _buildSectionTitle(provider),
+                  // ),
 
                   // Bookmarks grid
                   SliverPadding(
@@ -97,13 +98,18 @@ class BookmarksScreen extends StatelessWidget {
               Text(
                 'FAVORITES',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                      fontSize: 28,
                     ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Your favorite wallpapers',
-                style: Theme.of(context).textTheme.bodyMedium,
+                '${DateFormatter.format()} • ${provider.bookmarkCount} Saved',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ],
           ),
@@ -128,31 +134,31 @@ class BookmarksScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(BookmarkProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Your Collection',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          Text(
-            '${provider.bookmarkCount} saved',
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSectionTitle(BookmarkProvider provider) {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         const Text(
+  //           'Your Collection',
+  //           style: TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //             color: AppTheme.textPrimary,
+  //           ),
+  //         ),
+  //         Text(
+  //           '${provider.bookmarkCount} saved',
+  //           style: const TextStyle(
+  //             fontSize: 13,
+  //             color: AppTheme.textSecondary,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildEmptyState() {
     return Center(

@@ -92,13 +92,25 @@ class WideWallpaperCard extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'PRO',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.star_rounded,
+                          size: 10,
+                          color: Colors.black87,
+                        ),
+                        SizedBox(width: 3),
+                        Text(
+                          'PRO',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

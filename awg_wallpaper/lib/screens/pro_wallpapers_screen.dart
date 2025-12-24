@@ -7,6 +7,8 @@ import '../widgets/category_chip.dart';
 import '../widgets/shimmer_loading.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
+import '../utils/date_formatter.dart';
+import 'profile_screen.dart';
 
 class ProWallpapersScreen extends StatelessWidget {
   const ProWallpapersScreen({super.key});
@@ -36,9 +38,9 @@ class ProWallpapersScreen extends StatelessWidget {
                   ),
 
                   // Section Title
-                  SliverToBoxAdapter(
-                    child: _buildSectionTitle(provider),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: _buildSectionTitle(provider),
+                  // ),
 
                   // Wallpaper Grid
                   if (provider.isLoading)
@@ -67,34 +69,37 @@ class ProWallpapersScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'PRO',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textPrimary,
-                      fontSize: 28,
-                    ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primary,
-                      AppTheme.primary.withOpacity(0.7),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(6),
+              Row(children: [
+                Text(
+                  'EXCLUSIVE',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        color: AppTheme.textPrimary,
+                        fontSize: 28,
+                      ),
                 ),
-                child: const Text(
-                  '👑',
-                  style: TextStyle(fontSize: 16),
+                const Icon(
+                  Icons.star_rounded,
+                  size: 30,
+                  color: Colors.amberAccent,
                 ),
-              ),
+              ]),
+              const SizedBox(height: 4),
+              if (Provider.of<WallpaperProvider>(context).totalProWallpapers >
+                  0)
+                Text(
+                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Wallpapers',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textMuted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
             ],
           ),
+          const SizedBox(width: 43),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -103,16 +108,37 @@ class ProWallpapersScreen extends StatelessWidget {
               );
             },
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
                 color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppTheme.surfaceVariant),
               ),
               child: const Icon(
                 Icons.search_rounded,
                 color: AppTheme.textPrimary,
-                size: 24,
+                size: 22,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.surfaceVariant),
+              ),
+              child: const Icon(
+                Icons.person_rounded,
+                color: AppTheme.textPrimary,
+                size: 22,
               ),
             ),
           ),
@@ -123,7 +149,7 @@ class ProWallpapersScreen extends StatelessWidget {
 
   Widget _buildCategories(BuildContext context, WallpaperProvider provider) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 15),
+      margin: const EdgeInsets.fromLTRB(5, 0, 0, 25),
       height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -143,30 +169,30 @@ class ProWallpapersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(WallpaperProvider provider) {
-    final categoryName = provider.selectedCategory == 'all'
-        ? 'All Pro Wallpapers'
-        : provider.categories
-            .firstWhere((c) => c.id == provider.selectedCategory)
-            .name;
+  // Widget _buildSectionTitle(WallpaperProvider provider) {
+  //   final categoryName = provider.selectedCategory == 'all'
+  //       ? 'All Pro Wallpapers'
+  //       : provider.categories
+  //           .firstWhere((c) => c.id == provider.selectedCategory)
+  //           .name;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            categoryName,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         Text(
+  //           categoryName,
+  //           style: const TextStyle(
+  //             fontSize: 20,
+  //             fontWeight: FontWeight.bold,
+  //             color: AppTheme.textPrimary,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildWallpaperGrid(BuildContext context, WallpaperProvider provider) {
     // Filter to show only PRO wallpapers (not wide, not in a pack)

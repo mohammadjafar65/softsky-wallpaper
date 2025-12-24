@@ -380,9 +380,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.primary, Color(0xFF9C27B0)],
-                  ),
+                  // gradient: const LinearGradient(
+                  //   colors: [AppTheme.primary, Color(0xFF9C27B0)],
+                  // ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -392,15 +392,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ),
                   ],
                 ),
-                child: const Text(
-                  'SAVE 50%',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                // child: const Text(
+                //   'SAVE 50%',
+                //   style: TextStyle(
+                //     color: Colors.white,
+                //     fontWeight: FontWeight.bold,
+                //     fontSize: 12,
+                //     letterSpacing: 0.5,
+                //   ),
+                // ),
               ),
             ),
         ],

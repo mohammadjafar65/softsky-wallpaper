@@ -68,6 +68,9 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Error fetching wallpapers: $e');
+      if (e.toString().contains('SocketException')) {
+        throw Exception('Network error: Check your internet connection');
+      }
       rethrow;
     }
   }
@@ -235,6 +238,30 @@ class ApiService {
     } catch (e) {
       debugPrint('Error syncing user: $e');
       rethrow;
+    }
+  }
+
+  /// Update FCM token
+  Future<void> updateFCMToken(String token) async {
+    try {
+      if (_authToken == null) {
+        debugPrint('Cannot update FCM token: No auth token');
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/fcm-token'),
+        headers: _headers,
+        body: json.encode({'fcmToken': token}),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint('Failed to update FCM token: ${response.body}');
+      } else {
+        debugPrint('FCM token updated successfully on backend');
+      }
+    } catch (e) {
+      debugPrint('Error updating FCM token: $e');
     }
   }
 }

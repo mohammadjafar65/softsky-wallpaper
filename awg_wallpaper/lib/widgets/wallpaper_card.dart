@@ -146,17 +146,22 @@ class _WallpaperCardState extends State<WallpaperCard>
                         color: AppTheme.gold,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.star_rounded,
-                              size: 10, color: Colors.white),
-                          SizedBox(width: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.star_rounded,
+                            size: 10,
+                            color: Colors.black87,
+                          ),
+                          SizedBox(width: 3),
                           Text(
                             'PRO',
                             style: TextStyle(
+                              color: Colors.black87,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],

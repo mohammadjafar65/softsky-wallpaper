@@ -4,6 +4,8 @@ import '../config/theme.dart';
 import '../providers/wallpaper_provider.dart';
 import '../widgets/wide_wallpaper_card.dart';
 import 'wallpaper_detail_screen.dart';
+import '../utils/date_formatter.dart';
+import 'profile_screen.dart';
 
 class WideWallpapersScreen extends StatelessWidget {
   const WideWallpapersScreen({super.key});
@@ -77,47 +79,58 @@ class WideWallpapersScreen extends StatelessWidget {
     );
   }
 
-  String _getFormattedDate() {
-    final now = DateTime.now();
-    final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    return '${now.day} ${months[now.month - 1]}';
-  }
-
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'SCAPES',
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'SCAPES',
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                      fontSize: 28,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              if (Provider.of<WallpaperProvider>(context)
+                  .wideWallpapers
+                  .isNotEmpty)
+                Text(
+                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).wideWallpapers.length} Wallpapers',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textMuted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
+            ],
           ),
-          const SizedBox(height: 4),
-          if (Provider.of<WallpaperProvider>(context).wideWallpapers.length > 0)
-            Text(
-              '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).wideWallpapers.length} Wallpapers',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textMuted,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.surfaceVariant),
+              ),
+              child: const Icon(
+                Icons.person_rounded,
+                color: AppTheme.textPrimary,
+                size: 22,
+              ),
             ),
+          ),
         ],
       ),
     );

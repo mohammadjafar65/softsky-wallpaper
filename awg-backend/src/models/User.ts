@@ -16,6 +16,7 @@ export interface IUser extends Document {
     };
     favorites: mongoose.Types.ObjectId[];
     downloads: number;
+    fcmToken?: string;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -37,6 +38,7 @@ const userSchema = new Schema<IUser>({
     },
     favorites: [{ type: Schema.Types.ObjectId, ref: 'Wallpaper' }],
     downloads: { type: Number, default: 0 },
+    fcmToken: { type: String },
     isActive: { type: Boolean, default: true },
 }, {
     timestamps: true,
@@ -58,5 +60,6 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
 };
 
 userSchema.index({ role: 1 });
+userSchema.index({ fcmToken: 1 });
 
 export default mongoose.model<IUser>('User', userSchema);

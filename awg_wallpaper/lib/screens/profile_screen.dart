@@ -233,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       Text(
-                        'Version 3.0.5',
+                        'Version 3.0.6',
                         style: TextStyle(
                           color: AppTheme.textMuted.withOpacity(0.5),
                           fontSize: 12,
@@ -256,6 +256,7 @@ class ProfileScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Stack(
+        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           if (Navigator.canPop(context))

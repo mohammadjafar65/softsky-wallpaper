@@ -329,7 +329,7 @@ class SubscriptionProvider extends ChangeNotifier {
     },
     SubscriptionPlan.monthly: {
       'name': 'Monthly',
-      'price': '\$2.98',
+      'price': '\₹29.99',
       'period': '/month',
       'features': [
         'Pro Wallpapers',
@@ -342,15 +342,14 @@ class SubscriptionProvider extends ChangeNotifier {
     },
     SubscriptionPlan.annual: {
       'name': 'Annual',
-      'price': '\$9.98',
+      'price': '\₹79.99',
       'period': '/year',
       'features': ['Pro Wallpapers', 'No ads', '4K quality', 'Exclusive packs'],
-      'savings': 'Save 50%',
+      'savings': '',
     },
     SubscriptionPlan.lifetime: {
       'name': 'Lifetime',
-      'price':
-          '\$19.98', // Increasing slightly or keeping 299? Lifetime was 299.
+      'price': '\₹299.99',
       'period': 'one-time',
       'features': [
         'Pro Wallpapers',

@@ -26,11 +26,15 @@ dependencies:
   google_sign_in: ^6.2.1
   firebase_auth: ^5.1.0
   firebase_core: ^3.1.0
+  firebase_messaging: ^15.1.6
+  flutter_local_notifications: ^18.0.1
   flutter_rating_bar: ^4.0.1
   in_app_review: ^2.0.9
   font_awesome_flutter: ^10.6.0
   http: ^1.1.0
   in_app_purchase: ^3.1.13
+  upgrader: ^11.4.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

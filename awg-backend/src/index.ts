@@ -13,6 +13,7 @@ import categoryRoutes from './routes/categories';
 import userRoutes from './routes/users';
 import subscriptionRoutes from './routes/subscriptions';
 import packRoutes from './routes/packs';
+import notificationRoutes from './routes/notifications';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -88,6 +89,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/packs', packRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

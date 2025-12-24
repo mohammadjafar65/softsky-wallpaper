@@ -31,9 +31,9 @@ class HomeScreen extends StatelessWidget {
                   ),
 
                   // Section Title
-                  SliverToBoxAdapter(
-                    child: _buildSectionTitle(provider),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: _buildSectionTitle(provider),
+                  // ),
 
                   // Wallpaper Grid
                   if (provider.isLoading)
@@ -113,16 +113,16 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
                     color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppTheme.surfaceVariant),
                   ),
                   child: const Icon(
                     Icons.search_rounded,
                     color: AppTheme.textPrimary,
-                    size: 24,
+                    size: 22,
                   ),
                 ),
               ),
@@ -135,16 +135,16 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
                     color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppTheme.surfaceVariant),
                   ),
                   child: const Icon(
                     Icons.person_rounded,
                     color: AppTheme.textPrimary,
-                    size: 24,
+                    size: 22,
                   ),
                 ),
               ),
@@ -181,55 +181,31 @@ class HomeScreen extends StatelessWidget {
   //   );
   // }
 
-  Widget _buildSectionTitle(WallpaperProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Recent',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSectionTitle(WallpaperProvider provider) {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         const Text(
+  //           'Free Wallpapers',
+  //           style: TextStyle(
+  //             fontSize: 20,
+  //             fontWeight: FontWeight.bold,
+  //             color: AppTheme.textPrimary,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildWallpaperGrid(BuildContext context, WallpaperProvider provider) {
-    // Use the provider's wallpapers getter which already filters for non-wide, non-pack wallpapers
-    final wallpapers = provider.wallpapers;
-
-    if (wallpapers.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.wallpaper_outlined,
-                  size: 64,
-                  color: AppTheme.textMuted.withOpacity(0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No wallpapers available',
-                  style: TextStyle(
-                    color: AppTheme.textMuted,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    // Filter for free (non-pro) wallpapers only, excluding wide and pack wallpapers
+    final freeWallpapers = provider.allWallpapers
+        .where((w) =>
+            !w.isPro && !w.isWide && (w.packId == null || w.packId!.isEmpty))
+        .toList();
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -242,7 +218,7 @@ class HomeScreen extends StatelessWidget {
         ),
         delegate: SliverChildBuilderDelegate(
           (ctx, index) {
-            final wallpaper = wallpapers[index];
+            final wallpaper = freeWallpapers[index];
 
             return WallpaperCard(
               wallpaper: wallpaper,
@@ -251,7 +227,7 @@ class HomeScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => WallpaperDetailScreen(
-                      wallpapers: wallpapers,
+                      wallpapers: freeWallpapers,
                       initialIndex: index,
                     ),
                   ),
@@ -259,7 +235,7 @@ class HomeScreen extends StatelessWidget {
               },
             );
           },
-          childCount: wallpapers.length,
+          childCount: freeWallpapers.length,
         ),
       ),
     );
