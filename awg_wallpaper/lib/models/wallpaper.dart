@@ -36,11 +36,19 @@ class Wallpaper {
   }
 
   factory Wallpaper.fromJson(Map<String, dynamic> json) {
+    // Helper to ensure URLs use HTTPS (Android blocks cleartext HTTP)
+    String ensureHttps(String url) {
+      if (url.startsWith('http://')) {
+        return url.replaceFirst('http://', 'https://');
+      }
+      return url;
+    }
+
     return Wallpaper(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       title: json['title'] as String,
-      imageUrl: json['imageUrl'] as String,
-      thumbnailUrl: json['thumbnailUrl'] as String,
+      imageUrl: ensureHttps(json['imageUrl'] as String),
+      thumbnailUrl: ensureHttps(json['thumbnailUrl'] as String),
       category: json['category'] is Map<String, dynamic>
           ? json['category']['_id'] as String
           : json['category'] as String,

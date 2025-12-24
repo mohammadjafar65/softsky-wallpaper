@@ -27,14 +27,14 @@ class WideWallpapersScreen extends StatelessWidget {
                   ),
 
                   // Info card
-                  SliverToBoxAdapter(
-                    child: _buildInfoCard(),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: _buildInfoCard(),
+                  // ),
 
                   // Section title
-                  SliverToBoxAdapter(
-                    child: _buildSectionTitle(provider),
-                  ),
+                  // SliverToBoxAdapter(
+                  //   child: _buildSectionTitle(provider),
+                  // ),
 
                   // Wide wallpapers list
                   SliverPadding(
@@ -77,111 +77,135 @@ class WideWallpapersScreen extends StatelessWidget {
     );
   }
 
+  String _getFormattedDate() {
+    final now = DateTime.now();
+    final months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return '${now.day} ${months[now.month - 1]}';
+  }
+
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Wide Wallpapers',
+            'SCAPES',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 4),
-          Text(
-            'For desktop & tablets',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          if (Provider.of<WallpaperProvider>(context).wideWallpapers.length > 0)
+            Text(
+              '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).wideWallpapers.length} Wallpapers',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard() {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.accent.withOpacity(0.15),
-            AppTheme.primary.withOpacity(0.15),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: AppTheme.accent.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.accent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.desktop_windows_rounded,
-              color: AppTheme.accent,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Landscape Format',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Perfect for your desktop, laptop, or tablet screens',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildInfoCard() {
+  //   return Container(
+  //     margin: const EdgeInsets.all(20),
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       gradient: LinearGradient(
+  //         colors: [
+  //           AppTheme.accent.withOpacity(0.15),
+  //           AppTheme.primary.withOpacity(0.15),
+  //         ],
+  //       ),
+  //       borderRadius: BorderRadius.circular(AppRadius.lg),
+  //       border: Border.all(
+  //         color: AppTheme.accent.withOpacity(0.3),
+  //         width: 1,
+  //       ),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Container(
+  //           padding: const EdgeInsets.all(12),
+  //           decoration: BoxDecoration(
+  //             color: AppTheme.accent.withOpacity(0.2),
+  //             borderRadius: BorderRadius.circular(12),
+  //           ),
+  //           child: const Icon(
+  //             Icons.desktop_windows_rounded,
+  //             color: AppTheme.accent,
+  //             size: 24,
+  //           ),
+  //         ),
+  //         const SizedBox(width: 16),
+  //         const Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 'Landscape Format',
+  //                 style: TextStyle(
+  //                   color: AppTheme.textPrimary,
+  //                   fontSize: 15,
+  //                   fontWeight: FontWeight.w600,
+  //                 ),
+  //               ),
+  //               SizedBox(height: 4),
+  //               Text(
+  //                 'Perfect for your desktop, laptop, or tablet screens',
+  //                 style: TextStyle(
+  //                   color: AppTheme.textSecondary,
+  //                   fontSize: 12,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildSectionTitle(WallpaperProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'All Wide Wallpapers',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          Text(
-            '${provider.wideWallpapers.length} wallpapers',
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSectionTitle(WallpaperProvider provider) {
+  //   return Padding(
+  //     padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         const Text(
+  //           'All Wide Wallpapers',
+  //           style: TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //             color: AppTheme.textPrimary,
+  //           ),
+  //         ),
+  //         Text(
+  //           '${provider.wideWallpapers.length} wallpapers',
+  //           style: const TextStyle(
+  //             fontSize: 13,
+  //             color: AppTheme.textSecondary,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

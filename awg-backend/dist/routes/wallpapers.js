@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const Wallpaper_1 = __importDefault(require("../models/Wallpaper"));
+const User_1 = __importDefault(require("../models/User"));
 const Category_1 = __importDefault(require("../models/Category"));
 const Pack_1 = __importDefault(require("../models/Pack"));
 const auth_1 = require("../middleware/auth");
@@ -271,11 +272,17 @@ router.delete('/:id', auth_1.authenticate, auth_1.requireAdmin, async (req, res)
     }
 });
 // Track download
-router.post('/:id/download', async (req, res) => {
+router.post('/:id/download', auth_1.optionalAuth, async (req, res) => {
     try {
         const wallpaper = await Wallpaper_1.default.findByIdAndUpdate(req.params.id, { $inc: { downloads: 1 } }, { new: true });
         if (!wallpaper) {
             return res.status(404).json({ error: 'Wallpaper not found' });
+        }
+        // If user is authenticated, track their download
+        if (req.user?.id) {
+            await User_1.default.findByIdAndUpdate(req.user.id, {
+                $inc: { downloads: 1 }
+            });
         }
         res.json({ downloads: wallpaper.downloads });
     }

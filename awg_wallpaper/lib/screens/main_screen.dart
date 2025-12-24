@@ -4,7 +4,7 @@ import 'home_screen.dart';
 import 'packs_screen.dart';
 import 'wide_wallpapers_screen.dart';
 import 'bookmarks_screen.dart';
-import 'profile_screen.dart';
+import 'pro_wallpapers_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,13 +15,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  
+
   final List<Widget> _screens = const [
     HomeScreen(),
     PacksScreen(),
     WideWallpapersScreen(),
     BookmarksScreen(),
-    ProfileScreen(),
+    ProWallpapersScreen(),
   ];
 
   @override

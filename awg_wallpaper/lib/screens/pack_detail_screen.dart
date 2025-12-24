@@ -52,7 +52,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
               : CustomScrollView(
                   slivers: [
                     SliverAppBar(
-                      expandedHeight: 320,
+                      expandedHeight: 250,
                       pinned: true,
                       backgroundColor:
                           Theme.of(context).scaffoldBackgroundColor,

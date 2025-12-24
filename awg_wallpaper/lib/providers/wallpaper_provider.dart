@@ -15,6 +15,7 @@ class WallpaperProvider extends ChangeNotifier {
   List<WallpaperPack> _packs = [];
   List<Category> _categories = [];
   String _selectedCategory = 'all';
+  int _totalWallpapers = 0;
   bool _isLoading = false;
   String? _error;
 
@@ -27,9 +28,14 @@ class WallpaperProvider extends ChangeNotifier {
   // bool _useApi = true;
 
   List<Wallpaper> get wallpapers => _selectedCategory == 'all'
-      ? _wallpapers.where((w) => !w.isWide).toList()
+      ? _wallpapers
+          .where((w) => !w.isWide && (w.packId == null || w.packId!.isEmpty))
+          .toList()
       : _wallpapers
-          .where((w) => w.category == _selectedCategory && !w.isWide)
+          .where((w) =>
+              w.category == _selectedCategory &&
+              !w.isWide &&
+              (w.packId == null || w.packId!.isEmpty))
           .toList();
 
   List<Wallpaper> get allWallpapers => _wallpapers;
@@ -39,6 +45,7 @@ class WallpaperProvider extends ChangeNotifier {
   List<WallpaperPack> get proPacks => _packs.where((p) => p.isPro).toList();
   List<Category> get categories => _categories;
   String get selectedCategory => _selectedCategory;
+  int get totalWallpapers => _totalWallpapers;
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
   String? get error => _error;
@@ -106,6 +113,10 @@ class WallpaperProvider extends ChangeNotifier {
       _wideWallpapers = wideWallpapersResponse.wallpapers
           .map((w) => w.copyWith(isPro: true))
           .toList();
+
+      // Calculate total wallpapers
+      _totalWallpapers =
+          wallpapersResponse.total + wideWallpapersResponse.total;
 
       // Save to cache
       _saveToCache();

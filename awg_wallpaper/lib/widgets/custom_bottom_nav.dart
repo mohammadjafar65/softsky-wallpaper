@@ -29,15 +29,15 @@ class CustomBottomNav extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _NavIcon(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
+                icon: Icons.collections_outlined,
+                activeIcon: Icons.collections_rounded,
                 isSelected: currentIndex == 0,
                 color: AppTheme.textSecondary,
                 onTap: () => onTap(0),
               ),
               _NavIcon(
-                icon: Icons.grid_view_outlined,
-                activeIcon: Icons.grid_view_rounded,
+                icon: Icons.folder_outlined,
+                activeIcon: Icons.folder_rounded,
                 isSelected: currentIndex == 1,
                 color: AppTheme.textSecondary,
                 onTap: () => onTap(1),
@@ -47,15 +47,15 @@ class CustomBottomNav extends StatelessWidget {
                 onTap: () => onTap(2),
               ),
               _NavIcon(
-                icon: Icons.favorite_border_rounded,
-                activeIcon: Icons.favorite_rounded,
+                icon: Icons.bookmark_border_rounded,
+                activeIcon: Icons.bookmark_rounded,
                 isSelected: currentIndex == 3,
                 color: AppTheme.textSecondary,
                 onTap: () => onTap(3),
               ),
               _NavIcon(
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
+                icon: Icons.workspace_premium_outlined,
+                activeIcon: Icons.workspace_premium_rounded,
                 isSelected: currentIndex == 4,
                 color: AppTheme.textSecondary,
                 onTap: () => onTap(4),
@@ -155,7 +155,7 @@ class _CenterIcon extends StatelessWidget {
           ],
         ),
         child: const Icon(
-          Icons.desktop_mac_outlined,
+          Icons.panorama_outlined,
           color: Colors.white,
           size: 25,
         ),

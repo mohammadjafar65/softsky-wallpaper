@@ -22,14 +22,14 @@ class WideWallpaperCard extends StatelessWidget {
       child: Hero(
         tag: 'wallpaper_${wallpaper.id}',
         child: Container(
-          height: 200,
+          height: 185,
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.xl),
             boxShadow: [
               BoxShadow(
                 color: AppTheme.primary.withOpacity(0.15),
-                blurRadius: 15,
+                blurRadius: 12,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -43,6 +43,7 @@ class WideWallpaperCard extends StatelessWidget {
                 CachedNetworkImage(
                   imageUrl: wallpaper.thumbnailUrl,
                   fit: BoxFit.cover,
+                  alignment: Alignment.center,
                   placeholder: (context, url) => Container(
                     color: AppTheme.surfaceVariant,
                     child: const Center(

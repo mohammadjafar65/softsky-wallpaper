@@ -255,15 +255,41 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Center(
-        child: Text(
-          'Profile',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.getTextPrimary(isDark),
-                letterSpacing: 1,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (Navigator.canPop(context))
+            Positioned(
+              left: 0,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.getSurface(isDark),
+                    borderRadius: BorderRadius.circular(12),
+                    border:
+                        Border.all(color: AppTheme.getSurfaceVariant(isDark)),
+                  ),
+                  child: Icon(
+                    Icons.arrow_back_rounded,
+                    color: AppTheme.getTextPrimary(isDark),
+                    size: 20,
+                  ),
+                ),
               ),
-        ),
+            ),
+          Center(
+            child: Text(
+              'PROFILE',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextPrimary(isDark),
+                    letterSpacing: 1,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }
