@@ -53,6 +53,7 @@ const userSchema = new mongoose_1.Schema({
     },
     favorites: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Wallpaper' }],
     downloads: { type: Number, default: 0 },
+    fcmToken: { type: String },
     isActive: { type: Boolean, default: true },
 }, {
     timestamps: true,
@@ -72,5 +73,6 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
     return bcryptjs_1.default.compare(candidatePassword, this.password);
 };
 userSchema.index({ role: 1 });
+userSchema.index({ fcmToken: 1 });
 exports.default = mongoose_1.default.model('User', userSchema);
 //# sourceMappingURL=User.js.map

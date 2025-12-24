@@ -14,6 +14,7 @@ export interface IUser extends Document {
     };
     favorites: mongoose.Types.ObjectId[];
     downloads: number;
+    fcmToken?: string;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;

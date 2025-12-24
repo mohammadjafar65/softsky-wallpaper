@@ -16,6 +16,7 @@ const categories_1 = __importDefault(require("./routes/categories"));
 const users_1 = __importDefault(require("./routes/users"));
 const subscriptions_1 = __importDefault(require("./routes/subscriptions"));
 const packs_1 = __importDefault(require("./routes/packs"));
+const notifications_1 = __importDefault(require("./routes/notifications"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middleware
@@ -80,6 +81,7 @@ app.use('/api/categories', categories_1.default);
 app.use('/api/users', users_1.default);
 app.use('/api/subscriptions', subscriptions_1.default);
 app.use('/api/packs', packs_1.default);
+app.use('/api/notifications', notifications_1.default);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'AWG Backend API is running!' });

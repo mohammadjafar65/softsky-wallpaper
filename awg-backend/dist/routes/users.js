@@ -193,5 +193,28 @@ router.get('/stats/overview', auth_1.authenticate, auth_1.requireAdmin, async (r
         res.status(500).json({ error: 'Failed to get user stats' });
     }
 });
+// Update FCM token for current user
+router.post('/fcm-token', auth_1.authenticate, async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+        if (!fcmToken) {
+            return res.status(400).json({ error: 'FCM token is required' });
+        }
+        const user = await User_1.default.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.fcmToken = fcmToken;
+        await user.save();
+        res.json({
+            success: true,
+            message: 'FCM token updated successfully',
+        });
+    }
+    catch (error) {
+        console.error('Error updating FCM token:', error);
+        res.status(500).json({ error: 'Failed to update FCM token' });
+    }
+});
 exports.default = router;
 //# sourceMappingURL=users.js.map
