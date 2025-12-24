@@ -19,6 +19,7 @@ export declare const sendNotificationToTokens: (tokens: string[], title: string,
  */
 export declare const sendNotificationToUser: (userId: string, title: string, body: string, data?: Record<string, string>) => Promise<{
     success: boolean;
+    messageId?: string;
     error?: string;
 }>;
 /**
@@ -42,6 +43,7 @@ declare const _default: {
     }>;
     sendNotificationToUser: (userId: string, title: string, body: string, data?: Record<string, string>) => Promise<{
         success: boolean;
+        messageId?: string;
         error?: string;
     }>;
     sendNotificationToAll: (title: string, body: string, data?: Record<string, string>) => Promise<{

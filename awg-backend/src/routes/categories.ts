@@ -1,24 +1,30 @@
-import { Router } from 'express';
-import Category from '../models/Category';
-import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
+import { Router } from "express";
+import { AppDataSource } from "../data-source";
+import { Category } from "../entities/Category";
+import { authenticate, requireAdmin, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
 // Get all categories (public)
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        const includeInactive = req.query.includeInactive === 'true';
+        const includeInactive = req.query.includeInactive === "true";
 
-        const query: any = {};
+        const categoryRepository = AppDataSource.getRepository(Category);
+
+        const queryBuilder = categoryRepository.createQueryBuilder("category");
+
         if (!includeInactive) {
-            query.isActive = true;
+            queryBuilder.where("category.isActive = :isActive", { isActive: true });
         }
 
-        const categories = await Category.find(query).sort({ name: 1 });
+        const categories = await queryBuilder
+            .orderBy("category.name", "ASC")
+            .getMany();
 
         res.json({
-            categories: categories.map(c => ({
-                id: c._id,
+            categories: categories.map((c) => ({
+                id: c.id,
                 name: c.name,
                 slug: c.slug,
                 icon: c.icon,
@@ -28,21 +34,24 @@ router.get('/', async (req, res) => {
             })),
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get categories' });
+        res.status(500).json({ error: "Failed to get categories" });
     }
 });
 
 // Get single category
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
     try {
-        const category = await Category.findById(req.params.id);
+        const categoryRepository = AppDataSource.getRepository(Category);
+        const category = await categoryRepository.findOne({
+            where: { id: parseInt(req.params.id) },
+        });
 
         if (!category) {
-            return res.status(404).json({ error: 'Category not found' });
+            return res.status(404).json({ error: "Category not found" });
         }
 
         res.json({
-            id: category._id,
+            id: category.id,
             name: category.name,
             slug: category.slug,
             icon: category.icon,
@@ -51,75 +60,90 @@ router.get('/:id', async (req, res) => {
             isActive: category.isActive,
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get category' });
+        res.status(500).json({ error: "Failed to get category" });
     }
 });
 
 // Create category (admin only)
-router.post('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.post("/", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const { name, icon, description } = req.body;
 
         if (!name) {
-            return res.status(400).json({ error: 'Name is required' });
+            return res.status(400).json({ error: "Name is required" });
         }
 
         // Generate slug from name
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const slug = name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+
+        const categoryRepository = AppDataSource.getRepository(Category);
 
         // Check if slug already exists
-        const existing = await Category.findOne({ slug });
+        const existing = await categoryRepository.findOne({ where: { slug } });
         if (existing) {
-            return res.status(400).json({ error: 'Category with this name already exists' });
+            return res
+                .status(400)
+                .json({ error: "Category with this name already exists" });
         }
 
-        const category = await Category.create({
+        const category = categoryRepository.create({
             name,
             slug,
-            icon: icon || '🎨',
+            icon: icon || "🎨",
             description,
         });
+        await categoryRepository.save(category);
 
         res.status(201).json({
-            message: 'Category created successfully',
+            message: "Category created successfully",
             category: {
-                id: category._id,
+                id: category.id,
                 name: category.name,
                 slug: category.slug,
                 icon: category.icon,
             },
         });
     } catch (error) {
-        console.error('Create category error:', error);
-        res.status(500).json({ error: 'Failed to create category' });
+        console.error("Create category error:", error);
+        res.status(500).json({ error: "Failed to create category" });
     }
 });
 
 // Update category (admin only)
-router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const { name, icon, description, isActive } = req.body;
 
-        const category = await Category.findById(req.params.id);
+        const categoryRepository = AppDataSource.getRepository(Category);
+        const category = await categoryRepository.findOne({
+            where: { id: parseInt(req.params.id) },
+        });
 
         if (!category) {
-            return res.status(404).json({ error: 'Category not found' });
+            return res.status(404).json({ error: "Category not found" });
         }
 
         if (name) {
             category.name = name;
-            category.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            category.slug = name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "");
         }
         if (icon) category.icon = icon;
         if (description !== undefined) category.description = description;
-        if (isActive !== undefined) category.isActive = isActive === true || isActive === 'true';
+        if (isActive !== undefined)
+            category.isActive = isActive === true || isActive === "true";
 
-        await category.save();
+        await categoryRepository.save(category);
 
         res.json({
-            message: 'Category updated successfully',
+            message: "Category updated successfully",
             category: {
-                id: category._id,
+                id: category.id,
                 name: category.name,
                 slug: category.slug,
                 icon: category.icon,
@@ -127,30 +151,33 @@ router.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => 
             },
         });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to update category' });
+        res.status(500).json({ error: "Failed to update category" });
     }
 });
 
 // Delete category (admin only)
-router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.delete("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-        const category = await Category.findById(req.params.id);
+        const categoryRepository = AppDataSource.getRepository(Category);
+        const category = await categoryRepository.findOne({
+            where: { id: parseInt(req.params.id) },
+        });
 
         if (!category) {
-            return res.status(404).json({ error: 'Category not found' });
+            return res.status(404).json({ error: "Category not found" });
         }
 
         if (category.wallpaperCount > 0) {
             return res.status(400).json({
-                error: 'Cannot delete category with wallpapers. Please reassign or delete wallpapers first.'
+                error: "Cannot delete category with wallpapers. Please reassign or delete wallpapers first.",
             });
         }
 
-        await Category.findByIdAndDelete(req.params.id);
+        await categoryRepository.delete(req.params.id);
 
-        res.json({ message: 'Category deleted successfully' });
+        res.json({ message: "Category deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to delete category' });
+        res.status(500).json({ error: "Failed to delete category" });
     }
 });
 

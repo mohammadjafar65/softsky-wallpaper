@@ -35,6 +35,9 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNotificationToAll = exports.sendNotificationToUser = exports.sendNotificationToTokens = exports.sendNotificationToToken = void 0;
 const admin = __importStar(require("firebase-admin"));
+const data_source_1 = require("../data-source");
+const User_1 = require("../entities/User");
+const typeorm_1 = require("typeorm");
 // Initialize Firebase Admin SDK
 const initializeFirebaseAdmin = () => {
     if (admin.apps.length > 0) {
@@ -42,15 +45,17 @@ const initializeFirebaseAdmin = () => {
     }
     try {
         // Option 1: Using environment variables (recommended for production)
-        if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+        if (process.env.FIREBASE_PROJECT_ID &&
+            process.env.FIREBASE_CLIENT_EMAIL &&
+            process.env.FIREBASE_PRIVATE_KEY) {
             admin.initializeApp({
                 credential: admin.credential.cert({
                     projectId: process.env.FIREBASE_PROJECT_ID,
                     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+                    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
                 }),
             });
-            console.log('✅ Firebase Admin initialized with environment variables');
+            console.log("✅ Firebase Admin initialized with environment variables");
         }
         // Option 2: Using service account JSON file (for development)
         else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
@@ -58,15 +63,15 @@ const initializeFirebaseAdmin = () => {
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
             });
-            console.log('✅ Firebase Admin initialized with service account file');
+            console.log("✅ Firebase Admin initialized with service account file");
         }
         else {
-            console.warn('⚠️  Firebase Admin not initialized - FCM credentials not found');
-            console.warn('Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in .env');
+            console.warn("⚠️  Firebase Admin not initialized - FCM credentials not found");
+            console.warn("Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in .env");
         }
     }
     catch (error) {
-        console.error('❌ Failed to initialize Firebase Admin:', error);
+        console.error("❌ Failed to initialize Firebase Admin:", error);
     }
 };
 // Initialize on module load
@@ -77,7 +82,7 @@ initializeFirebaseAdmin();
 const sendNotificationToToken = async (token, title, body, data) => {
     try {
         if (!admin.apps.length) {
-            throw new Error('Firebase Admin not initialized');
+            throw new Error("Firebase Admin not initialized");
         }
         const message = {
             notification: {
@@ -87,20 +92,20 @@ const sendNotificationToToken = async (token, title, body, data) => {
             data: data || {},
             token,
             android: {
-                priority: 'high',
+                priority: "high",
                 notification: {
-                    channelId: 'softsky_wallpaper_notifications',
-                    priority: 'high',
-                    sound: 'default',
+                    channelId: "softsky_wallpaper_notifications",
+                    priority: "high",
+                    sound: "default",
                 },
             },
         };
         const response = await admin.messaging().send(message);
-        console.log('✅ Notification sent successfully:', response);
+        console.log("✅ Notification sent successfully:", response);
         return { success: true, messageId: response };
     }
     catch (error) {
-        console.error('❌ Error sending notification:', error);
+        console.error("❌ Error sending notification:", error);
         return { success: false, error: error.message };
     }
 };
@@ -111,7 +116,7 @@ exports.sendNotificationToToken = sendNotificationToToken;
 const sendNotificationToTokens = async (tokens, title, body, data) => {
     try {
         if (!admin.apps.length) {
-            throw new Error('Firebase Admin not initialized');
+            throw new Error("Firebase Admin not initialized");
         }
         if (tokens.length === 0) {
             return { successCount: 0, failureCount: 0, errors: [] };
@@ -124,11 +129,11 @@ const sendNotificationToTokens = async (tokens, title, body, data) => {
             data: data || {},
             tokens,
             android: {
-                priority: 'high',
+                priority: "high",
                 notification: {
-                    channelId: 'softsky_wallpaper_notifications',
-                    priority: 'high',
-                    sound: 'default',
+                    channelId: "softsky_wallpaper_notifications",
+                    priority: "high",
+                    sound: "default",
                 },
             },
         };
@@ -143,8 +148,12 @@ const sendNotificationToTokens = async (tokens, title, body, data) => {
         };
     }
     catch (error) {
-        console.error('❌ Error sending notifications:', error);
-        return { successCount: 0, failureCount: tokens.length, errors: [{ error: error.message }] };
+        console.error("❌ Error sending notifications:", error);
+        return {
+            successCount: 0,
+            failureCount: tokens.length,
+            errors: [{ error: error.message }],
+        };
     }
 };
 exports.sendNotificationToTokens = sendNotificationToTokens;
@@ -153,19 +162,21 @@ exports.sendNotificationToTokens = sendNotificationToTokens;
  */
 const sendNotificationToUser = async (userId, title, body, data) => {
     try {
-        const User = require('../models/User').default;
-        const user = await User.findById(userId);
+        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
+        const user = await userRepository.findOne({
+            where: { id: parseInt(userId) },
+        });
         if (!user) {
-            return { success: false, error: 'User not found' };
+            return { success: false, error: "User not found" };
         }
         if (!user.fcmToken) {
-            return { success: false, error: 'User has no FCM token' };
+            return { success: false, error: "User has no FCM token" };
         }
         const result = await (0, exports.sendNotificationToToken)(user.fcmToken, title, body, data);
         return result;
     }
     catch (error) {
-        console.error('❌ Error sending notification to user:', error);
+        console.error("❌ Error sending notification to user:", error);
         return { success: false, error: error.message };
     }
 };
@@ -175,12 +186,16 @@ exports.sendNotificationToUser = sendNotificationToUser;
  */
 const sendNotificationToAll = async (title, body, data) => {
     try {
-        const User = require('../models/User').default;
+        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
         // Get all users with FCM tokens
-        const users = await User.find({ fcmToken: { $exists: true, $ne: null } });
-        const tokens = users.map((user) => user.fcmToken).filter(Boolean);
+        const users = await userRepository.find({
+            where: { fcmToken: (0, typeorm_1.Not)((0, typeorm_1.IsNull)()) },
+        });
+        const tokens = users
+            .map((user) => user.fcmToken)
+            .filter((token) => !!token);
         if (tokens.length === 0) {
-            console.log('⚠️  No users with FCM tokens found');
+            console.log("⚠️  No users with FCM tokens found");
             return { successCount: 0, failureCount: 0, totalUsers: 0 };
         }
         console.log(`📤 Sending notification to ${tokens.length} users...`);
@@ -201,7 +216,7 @@ const sendNotificationToAll = async (title, body, data) => {
         };
     }
     catch (error) {
-        console.error('❌ Error sending notification to all users:', error);
+        console.error("❌ Error sending notification to all users:", error);
         return { successCount: 0, failureCount: 0, totalUsers: 0 };
     }
 };
