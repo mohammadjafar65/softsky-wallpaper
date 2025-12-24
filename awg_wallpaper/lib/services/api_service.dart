@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:http/http.dart' as http;
@@ -9,7 +10,62 @@ class ApiService {
   // TODO: Update this URL to your deployed backend URL
   static const String baseUrl = 'https://softskyapi.softsky.studio/api';
 
+  // Retry configuration
+  static const int _maxRetries = 3;
+  static const Duration _initialRetryDelay = Duration(seconds: 1);
+
   String? _authToken;
+
+  /// Helper method to execute HTTP requests with retry logic
+  Future<http.Response> _executeWithRetry(
+    Future<http.Response> Function() request, {
+    int maxRetries = _maxRetries,
+  }) async {
+    int attempt = 0;
+    Duration delay = _initialRetryDelay;
+
+    while (true) {
+      try {
+        attempt++;
+        final response = await request();
+
+        // Retry on 503 (Service Unavailable) or 502 (Bad Gateway)
+        if ((response.statusCode == 503 || response.statusCode == 502) &&
+            attempt < maxRetries) {
+          debugPrint(
+              'Server returned ${response.statusCode}, retrying in ${delay.inSeconds}s (attempt $attempt/$maxRetries)');
+          await Future.delayed(delay);
+          delay *= 2; // Exponential backoff
+          continue;
+        }
+
+        return response;
+      } on TimeoutException {
+        if (attempt >= maxRetries) {
+          debugPrint('Request timed out after $maxRetries attempts');
+          rethrow;
+        }
+        debugPrint(
+            'Request timed out, retrying in ${delay.inSeconds}s (attempt $attempt/$maxRetries)');
+        await Future.delayed(delay);
+        delay *= 2;
+      } catch (e) {
+        if (attempt >= maxRetries) {
+          rethrow;
+        }
+        // Only retry on network-related errors
+        if (e.toString().contains('SocketException') ||
+            e.toString().contains('Connection')) {
+          debugPrint(
+              'Network error, retrying in ${delay.inSeconds}s (attempt $attempt/$maxRetries)');
+          await Future.delayed(delay);
+          delay *= 2;
+        } else {
+          rethrow;
+        }
+      }
+    }
+  }
 
   // Set authentication token (from Firebase)
   void setAuthToken(String token) {
@@ -56,9 +112,11 @@ class ApiService {
 
       final uri = Uri.parse('$baseUrl/wallpapers')
           .replace(queryParameters: queryParams);
-      final response = await http
-          .get(uri, headers: _headers)
-          .timeout(const Duration(seconds: 30));
+      final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: _headers)
+            .timeout(const Duration(seconds: 30)),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -80,9 +138,11 @@ class ApiService {
     try {
       final uri = Uri.parse('$baseUrl/wallpapers/search')
           .replace(queryParameters: {'q': query});
-      final response = await http
-          .get(uri, headers: _headers)
-          .timeout(const Duration(seconds: 30));
+      final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: _headers)
+            .timeout(const Duration(seconds: 30)),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -99,12 +159,14 @@ class ApiService {
   /// Get single wallpaper by ID
   Future<Wallpaper> getWallpaperById(String id) async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/wallpapers/$id'),
-            headers: _headers,
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await _executeWithRetry(
+        () => http
+            .get(
+              Uri.parse('$baseUrl/wallpapers/$id'),
+              headers: _headers,
+            )
+            .timeout(const Duration(seconds: 30)),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -135,12 +197,14 @@ class ApiService {
   /// Get all categories
   Future<List<Category>> getCategories() async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/categories'),
-            headers: _headers,
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await _executeWithRetry(
+        () => http
+            .get(
+              Uri.parse('$baseUrl/categories'),
+              headers: _headers,
+            )
+            .timeout(const Duration(seconds: 30)),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

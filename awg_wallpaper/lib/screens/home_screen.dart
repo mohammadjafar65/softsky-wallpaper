@@ -8,8 +8,25 @@ import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Ensure data is loaded when screen first appears
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<WallpaperProvider>();
+      if (provider.allWallpapers.isEmpty && !provider.isLoading) {
+        provider.refresh();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
