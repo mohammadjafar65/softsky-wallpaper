@@ -69,6 +69,33 @@ app.use((req, res, next) => {
 app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+// Root endpoint - works without database for debugging
+app.get("/", (req, res) => {
+    res.json({
+        status: "ok",
+        message: "AWG Backend API Server is running",
+        version: "1.0.0",
+        timestamp: new Date().toISOString(),
+        database: data_source_1.AppDataSource.isInitialized ? "connected" : "not connected",
+    });
+});
+app.get("/api", (req, res) => {
+    res.json({
+        status: "ok",
+        message: "AWG Backend API is available",
+        database: data_source_1.AppDataSource.isInitialized ? "connected" : "not connected",
+        endpoints: [
+            "/api/health",
+            "/api/auth",
+            "/api/wallpapers",
+            "/api/categories",
+            "/api/users",
+            "/api/subscriptions",
+            "/api/packs",
+            "/api/notifications",
+        ],
+    });
+});
 // API Routes
 app.use("/api/auth", auth_1.default);
 app.use("/api/wallpapers", wallpapers_1.default);
@@ -85,6 +112,11 @@ app.get("/api/health", async (req, res) => {
         message: dbConnected
             ? "AWG Backend API is running!"
             : "Database connection failed",
+        database: {
+            connected: dbConnected,
+            host: process.env.MYSQL_HOST || "localhost",
+            database: process.env.MYSQL_DATABASE || "awg_wallpaper",
+        },
     });
 });
 // Error handling middleware
@@ -92,18 +124,22 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: "Something went wrong!" });
 });
-// Initialize database and start server
+// Start server immediately, then try to connect to database
+const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📡 API available at http://localhost:${PORT}/api`);
+});
+// Initialize database connection (non-blocking)
 data_source_1.AppDataSource.initialize()
     .then(() => {
     console.log("✅ Connected to MySQL");
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
-        console.log(`📡 API available at http://localhost:${PORT}/api`);
-    });
+    console.log(`   Host: ${process.env.MYSQL_HOST || "localhost"}`);
+    console.log(`   Database: ${process.env.MYSQL_DATABASE || "awg_wallpaper"}`);
 })
     .catch((error) => {
-    console.error("❌ MySQL connection error:", error);
-    process.exit(1);
+    console.error("❌ MySQL connection error:", error.message);
+    console.error("   The server will continue running but database operations will fail.");
+    console.error("   Please check your MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, and MYSQL_DATABASE environment variables.");
 });
 exports.default = app;
 //# sourceMappingURL=index.js.map
