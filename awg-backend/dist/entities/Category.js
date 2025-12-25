@@ -28,7 +28,12 @@ __decorate([
     __metadata("design:type", String)
 ], Category.prototype, "slug", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 50, nullable: true }),
+    (0, typeorm_1.Column)({
+        length: 50,
+        nullable: true,
+        charset: "utf8mb4",
+        collation: "utf8mb4_unicode_ci",
+    }),
     __metadata("design:type", String)
 ], Category.prototype, "icon", void 0);
 __decorate([

@@ -34,6 +34,7 @@ exports.upload = (0, multer_1.default)({
 // Upload image to Cloudinary
 const uploadToCloudinary = async (buffer, folder = 'wallpapers') => {
     return new Promise((resolve, reject) => {
+        console.log(`Starting Cloudinary upload to folder: awg/${folder}`);
         const uploadStream = cloudinary_1.v2.uploader.upload_stream({
             folder: `awg/${folder}`,
             resource_type: 'image',
@@ -43,9 +44,11 @@ const uploadToCloudinary = async (buffer, folder = 'wallpapers') => {
             ],
         }, (error, result) => {
             if (error) {
+                console.error("Cloudinary upload failed:", error);
                 reject(error);
             }
             else if (result) {
+                console.log("Cloudinary upload success:", result.public_id);
                 // Generate thumbnail URL
                 const thumbnailUrl = cloudinary_1.v2.url(result.public_id, {
                     width: 480,

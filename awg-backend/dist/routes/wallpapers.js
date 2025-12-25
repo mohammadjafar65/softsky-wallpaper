@@ -181,6 +181,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", auth_1.authenticate, auth_1.requireAdmin, upload_1.upload.single("image"), async (req, res) => {
     try {
         const { title, category, tags, isWide, isPro, packId } = req.body;
+        console.log("Create wallpaper request body:", { title, category, tags, isWide, isPro, packId });
         if (!req.file) {
             return res.status(400).json({ error: "Image is required" });
         }
@@ -189,6 +190,10 @@ router.post("/", auth_1.authenticate, auth_1.requireAdmin, upload_1.upload.singl
                 .status(400)
                 .json({ error: "Title and category are required" });
         }
+        const categoryId = parseInt(category);
+        if (isNaN(categoryId)) {
+            return res.status(400).json({ error: "Invalid category ID" });
+        }
         // Upload to Cloudinary
         const { url, thumbnailUrl } = await (0, upload_1.uploadToCloudinary)(req.file.buffer, isWide === "true" ? "wide" : "wallpapers");
         const categoryRepository = data_source_1.AppDataSource.getRepository(Category_1.Category);
@@ -196,27 +201,34 @@ router.post("/", auth_1.authenticate, auth_1.requireAdmin, upload_1.upload.singl
         const packRepository = data_source_1.AppDataSource.getRepository(Pack_1.Pack);
         // Verify category exists
         const categoryDoc = await categoryRepository.findOne({
-            where: { id: parseInt(category) },
+            where: { id: categoryId },
         });
         if (!categoryDoc) {
             return res.status(400).json({ error: "Invalid category" });
+        }
+        let parsedPackId = undefined;
+        if (packId && packId !== "" && packId !== "null" && packId !== "undefined") {
+            parsedPackId = parseInt(packId);
+            if (isNaN(parsedPackId)) {
+                parsedPackId = undefined;
+            }
         }
         const wallpaper = wallpaperRepository.create({
             title,
             imageUrl: url,
             thumbnailUrl,
-            categoryId: parseInt(category),
+            categoryId: categoryId,
             tags: tags ? tags.split(",").map((t) => t.trim()) : [],
             isWide: isWide === "true",
             isPro: isPro === "true",
-            packId: packId ? parseInt(packId) : undefined,
+            packId: parsedPackId,
         });
         await wallpaperRepository.save(wallpaper);
         // Update category wallpaper count
         await categoryRepository.increment({ id: categoryDoc.id }, "wallpaperCount", 1);
         // Update pack wallpaper count if assigned to a pack
-        if (packId) {
-            await packRepository.increment({ id: parseInt(packId) }, "wallpaperCount", 1);
+        if (parsedPackId) {
+            await packRepository.increment({ id: parsedPackId }, "wallpaperCount", 1);
         }
         res.status(201).json({
             message: "Wallpaper created successfully",
@@ -230,7 +242,17 @@ router.post("/", auth_1.authenticate, auth_1.requireAdmin, upload_1.upload.singl
     }
     catch (error) {
         console.error("Create wallpaper error:", error);
-        res.status(500).json({ error: "Failed to create wallpaper" });
+        // Enhanced error logging
+        if (error.sqlMessage)
+            console.error("SQL Error:", error.sqlMessage);
+        if (error.code)
+            console.error("Error Code:", error.code);
+        res.status(500).json({
+            error: "Failed to create wallpaper",
+            details: error.message || "Unknown error",
+            sqlMessage: process.env.NODE_ENV === 'development' ? error.sqlMessage : undefined,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 // Update wallpaper (admin only)
@@ -258,7 +280,11 @@ router.put("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
         // Handle pack assignment changes
         if (packId !== undefined) {
             const oldPackId = wallpaper.packId;
-            const newPackId = packId === "" ? undefined : parseInt(packId);
+            let newPackId = undefined;
+            if (packId !== "" && packId !== "null" && packId !== "undefined") {
+                const parsed = parseInt(packId);
+                newPackId = isNaN(parsed) ? undefined : parsed;
+            }
             // If pack changed, update counts
             if (oldPackId !== newPackId) {
                 // Decrement old pack count

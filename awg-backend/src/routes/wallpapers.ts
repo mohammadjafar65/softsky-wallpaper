@@ -213,6 +213,7 @@ router.post(
     async (req: AuthRequest, res) => {
         try {
             const { title, category, tags, isWide, isPro, packId } = req.body;
+            console.log("Create wallpaper request body:", { title, category, tags, isWide, isPro, packId });
 
             if (!req.file) {
                 return res.status(400).json({ error: "Image is required" });
@@ -222,6 +223,11 @@ router.post(
                 return res
                     .status(400)
                     .json({ error: "Title and category are required" });
+            }
+
+            const categoryId = parseInt(category);
+            if (isNaN(categoryId)) {
+                return res.status(400).json({ error: "Invalid category ID" });
             }
 
             // Upload to Cloudinary
@@ -236,21 +242,29 @@ router.post(
 
             // Verify category exists
             const categoryDoc = await categoryRepository.findOne({
-                where: { id: parseInt(category) },
+                where: { id: categoryId },
             });
             if (!categoryDoc) {
                 return res.status(400).json({ error: "Invalid category" });
+            }
+
+            let parsedPackId: number | undefined = undefined;
+            if (packId && packId !== "" && packId !== "null" && packId !== "undefined") {
+                parsedPackId = parseInt(packId);
+                if (isNaN(parsedPackId)) {
+                    parsedPackId = undefined;
+                }
             }
 
             const wallpaper = wallpaperRepository.create({
                 title,
                 imageUrl: url,
                 thumbnailUrl,
-                categoryId: parseInt(category),
+                categoryId: categoryId,
                 tags: tags ? tags.split(",").map((t: string) => t.trim()) : [],
                 isWide: isWide === "true",
                 isPro: isPro === "true",
-                packId: packId ? parseInt(packId) : undefined,
+                packId: parsedPackId,
             });
             await wallpaperRepository.save(wallpaper);
 
@@ -262,9 +276,9 @@ router.post(
             );
 
             // Update pack wallpaper count if assigned to a pack
-            if (packId) {
+            if (parsedPackId) {
                 await packRepository.increment(
-                    { id: parseInt(packId) },
+                    { id: parsedPackId },
                     "wallpaperCount",
                     1
                 );
@@ -281,9 +295,14 @@ router.post(
             });
         } catch (error: any) {
             console.error("Create wallpaper error:", error);
+            // Enhanced error logging
+            if (error.sqlMessage) console.error("SQL Error:", error.sqlMessage);
+            if (error.code) console.error("Error Code:", error.code);
+
             res.status(500).json({
                 error: "Failed to create wallpaper",
                 details: error.message || "Unknown error",
+                sqlMessage: process.env.NODE_ENV === 'development' ? error.sqlMessage : undefined,
                 stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
             });
         }
@@ -317,7 +336,12 @@ router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
         // Handle pack assignment changes
         if (packId !== undefined) {
             const oldPackId = wallpaper.packId;
-            const newPackId = packId === "" ? undefined : parseInt(packId);
+            let newPackId: number | undefined = undefined;
+
+            if (packId !== "" && packId !== "null" && packId !== "undefined") {
+                const parsed = parseInt(packId);
+                newPackId = isNaN(parsed) ? undefined : parsed;
+            }
 
             // If pack changed, update counts
             if (oldPackId !== newPackId) {

@@ -35,6 +35,7 @@ export const uploadToCloudinary = async (
     folder: string = 'wallpapers'
 ): Promise<{ url: string; thumbnailUrl: string; publicId: string }> => {
     return new Promise((resolve, reject) => {
+        console.log(`Starting Cloudinary upload to folder: awg/${folder}`);
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: `awg/${folder}`,
@@ -46,8 +47,10 @@ export const uploadToCloudinary = async (
             },
             (error, result) => {
                 if (error) {
+                    console.error("Cloudinary upload failed:", error);
                     reject(error);
                 } else if (result) {
+                    console.log("Cloudinary upload success:", result.public_id);
                     // Generate thumbnail URL
                     const thumbnailUrl = cloudinary.url(result.public_id, {
                         width: 480,
