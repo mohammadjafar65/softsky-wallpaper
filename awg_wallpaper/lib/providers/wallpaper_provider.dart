@@ -6,9 +6,11 @@ import '../models/wallpaper_pack.dart';
 import '../models/category.dart';
 
 import '../services/api_service.dart';
+import '../services/pack_service.dart';
 
 class WallpaperProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
+  final PackService _packService = PackService();
 
   List<Wallpaper> _wallpapers = [];
   List<Wallpaper> _wideWallpapers = [];
@@ -90,18 +92,10 @@ class WallpaperProvider extends ChangeNotifier {
 
   Future<void> _loadFromApi() async {
     try {
-      // Run requests in parallel to speed up loading
-      final results = await Future.wait([
-        _apiService.getCategories(),
-        _apiService.getWallpapers(page: 1, limit: 30, isWide: false),
-
-        _apiService.getWallpapers(page: 1, limit: 20, isWide: true),
-        _apiService.getWallpapers(
-            page: 1, limit: 1, isPro: true), // Fetch just for count
-      ]);
+      // Load data sequentially to prevent server overload/500 errors
 
       // 1. Categories
-      final fetchedCategories = results[0] as List<Category>;
+      final fetchedCategories = await _apiService.getCategories();
       if (!fetchedCategories.any((c) => c.id == 'all')) {
         fetchedCategories.insert(
             0, const Category(id: 'all', name: 'All', icon: '✨'));
@@ -109,25 +103,32 @@ class WallpaperProvider extends ChangeNotifier {
       _categories = fetchedCategories;
 
       // 2. Wallpapers
-      final wallpapersResponse = results[1] as WallpapersResponse;
+      final wallpapersResponse =
+          await _apiService.getWallpapers(page: 1, limit: 30, isWide: false);
       _wallpapers = wallpapersResponse.wallpapers;
       _currentPage = wallpapersResponse.page;
       _totalPages = wallpapersResponse.pages;
       _hasMore = _currentPage < _totalPages;
 
       // 3. Wide Wallpapers
-      final wideWallpapersResponse = results[2] as WallpapersResponse;
+      final wideWallpapersResponse =
+          await _apiService.getWallpapers(page: 1, limit: 20, isWide: true);
       _wideWallpapers = wideWallpapersResponse.wallpapers
           .map((w) => w.copyWith(isPro: true))
           .toList();
 
+      // 4. Packs
+      _packs = await _packService.getPacks(page: 1, limit: 50);
+      debugPrint('WallpaperProvider: Loaded ${_packs.length} packs');
+
+      // 5. Pro Wallpapers Count
+      final proWallpapersResponse =
+          await _apiService.getWallpapers(page: 1, limit: 1, isPro: true);
+      _totalProWallpapers = proWallpapersResponse.total;
+
       // Calculate total wallpapers
       _totalWallpapers =
           wallpapersResponse.total + wideWallpapersResponse.total;
-
-      // 4. Pro Wallpapers Count
-      final proWallpapersResponse = results[3] as WallpapersResponse;
-      _totalProWallpapers = proWallpapersResponse.total;
 
       // Save to cache
       _saveToCache();
@@ -172,6 +173,18 @@ class WallpaperProvider extends ChangeNotifier {
       }
     }
 
+    // Load packs from cache
+    if (box.containsKey('packs')) {
+      try {
+        final List<dynamic> packsJson = json.decode(box.get('packs'));
+        _packs = packsJson.map((p) => WallpaperPack.fromJson(p)).toList();
+        debugPrint(
+            'WallpaperProvider: Loaded ${_packs.length} packs from cache');
+      } catch (e) {
+        debugPrint('Error loading packs from cache: $e');
+      }
+    }
+
     notifyListeners();
   }
 
@@ -186,6 +199,9 @@ class WallpaperProvider extends ChangeNotifier {
           json.encode(_wallpapers.map((w) => w.toJson()).toList()));
       box.put('wide_wallpapers',
           json.encode(_wideWallpapers.map((w) => w.toJson()).toList()));
+      // Save packs to cache
+      box.put('packs', json.encode(_packs.map((p) => p.toJson()).toList()));
+      debugPrint('WallpaperProvider: Saved ${_packs.length} packs to cache');
     } catch (e) {
       debugPrint('Error saving to cache: $e');
     }
@@ -242,6 +258,13 @@ class WallpaperProvider extends ChangeNotifier {
         isWide: false, // Explicitly exclude wide wallpapers
       );
       // Merge with existing wallpapers or filter
+      final newWallpapers = response.wallpapers;
+      for (final w in newWallpapers) {
+        if (!_wallpapers.any((existing) => existing.id == w.id)) {
+          _wallpapers.add(w);
+        }
+      }
+
       _currentPage = response.page;
       _totalPages = response.pages;
       _hasMore = _currentPage < _totalPages;

@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../config/theme.dart';
 import '../providers/pack_provider.dart';
+import '../providers/wallpaper_provider.dart';
 import '../widgets/pack_card.dart';
 import 'pack_detail_screen.dart';
 import '../utils/date_formatter.dart';
@@ -23,7 +24,16 @@ class _PacksScreenState extends State<PacksScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PackProvider>().fetchPacks();
+      final wallpaperProvider = context.read<WallpaperProvider>();
+      final packProvider = context.read<PackProvider>();
+
+      // If WallpaperProvider already has packs (cached or loaded), give them to PackProvider
+      if (wallpaperProvider.packs.isNotEmpty) {
+        packProvider.setPacksFromProvider(wallpaperProvider.packs);
+      } else {
+        // Otherwise fetch normally
+        packProvider.fetchPacks();
+      }
     });
   }
 

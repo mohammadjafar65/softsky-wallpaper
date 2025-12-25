@@ -20,7 +20,12 @@ export class Category {
     @Column({ unique: true, length: 255 })
     slug!: string;
 
-    @Column({ length: 50, nullable: true })
+    @Column({
+        length: 50,
+        nullable: true,
+        charset: "utf8mb4",
+        collation: "utf8mb4_unicode_ci",
+    })
     icon?: string;
 
     @Column({ type: "text", nullable: true })

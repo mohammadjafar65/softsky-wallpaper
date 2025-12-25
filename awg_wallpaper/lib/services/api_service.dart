@@ -122,6 +122,7 @@ class ApiService {
         final data = json.decode(response.body);
         return WallpapersResponse.fromJson(data);
       } else {
+        debugPrint('Request failed: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to load wallpapers: ${response.statusCode}');
       }
     } catch (e) {

@@ -37,26 +37,38 @@ class Wallpaper {
 
   factory Wallpaper.fromJson(Map<String, dynamic> json) {
     // Helper to ensure URLs use HTTPS (Android blocks cleartext HTTP)
-    String ensureHttps(String url) {
+    String ensureHttps(String? url) {
+      if (url == null) return '';
       if (url.startsWith('http://')) {
         return url.replaceFirst('http://', 'https://');
       }
       return url;
     }
 
+    // Handle category which can be an Object (MySQL) or String (Legacy/Mongo)
+    String parseCategory(dynamic categoryData) {
+      if (categoryData is Map<String, dynamic>) {
+        // Try id, _id, name, slug
+        if (categoryData['id'] != null) return categoryData['id'].toString();
+        if (categoryData['_id'] != null) return categoryData['_id'].toString();
+        return categoryData['name']?.toString() ??
+            categoryData['slug']?.toString() ??
+            '';
+      }
+      return categoryData?.toString() ?? '';
+    }
+
     return Wallpaper(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      title: json['title'] as String,
-      imageUrl: ensureHttps(json['imageUrl'] as String),
-      thumbnailUrl: ensureHttps(json['thumbnailUrl'] as String),
-      category: json['category'] is Map<String, dynamic>
-          ? json['category']['_id'] as String
-          : json['category'] as String,
+      title: json['title']?.toString() ?? 'Untitled',
+      imageUrl: ensureHttps(json['imageUrl']?.toString()),
+      thumbnailUrl: ensureHttps(json['thumbnailUrl']?.toString()),
+      category: parseCategory(json['category']),
       isWide: json['isWide'] as bool? ?? false,
       isPro: json['isPro'] as bool? ?? false,
-      packId: json['packId'] as String?,
+      packId: json['packId']?.toString(), // Use toString() for safety
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
+          ? DateTime.tryParse(json['createdAt'].toString())
           : null,
     );
   }
