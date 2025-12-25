@@ -115,7 +115,7 @@ app.get("/api/health", async (req, res) => {
         database: {
             connected: dbConnected,
             host: process.env.MYSQL_HOST || "localhost",
-            database: process.env.MYSQL_DATABASE || "awg_wallpaper",
+            database: process.env.MYSQL_DATABASE || "softoatk_ssw_wallpaper",
         },
     });
 });
@@ -134,7 +134,7 @@ data_source_1.AppDataSource.initialize()
     .then(() => {
     console.log("✅ Connected to MySQL");
     console.log(`   Host: ${process.env.MYSQL_HOST || "localhost"}`);
-    console.log(`   Database: ${process.env.MYSQL_DATABASE || "awg_wallpaper"}`);
+    console.log(`   Database: ${process.env.MYSQL_DATABASE || "softoatk_ssw_wallpaper"}`);
 })
     .catch((error) => {
     console.error("❌ MySQL connection error:", error.message);
