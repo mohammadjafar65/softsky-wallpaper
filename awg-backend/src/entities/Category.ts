@@ -20,8 +20,8 @@ export class Category {
     @Column({ unique: true, length: 255 })
     slug!: string;
 
-    @Column({ length: 50, default: "🎨" })
-    icon!: string;
+    @Column({ length: 50, nullable: true })
+    icon?: string;
 
     @Column({ type: "text", nullable: true })
     description?: string;
