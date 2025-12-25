@@ -19,6 +19,9 @@ import notificationRoutes from "./routes/notifications";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Store database connection error for debugging
+let dbConnectionError: string | null = null;
+
 // Middleware
 const allowedOrigins = [
     process.env.CLIENT_URL || "",
@@ -133,6 +136,7 @@ app.get("/api/health", async (req, res) => {
             connected: dbConnected,
             host: process.env.MYSQL_HOST || "localhost",
             database: process.env.MYSQL_DATABASE || "softoatk_ssw_wallpaper",
+            error: dbConnectionError,
         },
     });
 });
@@ -164,6 +168,7 @@ AppDataSource.initialize()
         console.log(`   Database: ${process.env.MYSQL_DATABASE || "softoatk_ssw_wallpaper"}`);
     })
     .catch((error) => {
+        dbConnectionError = error.message;
         console.error("❌ MySQL connection error:", error.message);
         console.error("   The server will continue running but database operations will fail.");
         console.error("   Please check your MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, and MYSQL_DATABASE environment variables.");
