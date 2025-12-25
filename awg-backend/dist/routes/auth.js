@@ -167,5 +167,28 @@ router.post("/setup-admin", async (req, res) => {
         res.status(500).json({ error: "Failed to create admin" });
     }
 });
+// Reset admin password (for fixing login issues)
+router.post("/reset-admin", async (req, res) => {
+    try {
+        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
+        const admin = await userRepository.findOne({
+            where: { role: "admin" },
+        });
+        if (!admin) {
+            return res.status(404).json({ error: "No admin user found" });
+        }
+        const newPassword = process.env.ADMIN_PASSWORD || "admin123";
+        admin.password = newPassword;
+        await userRepository.save(admin);
+        res.json({
+            message: "Admin password reset successfully",
+            email: admin.email,
+        });
+    }
+    catch (error) {
+        console.error("Reset admin error:", error);
+        res.status(500).json({ error: "Failed to reset admin password" });
+    }
+});
 exports.default = router;
 //# sourceMappingURL=auth.js.map
