@@ -116,48 +116,53 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                 ),
             ],
           ),
-          const SizedBox(width: 43),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SearchScreen()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.surfaceVariant),
+          // const SizedBox(width: 43),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SearchScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.surfaceVariant),
+                  ),
+                  child: const Icon(
+                    Icons.search_rounded,
+                    color: AppTheme.textPrimary,
+                    size: 22,
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.search_rounded,
-                color: AppTheme.textPrimary,
-                size: 22,
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.surfaceVariant),
+                  ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    color: AppTheme.textPrimary,
+                    size: 22,
+                  ),
+                ),
               ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.surfaceVariant),
-              ),
-              child: const Icon(
-                Icons.person_rounded,
-                color: AppTheme.textPrimary,
-                size: 22,
-              ),
-            ),
+            ],
           ),
         ],
       ),

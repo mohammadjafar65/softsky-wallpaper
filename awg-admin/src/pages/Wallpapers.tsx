@@ -182,8 +182,8 @@ export default function Wallpapers() {
                     try {
                         await wallpapersApi.create(data);
                         successCount++;
-                    } catch (error) {
-                        console.error(`Failed to upload ${file.name} to category ${catId}`, error);
+                    } catch (error: any) {
+                        console.error(`Failed to upload ${file.name} to category ${catId}`, error.response?.data || error);
                         failCount++;
                     }
 

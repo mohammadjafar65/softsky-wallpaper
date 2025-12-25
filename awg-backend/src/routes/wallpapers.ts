@@ -279,9 +279,13 @@ router.post(
                     thumbnailUrl: wallpaper.thumbnailUrl,
                 },
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Create wallpaper error:", error);
-            res.status(500).json({ error: "Failed to create wallpaper" });
+            res.status(500).json({
+                error: "Failed to create wallpaper",
+                details: error.message || "Unknown error",
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
         }
     }
 );
