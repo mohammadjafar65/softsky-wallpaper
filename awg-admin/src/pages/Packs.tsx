@@ -15,7 +15,7 @@ import {
 import { format } from 'date-fns';
 
 interface Pack {
-    _id: string;
+    id: string;
     name: string;
     description: string;
     coverImage: string;
@@ -91,7 +91,7 @@ export default function Packs() {
             }
 
             const promise = editingPack
-                ? api.update(editingPack._id, {
+                ? api.update(editingPack.id, {
                     name: formData.name,
                     description: formData.description,
                     isPro: formData.isPro,
@@ -197,7 +197,7 @@ export default function Packs() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredPacks.map((pack) => (
-                        <div key={pack._id} className="group relative bg-slate-800/50 rounded-2xl overflow-hidden border border-white/5 hover:border-violet-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10">
+                        <div key={pack.id} className="group relative bg-slate-800/50 rounded-2xl overflow-hidden border border-white/5 hover:border-violet-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10">
                             <div className="relative h-48 overflow-hidden">
                                 <img
                                     src={pack.coverImage}
@@ -246,7 +246,7 @@ export default function Packs() {
                                             <PencilIcon className="w-4 h-4" />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(pack._id)}
+                                            onClick={() => handleDelete(pack.id)}
                                             className="p-2 bg-slate-700/50 hover:bg-red-500 hover:text-white rounded-lg text-slate-400 transition-all"
                                         >
                                             <TrashIcon className="w-4 h-4" />

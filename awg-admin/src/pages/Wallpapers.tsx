@@ -31,7 +31,7 @@ interface Category {
 }
 
 interface Pack {
-    _id: string;
+    id: string;
     name: string;
 }
 
@@ -596,7 +596,7 @@ export default function Wallpapers() {
                                     >
                                         <option value="">None</option>
                                         {packs.map((pack) => (
-                                            <option key={pack._id} value={pack._id}>{pack.name}</option>
+                                            <option key={pack.id} value={pack.id}>{pack.name}</option>
                                         ))}
                                     </select>
                                 </div>
