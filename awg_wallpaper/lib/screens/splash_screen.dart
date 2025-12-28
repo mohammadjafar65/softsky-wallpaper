@@ -89,7 +89,9 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 200));
     _controller.forward();
 
-    await Future.delayed(const Duration(milliseconds: 3000));
+    // Reduced delay for faster app launch (animation duration is 2500ms,
+    // but we can navigate at 1800ms since main content is visible by then)
+    await Future.delayed(const Duration(milliseconds: 1800));
     if (mounted) {
       Navigator.pushReplacement(
         context,

@@ -18,6 +18,7 @@ interface User {
 export default function Notifications() {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
     const [targetType, setTargetType] = useState<'all' | 'user'>('all');
     const [selectedUserId, setSelectedUserId] = useState('');
     const [users, setUsers] = useState<User[]>([]);
@@ -71,6 +72,7 @@ export default function Notifications() {
                 const response = await notificationsApi.sendToAll({
                     title,
                     message,
+                    ...(imageUrl.trim() && { imageUrl: imageUrl.trim() }),
                 });
 
                 setResult({
@@ -82,6 +84,7 @@ export default function Notifications() {
                     userId: selectedUserId,
                     title,
                     message,
+                    ...(imageUrl.trim() && { imageUrl: imageUrl.trim() }),
                 });
 
                 setResult({
@@ -93,6 +96,7 @@ export default function Notifications() {
             // Clear form
             setTitle('');
             setMessage('');
+            setImageUrl('');
             setSelectedUserId('');
         } catch (error: any) {
             setResult({
@@ -218,6 +222,39 @@ export default function Notifications() {
                         <p className="text-xs text-slate-500 mt-2">
                             {message.length}/200 characters
                         </p>
+                    </div>
+
+                    {/* Image URL Input */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-3">
+                            Thumbnail Image URL <span className="text-slate-500">(Optional)</span>
+                        </label>
+                        <input
+                            type="url"
+                            value={imageUrl}
+                            onChange={(e) => setImageUrl(e.target.value)}
+                            placeholder="https://example.com/image.jpg"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                        />
+                        <p className="text-xs text-slate-500 mt-2">
+                            Add an image URL for rich notifications with thumbnails
+                        </p>
+                        {imageUrl && (
+                            <div className="mt-3 p-3 rounded-xl bg-slate-800/50 border border-white/5">
+                                <p className="text-xs text-slate-400 mb-2">Preview:</p>
+                                <img
+                                    src={imageUrl}
+                                    alt="Notification preview"
+                                    className="h-24 w-auto rounded-lg object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                    onLoad={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'block';
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Result Message */}

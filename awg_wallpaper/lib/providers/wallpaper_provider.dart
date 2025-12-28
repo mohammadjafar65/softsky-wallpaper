@@ -18,6 +18,7 @@ class WallpaperProvider extends ChangeNotifier {
   List<Category> _categories = [];
   String _selectedCategory = 'all';
   int _totalWallpapers = 0;
+  int _totalFreeWallpapers = 0;
   int _totalProWallpapers = 0;
   bool _isLoading = true; // Start with loading state
   String? _error;
@@ -31,16 +32,10 @@ class WallpaperProvider extends ChangeNotifier {
   // bool _useApi = true;
 
   List<Wallpaper> get wallpapers => _selectedCategory == 'all'
-      ? _wallpapers
-          .where((w) =>
-              !w.isPro && !w.isWide && (w.packId == null || w.packId!.isEmpty))
-          .toList()
+      ? _wallpapers.where((w) => !w.isPro && !w.isWide).toList()
       : _wallpapers
-          .where((w) =>
-              w.category == _selectedCategory &&
-              !w.isPro &&
-              !w.isWide &&
-              (w.packId == null || w.packId!.isEmpty))
+          .where(
+              (w) => w.category == _selectedCategory && !w.isPro && !w.isWide)
           .toList();
 
   List<Wallpaper> get allWallpapers => _wallpapers;
@@ -51,6 +46,7 @@ class WallpaperProvider extends ChangeNotifier {
   List<Category> get categories => _categories;
   String get selectedCategory => _selectedCategory;
   int get totalWallpapers => _totalWallpapers;
+  int get totalFreeWallpapers => _totalFreeWallpapers;
   int get totalProWallpapers => _totalProWallpapers;
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
@@ -68,9 +64,8 @@ class WallpaperProvider extends ChangeNotifier {
   }
 
   Future<void> _initializeData() async {
-    // 1. Try to load from cache first for instant display
-    _loadFromCache();
-
+    // Load from API first to prevent blank screen
+    // Cache is used as fallback only when API fails
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -78,7 +73,9 @@ class WallpaperProvider extends ChangeNotifier {
     try {
       await _loadFromApi();
     } catch (e) {
-      // debugPrint('API initialization failed: $e');
+      debugPrint('API initialization failed: $e');
+      // API failed, try loading from cache as fallback
+      _loadFromCache();
       if (_wallpapers.isEmpty) {
         _error = 'Failed to connect to server.';
       } else {
@@ -92,41 +89,54 @@ class WallpaperProvider extends ChangeNotifier {
 
   Future<void> _loadFromApi() async {
     try {
-      // Load data sequentially to prevent server overload/500 errors
+      // Load data in parallel for better performance
+      final stopwatch = Stopwatch()..start();
+
+      final results = await Future.wait([
+        _apiService.getCategories(),
+        _apiService.getWallpapers(page: 1, limit: 30, isWide: false),
+        _apiService.getWallpapers(page: 1, limit: 20, isWide: true),
+        _packService.getPacks(page: 1, limit: 50),
+        _apiService.getWallpapers(
+            page: 1, limit: 1, isPro: true, isWide: false),
+      ]);
+
+      debugPrint(
+          'WallpaperProvider: Parallel API calls completed in ${stopwatch.elapsedMilliseconds}ms');
 
       // 1. Categories
-      final fetchedCategories = await _apiService.getCategories();
+      final fetchedCategories = results[0] as List<Category>;
       if (!fetchedCategories.any((c) => c.id == 'all')) {
         fetchedCategories.insert(
             0, const Category(id: 'all', name: 'All', icon: '✨'));
       }
       _categories = fetchedCategories;
 
-      // 2. Wallpapers
-      final wallpapersResponse =
-          await _apiService.getWallpapers(page: 1, limit: 30, isWide: false);
+      // 2. All Non-Wide Wallpapers (master list for both Free and Pro screens)
+      final wallpapersResponse = results[1] as WallpapersResponse;
       _wallpapers = wallpapersResponse.wallpapers;
       _currentPage = wallpapersResponse.page;
       _totalPages = wallpapersResponse.pages;
       _hasMore = _currentPage < _totalPages;
 
       // 3. Wide Wallpapers
-      final wideWallpapersResponse =
-          await _apiService.getWallpapers(page: 1, limit: 20, isWide: true);
+      final wideWallpapersResponse = results[2] as WallpapersResponse;
       _wideWallpapers = wideWallpapersResponse.wallpapers
           .map((w) => w.copyWith(isPro: true))
           .toList();
 
       // 4. Packs
-      _packs = await _packService.getPacks(page: 1, limit: 50);
+      _packs = results[3] as List<WallpaperPack>;
       debugPrint('WallpaperProvider: Loaded ${_packs.length} packs');
 
-      // 5. Pro Wallpapers Count
-      final proWallpapersResponse =
-          await _apiService.getWallpapers(page: 1, limit: 1, isPro: true);
-      _totalProWallpapers = proWallpapersResponse.total;
+      // 5. Calculate Counters
+      final proNonWideResponse = results[4] as WallpapersResponse;
+      _totalProWallpapers = proNonWideResponse.total;
 
-      // Calculate total wallpapers
+      // Total Non-Wide minus Pro Non-Wide equals Free Non-Wide
+      _totalFreeWallpapers = wallpapersResponse.total - _totalProWallpapers;
+
+      // Overall total (all categories)
       _totalWallpapers =
           wallpapersResponse.total + wideWallpapersResponse.total;
 

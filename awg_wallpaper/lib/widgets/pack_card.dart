@@ -8,25 +8,34 @@ class PackCard extends StatelessWidget {
   final WallpaperPack pack;
   final VoidCallback onTap;
   final bool isLarge;
+  final double? width;
+  final double? height;
+  final EdgeInsetsGeometry? margin;
 
   const PackCard({
     super.key,
     required this.pack,
     required this.onTap,
     this.isLarge = false,
+    this.width,
+    this.height,
+    this.margin,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Determine card dimensions
-    final double width = isLarge ? double.infinity : 160;
-    // For grid in PacksScreen, height is controlled by aspect ratio, but for list it needs explicit height
-    final double height = isLarge ? 200 : 220;
+    // Use provided values or defaults based on isLarge
+    final EdgeInsetsGeometry defaultMargin =
+        EdgeInsets.only(right: isLarge ? 0 : 16);
 
     return Container(
-      width: width,
-      height: height,
-      margin: EdgeInsets.only(right: isLarge ? 0 : 16),
+      width: width ??
+          (isLarge
+              ? double.infinity
+              : null), // Let grid control width if not specified
+      height: height ??
+          (isLarge ? 200 : null), // Let grid control height if not specified
+      margin: margin ?? defaultMargin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [

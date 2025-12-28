@@ -5,6 +5,7 @@ import '../providers/wallpaper_provider.dart';
 import '../widgets/wide_wallpaper_card.dart';
 import 'wallpaper_detail_screen.dart';
 import '../utils/date_formatter.dart';
+import '../utils/ad_helper.dart';
 import 'profile_screen.dart';
 
 class WideWallpapersScreen extends StatelessWidget {
@@ -49,14 +50,18 @@ class WideWallpapersScreen extends StatelessWidget {
                           return WideWallpaperCard(
                             wallpaper: wallpaper,
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => WallpaperDetailScreen(
-                                    wallpapers: wideWallpapers,
-                                    initialIndex: index,
-                                  ),
-                                ),
+                              AdHelper.showInterstitialAd(
+                                onAdClosed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => WallpaperDetailScreen(
+                                        wallpapers: wideWallpapers,
+                                        initialIndex: index,
+                                      ),
+                                    ),
+                                  );
+                                },
                               );
                             },
                           );
@@ -100,7 +105,7 @@ class WideWallpapersScreen extends StatelessWidget {
                   .wideWallpapers
                   .isNotEmpty)
                 Text(
-                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).wideWallpapers.length} Wallpapers',
+                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).wideWallpapers.length} WideWallpapers',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppTheme.textMuted,
                         fontSize: 13,

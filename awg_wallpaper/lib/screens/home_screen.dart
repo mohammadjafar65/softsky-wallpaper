@@ -7,6 +7,15 @@ import '../widgets/shimmer_loading.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
+import 'pack_detail_screen.dart';
+import '../providers/pack_provider.dart';
+import '../widgets/pack_card.dart';
+import '../models/wallpaper.dart';
+import '../models/wallpaper_pack.dart';
+import '../widgets/native_ad_widget.dart';
+import '../utils/ad_helper.dart';
+import '../providers/subscription_provider.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,16 +25,43 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     // Ensure data is loaded when screen first appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WallpaperProvider>();
       if (provider.allWallpapers.isEmpty && !provider.isLoading) {
         provider.refresh();
       }
+
+      // Load packs for Pro Collections section
+      final packProvider = context.read<PackProvider>();
+      if (provider.packs.isNotEmpty) {
+        packProvider.setPacksFromProvider(provider.packs);
+      } else if (packProvider.packs.isEmpty && !packProvider.isLoading) {
+        packProvider.fetchPacks();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final provider = context.read<WallpaperProvider>();
+      if (!provider.isLoading && provider.hasMore) {
+        provider.loadMoreWallpapers();
+      }
+    }
   }
 
   @override
@@ -41,24 +77,20 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppTheme.primary,
               backgroundColor: AppTheme.surface,
               child: CustomScrollView(
+                controller: _scrollController,
                 slivers: [
                   // App Bar / Header
                   SliverToBoxAdapter(
                     child: _buildHeader(context),
                   ),
 
-                  // Section Title
-                  // SliverToBoxAdapter(
-                  //   child: _buildSectionTitle(provider),
-                  // ),
-
-                  // Wallpaper Grid
-                  if (provider.isLoading)
+                  // Mixed Content Grid (Wallpapers + Collections)
+                  if (provider.isLoading && provider.allWallpapers.isEmpty)
                     const SliverToBoxAdapter(
                       child: ShimmerLoading(),
                     )
                   else
-                    _buildWallpaperGrid(context, provider),
+                    _buildMixedContentGrid(context, provider),
 
                   // Bottom padding for nav bar
                   const SliverToBoxAdapter(
@@ -109,9 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
               ),
               const SizedBox(height: 4),
-              if (Provider.of<WallpaperProvider>(context).totalWallpapers > 0)
+              if (Provider.of<WallpaperProvider>(context).totalFreeWallpapers >
+                  0)
                 Text(
-                  '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalWallpapers} Wallpapers',
+                  '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalFreeWallpapers} Free Wallpapers',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppTheme.textMuted,
                         fontSize: 13,
@@ -217,44 +250,107 @@ class _HomeScreenState extends State<HomeScreen> {
   //   );
   // }
 
-  Widget _buildWallpaperGrid(BuildContext context, WallpaperProvider provider) {
-    // Filter for free (non-pro) wallpapers only, excluding wide and pack wallpapers
-    final freeWallpapers = provider.allWallpapers
-        .where((w) =>
-            !w.isPro && !w.isWide && (w.packId == null || w.packId!.isEmpty))
-        .toList();
+  Widget _buildMixedContentGrid(
+      BuildContext context, WallpaperProvider provider) {
+    // 1. Get all wallpapers (Free + Pro, but not wide)
+    final wallpapers = provider.allWallpapers.where((w) => !w.isWide).toList();
+
+    // 2. Get Pro Packs
+    final packs = context.watch<PackProvider>().proPacks;
+
+    // 3. Create a mixed list
+    // Algorithm: Interleave packs into wallpapers every N items
+    final List<dynamic> mixedItems = [];
+    int packIndex = 0;
+
+    final isPro = context.read<SubscriptionProvider>().isPro;
+
+    for (int i = 0; i < wallpapers.length; i++) {
+      mixedItems.add(wallpapers[i]);
+
+      // Every 5 items, insert a native ad (ONLY FOR NON-PRO)
+      if (!isPro && (i + 1) % 5 == 0) {
+        mixedItems.add('native_ad');
+      }
+
+      // Every 7 wallpapers, insert a pack if available
+      if ((i + 1) % 7 == 0 && packIndex < packs.length) {
+        mixedItems.add(packs[packIndex]);
+        packIndex++;
+      }
+    }
+
+    // If there are remaining packs, add them to the end (or skip if we want it balanced)
+    // while (packIndex < packs.length) {
+    //   mixedItems.add(packs[packIndex]);
+    //   packIndex++;
+    // }
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.65, // Consistent height for all cards
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (ctx, index) {
-            final wallpaper = freeWallpapers[index];
+      sliver: SliverMasonryGrid.count(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        itemBuilder: (ctx, index) {
+          final item = mixedItems[index];
 
-            return WallpaperCard(
-              wallpaper: wallpaper,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WallpaperDetailScreen(
-                      wallpapers: freeWallpapers,
-                      initialIndex: index,
-                    ),
-                  ),
-                );
-              },
+          if (item is Wallpaper) {
+            return AspectRatio(
+              aspectRatio: 0.65,
+              child: WallpaperCard(
+                wallpaper: item,
+                onTap: () {
+                  // Find the index in the original wallpaper list for consistent browsing
+                  final wallpaperIndex = wallpapers.indexOf(item);
+
+                  // Show Interstitial Ad before navigation
+                  AdHelper.showInterstitialAd(
+                    onAdClosed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WallpaperDetailScreen(
+                            wallpapers: wallpapers,
+                            initialIndex:
+                                wallpaperIndex != -1 ? wallpaperIndex : 0,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             );
-          },
-          childCount: freeWallpapers.length,
-        ),
+          } else if (item is WallpaperPack) {
+            return AspectRatio(
+              aspectRatio: 0.65,
+              child: PackCard(
+                pack: item,
+                isLarge: false,
+                margin: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PackDetailScreen(
+                        packId: item.id,
+                        packName: item.name,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          } else if (item == 'native_ad') {
+            return const NativeAdWidget();
+          }
+          return const SizedBox.shrink();
+        },
+        childCount: mixedItems.length,
       ),
     );
   }
+
+  // Removed _buildProCollections and _buildWallpaperGrid as they are replaced by _buildMixedContentGrid
 }

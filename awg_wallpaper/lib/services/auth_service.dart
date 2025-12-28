@@ -2,12 +2,39 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'api_service.dart';
+import 'notification_service.dart';
 
 /// Authentication Service that handles Firebase Auth and syncs with backend API
 class AuthService {
+  // Singleton pattern - ensures same instance is used throughout the app
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal();
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
   final ApiService _apiService = ApiService();
+
+  bool _initialized = false;
+
+  /// Initialize auth service and restore session if user was logged in
+  Future<void> initialize() async {
+    if (_initialized) return;
+
+    // Check if user is already logged in and sync with backend
+    if (_auth.currentUser != null) {
+      debugPrint(
+          'AuthService: Restoring session for ${_auth.currentUser!.email}');
+      try {
+        await _syncWithBackend(_auth.currentUser, 'session_restore');
+      } catch (e) {
+        debugPrint('AuthService: Failed to restore session: $e');
+      }
+    }
+
+    _initialized = true;
+    debugPrint('AuthService: Initialized (logged in: ${isLoggedIn})');
+  }
 
   // Backend API token (for authenticated requests)
   String? _backendToken;
@@ -146,9 +173,19 @@ class AuthService {
       _apiService.setAuthToken(response.token);
 
       debugPrint('User synced with backend successfully');
+
+      // Sync FCM token with backend now that we have an auth token
+      try {
+        final fcmToken = await NotificationService().getToken();
+        if (fcmToken != null) {
+          await NotificationService().sendTokenToBackend(fcmToken);
+        }
+      } catch (e) {
+        debugPrint('AuthService: Failed to sync FCM token after login: $e');
+      }
     } catch (e) {
       // Log but don't fail - user can still use the app with Firebase auth
-      debugPrint('Failed to sync user with backend: $e');
+      debugPrint('AuthService: Failed to sync user with backend: $e');
     }
   }
 

@@ -68,11 +68,11 @@ export const packsApi = {
 
 // Notifications API
 export const notificationsApi = {
-    sendToUser: (data: { userId: string; title: string; message: string; data?: Record<string, string> }) =>
+    sendToUser: (data: { userId: string; title: string; message: string; imageUrl?: string; data?: Record<string, string> }) =>
         api.post('/notifications/send-to-user', data),
-    sendToAll: (data: { title: string; message: string; data?: Record<string, string> }) =>
+    sendToAll: (data: { title: string; message: string; imageUrl?: string; data?: Record<string, string> }) =>
         api.post('/notifications/send-to-all', data),
-    sendTest: (data: { token: string; title: string; message: string; data?: Record<string, string> }) =>
+    sendTest: (data: { token: string; title: string; message: string; imageUrl?: string; data?: Record<string, string> }) =>
         api.post('/notifications/test', data),
 };
 

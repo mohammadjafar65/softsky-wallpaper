@@ -9,6 +9,8 @@ import '../widgets/pack_card.dart';
 import 'pack_detail_screen.dart';
 import '../utils/date_formatter.dart';
 import 'profile_screen.dart';
+import '../widgets/native_ad_widget.dart';
+import '../providers/subscription_provider.dart';
 
 class PacksScreen extends StatefulWidget {
   const PacksScreen({super.key});
@@ -180,12 +182,32 @@ class _PacksScreenState extends State<PacksScreen> {
   // Removed _buildSectionHeader and _buildHorizontalList helper methods as they are no longer used
 
   Widget _buildAllPacksList(BuildContext context, List packs) {
+    // Mix native ads into packs list (ONLY FOR NON-PRO)
+    final List<dynamic> mixedPacks = [];
+    final isPro = context.read<SubscriptionProvider>().isPro;
+
+    for (int i = 0; i < packs.length; i++) {
+      mixedPacks.add(packs[i]);
+      if (!isPro && (i + 1) % 3 == 0) {
+        mixedPacks.add('native_ad');
+      }
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final pack = packs[index];
+            final item = mixedPacks[index];
+
+            if (item == 'native_ad') {
+              return const Padding(
+                padding: EdgeInsets.only(bottom: 20),
+                child: NativeAdWidget(height: 150),
+              );
+            }
+
+            final pack = item;
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: PackCard(
@@ -203,7 +225,7 @@ class _PacksScreenState extends State<PacksScreen> {
               ),
             );
           },
-          childCount: packs.length,
+          childCount: mixedPacks.length,
         ),
       ),
     );

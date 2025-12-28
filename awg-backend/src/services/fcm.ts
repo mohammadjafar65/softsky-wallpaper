@@ -58,7 +58,8 @@ export const sendNotificationToToken = async (
     token: string,
     title: string,
     body: string,
-    data?: Record<string, string>
+    data?: Record<string, string>,
+    imageUrl?: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
     try {
         if (!admin.apps.length) {
@@ -69,8 +70,12 @@ export const sendNotificationToToken = async (
             notification: {
                 title,
                 body,
+                ...(imageUrl && { imageUrl }),
             },
-            data: data || {},
+            data: {
+                ...(data || {}),
+                ...(imageUrl && { imageUrl }),
+            },
             token,
             android: {
                 priority: "high",
@@ -78,6 +83,18 @@ export const sendNotificationToToken = async (
                     channelId: "softsky_wallpaper_notifications",
                     priority: "high" as any,
                     sound: "default",
+                    ...(imageUrl && { imageUrl }),
+                },
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        "mutable-content": 1,
+                        sound: "default",
+                    },
+                },
+                fcmOptions: {
+                    ...(imageUrl && { imageUrl }),
                 },
             },
         };
@@ -98,7 +115,8 @@ export const sendNotificationToTokens = async (
     tokens: string[],
     title: string,
     body: string,
-    data?: Record<string, string>
+    data?: Record<string, string>,
+    imageUrl?: string
 ): Promise<{ successCount: number; failureCount: number; errors: any[] }> => {
     try {
         if (!admin.apps.length) {
@@ -113,8 +131,12 @@ export const sendNotificationToTokens = async (
             notification: {
                 title,
                 body,
+                ...(imageUrl && { imageUrl }),
             },
-            data: data || {},
+            data: {
+                ...(data || {}),
+                ...(imageUrl && { imageUrl }),
+            },
             tokens,
             android: {
                 priority: "high",
@@ -122,6 +144,18 @@ export const sendNotificationToTokens = async (
                     channelId: "softsky_wallpaper_notifications",
                     priority: "high" as any,
                     sound: "default",
+                    ...(imageUrl && { imageUrl }),
+                },
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        "mutable-content": 1,
+                        sound: "default",
+                    },
+                },
+                fcmOptions: {
+                    ...(imageUrl && { imageUrl }),
                 },
             },
         };
@@ -158,7 +192,8 @@ export const sendNotificationToUser = async (
     userId: string,
     title: string,
     body: string,
-    data?: Record<string, string>
+    data?: Record<string, string>,
+    imageUrl?: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
     try {
         const userRepository = AppDataSource.getRepository(User);
@@ -174,7 +209,7 @@ export const sendNotificationToUser = async (
             return { success: false, error: "User has no FCM token" };
         }
 
-        const result = await sendNotificationToToken(user.fcmToken, title, body, data);
+        const result = await sendNotificationToToken(user.fcmToken, title, body, data, imageUrl);
         return result;
     } catch (error: any) {
         console.error("❌ Error sending notification to user:", error);
@@ -188,7 +223,8 @@ export const sendNotificationToUser = async (
 export const sendNotificationToAll = async (
     title: string,
     body: string,
-    data?: Record<string, string>
+    data?: Record<string, string>,
+    imageUrl?: string
 ): Promise<{ successCount: number; failureCount: number; totalUsers: number }> => {
     try {
         const userRepository = AppDataSource.getRepository(User);
@@ -216,7 +252,7 @@ export const sendNotificationToAll = async (
 
         for (let i = 0; i < tokens.length; i += batchSize) {
             const batch = tokens.slice(i, i + batchSize);
-            const result = await sendNotificationToTokens(batch, title, body, data);
+            const result = await sendNotificationToTokens(batch, title, body, data, imageUrl);
             totalSuccess += result.successCount;
             totalFailure += result.failureCount;
         }

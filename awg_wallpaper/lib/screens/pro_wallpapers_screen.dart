@@ -9,6 +9,10 @@ import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
 import '../utils/date_formatter.dart';
 import 'profile_screen.dart';
+import '../widgets/native_ad_widget.dart';
+import '../utils/ad_helper.dart';
+import '../providers/subscription_provider.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class ProWallpapersScreen extends StatefulWidget {
   const ProWallpapersScreen({super.key});
@@ -18,9 +22,12 @@ class ProWallpapersScreen extends StatefulWidget {
 }
 
 class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     // Ensure data is loaded when screen first appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WallpaperProvider>();
@@ -28,6 +35,22 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
         provider.refresh();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final provider = context.read<WallpaperProvider>();
+      if (!provider.isLoading && provider.hasMore) {
+        provider.loadMoreWallpapers();
+      }
+    }
   }
 
   @override
@@ -43,6 +66,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
               color: AppTheme.primary,
               backgroundColor: AppTheme.surface,
               child: CustomScrollView(
+                controller: _scrollController,
                 slivers: [
                   // Header
                   SliverToBoxAdapter(
@@ -107,7 +131,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
               if (Provider.of<WallpaperProvider>(context).totalProWallpapers >
                   0)
                 Text(
-                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Wallpapers',
+                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Pro Wallpapers',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppTheme.textMuted,
                         fontSize: 13,
@@ -217,10 +241,10 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
   // }
 
   Widget _buildWallpaperGrid(BuildContext context, WallpaperProvider provider) {
-    // Filter to show only PRO wallpapers (not wide, not in a pack)
+    // Filter to show only PRO wallpapers (not wide)
+    // Included wallpapers in packs as they are also pro wallpapers
     final proWallpapers = provider.allWallpapers
-        .where((w) =>
-            w.isPro && !w.isWide && (w.packId == null || w.packId!.isEmpty))
+        .where((w) => w.isPro && !w.isWide)
         .where((w) =>
             provider.selectedCategory == 'all' ||
             w.category == provider.selectedCategory)
@@ -253,36 +277,57 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
       );
     }
 
+    // Mix native ads into pro wallpapers list (ONLY FOR NON-PRO)
+    final List<dynamic> mixedProWallpapers = [];
+    final isPro = context.read<SubscriptionProvider>().isPro;
+
+    for (int i = 0; i < proWallpapers.length; i++) {
+      mixedProWallpapers.add(proWallpapers[i]);
+      if (!isPro && (i + 1) % 6 == 0) {
+        mixedProWallpapers.add('native_ad');
+      }
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.65,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final wallpaper = proWallpapers[index];
+      sliver: SliverMasonryGrid.count(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        itemBuilder: (context, index) {
+          final item = mixedProWallpapers[index];
 
-            return WallpaperCard(
+          if (item == 'native_ad') {
+            return const NativeAdWidget();
+          }
+
+          final wallpaper = item;
+          final wallpaperIndex = proWallpapers.indexOf(wallpaper);
+
+          return AspectRatio(
+            aspectRatio: 0.65,
+            child: WallpaperCard(
               wallpaper: wallpaper,
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WallpaperDetailScreen(
-                      wallpapers: proWallpapers,
-                      initialIndex: index,
-                    ),
-                  ),
+                AdHelper.showInterstitialAd(
+                  onAdClosed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WallpaperDetailScreen(
+                          wallpapers: proWallpapers,
+                          initialIndex:
+                              wallpaperIndex != -1 ? wallpaperIndex : 0,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
-            );
-          },
-          childCount: proWallpapers.length,
-        ),
+            ),
+          );
+        },
+        childCount: mixedProWallpapers.length,
       ),
     );
   }

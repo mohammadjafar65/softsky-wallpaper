@@ -6,6 +6,7 @@ import '../providers/wallpaper_provider.dart';
 import '../providers/search_provider.dart';
 import '../widgets/wallpaper_card.dart';
 import 'wallpaper_detail_screen.dart';
+import '../utils/ad_helper.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -17,13 +18,13 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  
+
   @override
   void initState() {
     super.initState();
     _focusNode.requestFocus();
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
@@ -42,7 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 // Search bar
                 _buildSearchBar(context, searchProvider, wallpaperProvider),
-                
+
                 // Content
                 Expanded(
                   child: searchProvider.query.isEmpty
@@ -56,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-  
+
   Widget _buildSearchBar(
     BuildContext context,
     SearchProvider searchProvider,
@@ -89,7 +90,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 color: AppTheme.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: _focusNode.hasFocus 
+                  color: _focusNode.hasFocus
                       ? AppTheme.primary
                       : AppTheme.surfaceVariant,
                 ),
@@ -115,7 +116,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   prefixIcon: const Icon(
                     Icons.search_rounded,
                     color: AppTheme.textSecondary,
@@ -151,7 +153,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-  
+
   Widget _buildSearchHistory(
     SearchProvider searchProvider,
     WallpaperProvider wallpaperProvider,
@@ -188,7 +190,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-          
+
           // History chips
           SliverToBoxAdapter(
             child: Padding(
@@ -232,7 +234,8 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           const SizedBox(width: 8),
                           GestureDetector(
-                            onTap: () => searchProvider.removeFromHistory(query),
+                            onTap: () =>
+                                searchProvider.removeFromHistory(query),
                             child: const Icon(
                               Icons.close_rounded,
                               size: 16,
@@ -248,7 +251,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
         ],
-        
+
         // Suggestions
         SliverToBoxAdapter(
           child: Padding(
@@ -268,7 +271,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children: wallpaperProvider.categories.skip(1).take(6).map((cat) {
+                  children:
+                      wallpaperProvider.categories.skip(1).take(6).map((cat) {
                     return GestureDetector(
                       onTap: () {
                         _controller.text = cat.name;
@@ -291,7 +295,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(cat.icon, style: const TextStyle(fontSize: 14)),
+                            Text(cat.icon,
+                                style: const TextStyle(fontSize: 14)),
                             const SizedBox(width: 8),
                             Text(
                               cat.name,
@@ -314,12 +319,12 @@ class _SearchScreenState extends State<SearchScreen> {
       ],
     );
   }
-  
+
   Widget _buildSearchResults(SearchProvider searchProvider) {
     if (searchProvider.results.isEmpty) {
       return _buildNoResults();
     }
-    
+
     return CustomScrollView(
       slivers: [
         // Results count
@@ -335,7 +340,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
         ),
-        
+
         // Results grid
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -346,20 +351,25 @@ class _SearchScreenState extends State<SearchScreen> {
             itemBuilder: (context, index) {
               final results = searchProvider.results;
               final wallpaper = results[index];
-              final height = index % 3 == 0 ? 280.0 : (index % 3 == 1 ? 220.0 : 250.0);
-              
+              final height =
+                  index % 3 == 0 ? 280.0 : (index % 3 == 1 ? 220.0 : 250.0);
+
               return WallpaperCard(
                 wallpaper: wallpaper,
                 height: height,
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => WallpaperDetailScreen(
-                        wallpapers: results,
-                        initialIndex: index,
-                      ),
-                    ),
+                  AdHelper.showInterstitialAd(
+                    onAdClosed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WallpaperDetailScreen(
+                            wallpapers: results,
+                            initialIndex: index,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               );
@@ -367,14 +377,14 @@ class _SearchScreenState extends State<SearchScreen> {
             childCount: searchProvider.results.length,
           ),
         ),
-        
+
         const SliverToBoxAdapter(
           child: SizedBox(height: 20),
         ),
       ],
     );
   }
-  
+
   Widget _buildNoResults() {
     return Center(
       child: Column(

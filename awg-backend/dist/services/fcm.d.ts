@@ -1,7 +1,7 @@
 /**
  * Send notification to a single device token
  */
-export declare const sendNotificationToToken: (token: string, title: string, body: string, data?: Record<string, string>) => Promise<{
+export declare const sendNotificationToToken: (token: string, title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
     success: boolean;
     messageId?: string;
     error?: string;
@@ -9,7 +9,7 @@ export declare const sendNotificationToToken: (token: string, title: string, bod
 /**
  * Send notification to multiple device tokens
  */
-export declare const sendNotificationToTokens: (tokens: string[], title: string, body: string, data?: Record<string, string>) => Promise<{
+export declare const sendNotificationToTokens: (tokens: string[], title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
     successCount: number;
     failureCount: number;
     errors: any[];
@@ -17,7 +17,7 @@ export declare const sendNotificationToTokens: (tokens: string[], title: string,
 /**
  * Send notification to a specific user by user ID
  */
-export declare const sendNotificationToUser: (userId: string, title: string, body: string, data?: Record<string, string>) => Promise<{
+export declare const sendNotificationToUser: (userId: string, title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
     success: boolean;
     messageId?: string;
     error?: string;
@@ -25,28 +25,28 @@ export declare const sendNotificationToUser: (userId: string, title: string, bod
 /**
  * Send notification to all users with FCM tokens
  */
-export declare const sendNotificationToAll: (title: string, body: string, data?: Record<string, string>) => Promise<{
+export declare const sendNotificationToAll: (title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
     successCount: number;
     failureCount: number;
     totalUsers: number;
 }>;
 declare const _default: {
-    sendNotificationToToken: (token: string, title: string, body: string, data?: Record<string, string>) => Promise<{
+    sendNotificationToToken: (token: string, title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
         success: boolean;
         messageId?: string;
         error?: string;
     }>;
-    sendNotificationToTokens: (tokens: string[], title: string, body: string, data?: Record<string, string>) => Promise<{
+    sendNotificationToTokens: (tokens: string[], title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
         successCount: number;
         failureCount: number;
         errors: any[];
     }>;
-    sendNotificationToUser: (userId: string, title: string, body: string, data?: Record<string, string>) => Promise<{
+    sendNotificationToUser: (userId: string, title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
         success: boolean;
         messageId?: string;
         error?: string;
     }>;
-    sendNotificationToAll: (title: string, body: string, data?: Record<string, string>) => Promise<{
+    sendNotificationToAll: (title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
         successCount: number;
         failureCount: number;
         totalUsers: number;

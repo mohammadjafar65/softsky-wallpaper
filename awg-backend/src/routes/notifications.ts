@@ -11,7 +11,7 @@ const router = Router();
  */
 router.post('/send-to-user', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
-        const { userId, title, message, data } = req.body;
+        const { userId, title, message, data, imageUrl } = req.body;
 
         // Validation
         if (!userId || !title || !message) {
@@ -19,7 +19,7 @@ router.post('/send-to-user', authenticate, requireAdmin, async (req: AuthRequest
         }
 
         // Send notification
-        const result = await fcmService.sendNotificationToUser(userId, title, message, data);
+        const result = await fcmService.sendNotificationToUser(userId, title, message, data, imageUrl);
 
         if (result.success) {
             return res.json({
@@ -46,7 +46,7 @@ router.post('/send-to-user', authenticate, requireAdmin, async (req: AuthRequest
  */
 router.post('/send-to-all', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
-        const { title, message, data } = req.body;
+        const { title, message, data, imageUrl } = req.body;
 
         // Validation
         if (!title || !message) {
@@ -54,7 +54,7 @@ router.post('/send-to-all', authenticate, requireAdmin, async (req: AuthRequest,
         }
 
         // Send notification to all users
-        const result = await fcmService.sendNotificationToAll(title, message, data);
+        const result = await fcmService.sendNotificationToAll(title, message, data, imageUrl);
 
         return res.json({
             success: true,
@@ -76,7 +76,7 @@ router.post('/send-to-all', authenticate, requireAdmin, async (req: AuthRequest,
  */
 router.post('/test', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
-        const { token, title, message, data } = req.body;
+        const { token, title, message, data, imageUrl } = req.body;
 
         // Validation
         if (!token || !title || !message) {
@@ -84,7 +84,7 @@ router.post('/test', authenticate, requireAdmin, async (req: AuthRequest, res: R
         }
 
         // Send test notification
-        const result = await fcmService.sendNotificationToToken(token, title, message, data);
+        const result = await fcmService.sendNotificationToToken(token, title, message, data, imageUrl);
 
         if (result.success) {
             return res.json({

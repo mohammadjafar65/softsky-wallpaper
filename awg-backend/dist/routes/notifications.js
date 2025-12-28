@@ -14,13 +14,13 @@ const router = (0, express_1.Router)();
  */
 router.post('/send-to-user', auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
     try {
-        const { userId, title, message, data } = req.body;
+        const { userId, title, message, data, imageUrl } = req.body;
         // Validation
         if (!userId || !title || !message) {
             return res.status(400).json({ error: 'userId, title, and message are required' });
         }
         // Send notification
-        const result = await fcm_1.default.sendNotificationToUser(userId, title, message, data);
+        const result = await fcm_1.default.sendNotificationToUser(userId, title, message, data, imageUrl);
         if (result.success) {
             return res.json({
                 success: true,
@@ -47,13 +47,13 @@ router.post('/send-to-user', auth_1.authenticate, auth_1.requireAdmin, async (re
  */
 router.post('/send-to-all', auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
     try {
-        const { title, message, data } = req.body;
+        const { title, message, data, imageUrl } = req.body;
         // Validation
         if (!title || !message) {
             return res.status(400).json({ error: 'title and message are required' });
         }
         // Send notification to all users
-        const result = await fcm_1.default.sendNotificationToAll(title, message, data);
+        const result = await fcm_1.default.sendNotificationToAll(title, message, data, imageUrl);
         return res.json({
             success: true,
             message: 'Notifications sent',
@@ -74,13 +74,13 @@ router.post('/send-to-all', auth_1.authenticate, auth_1.requireAdmin, async (req
  */
 router.post('/test', auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
     try {
-        const { token, title, message, data } = req.body;
+        const { token, title, message, data, imageUrl } = req.body;
         // Validation
         if (!token || !title || !message) {
             return res.status(400).json({ error: 'token, title, and message are required' });
         }
         // Send test notification
-        const result = await fcm_1.default.sendNotificationToToken(token, title, message, data);
+        const result = await fcm_1.default.sendNotificationToToken(token, title, message, data, imageUrl);
         if (result.success) {
             return res.json({
                 success: true,

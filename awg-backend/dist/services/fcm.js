@@ -79,7 +79,7 @@ initializeFirebaseAdmin();
 /**
  * Send notification to a single device token
  */
-const sendNotificationToToken = async (token, title, body, data) => {
+const sendNotificationToToken = async (token, title, body, data, imageUrl) => {
     try {
         if (!admin.apps.length) {
             throw new Error("Firebase Admin not initialized");
@@ -88,8 +88,12 @@ const sendNotificationToToken = async (token, title, body, data) => {
             notification: {
                 title,
                 body,
+                ...(imageUrl && { imageUrl }),
             },
-            data: data || {},
+            data: {
+                ...(data || {}),
+                ...(imageUrl && { imageUrl }),
+            },
             token,
             android: {
                 priority: "high",
@@ -97,6 +101,18 @@ const sendNotificationToToken = async (token, title, body, data) => {
                     channelId: "softsky_wallpaper_notifications",
                     priority: "high",
                     sound: "default",
+                    ...(imageUrl && { imageUrl }),
+                },
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        "mutable-content": 1,
+                        sound: "default",
+                    },
+                },
+                fcmOptions: {
+                    ...(imageUrl && { imageUrl }),
                 },
             },
         };
@@ -113,7 +129,7 @@ exports.sendNotificationToToken = sendNotificationToToken;
 /**
  * Send notification to multiple device tokens
  */
-const sendNotificationToTokens = async (tokens, title, body, data) => {
+const sendNotificationToTokens = async (tokens, title, body, data, imageUrl) => {
     try {
         if (!admin.apps.length) {
             throw new Error("Firebase Admin not initialized");
@@ -125,8 +141,12 @@ const sendNotificationToTokens = async (tokens, title, body, data) => {
             notification: {
                 title,
                 body,
+                ...(imageUrl && { imageUrl }),
             },
-            data: data || {},
+            data: {
+                ...(data || {}),
+                ...(imageUrl && { imageUrl }),
+            },
             tokens,
             android: {
                 priority: "high",
@@ -134,6 +154,18 @@ const sendNotificationToTokens = async (tokens, title, body, data) => {
                     channelId: "softsky_wallpaper_notifications",
                     priority: "high",
                     sound: "default",
+                    ...(imageUrl && { imageUrl }),
+                },
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        "mutable-content": 1,
+                        sound: "default",
+                    },
+                },
+                fcmOptions: {
+                    ...(imageUrl && { imageUrl }),
                 },
             },
         };
@@ -160,7 +192,7 @@ exports.sendNotificationToTokens = sendNotificationToTokens;
 /**
  * Send notification to a specific user by user ID
  */
-const sendNotificationToUser = async (userId, title, body, data) => {
+const sendNotificationToUser = async (userId, title, body, data, imageUrl) => {
     try {
         const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
         const user = await userRepository.findOne({
@@ -172,7 +204,7 @@ const sendNotificationToUser = async (userId, title, body, data) => {
         if (!user.fcmToken) {
             return { success: false, error: "User has no FCM token" };
         }
-        const result = await (0, exports.sendNotificationToToken)(user.fcmToken, title, body, data);
+        const result = await (0, exports.sendNotificationToToken)(user.fcmToken, title, body, data, imageUrl);
         return result;
     }
     catch (error) {
@@ -184,7 +216,7 @@ exports.sendNotificationToUser = sendNotificationToUser;
 /**
  * Send notification to all users with FCM tokens
  */
-const sendNotificationToAll = async (title, body, data) => {
+const sendNotificationToAll = async (title, body, data, imageUrl) => {
     try {
         const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
         // Get all users with FCM tokens
@@ -205,7 +237,7 @@ const sendNotificationToAll = async (title, body, data) => {
         let totalFailure = 0;
         for (let i = 0; i < tokens.length; i += batchSize) {
             const batch = tokens.slice(i, i + batchSize);
-            const result = await (0, exports.sendNotificationToTokens)(batch, title, body, data);
+            const result = await (0, exports.sendNotificationToTokens)(batch, title, body, data, imageUrl);
             totalSuccess += result.successCount;
             totalFailure += result.failureCount;
         }

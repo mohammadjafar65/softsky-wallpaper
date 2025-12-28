@@ -6,6 +6,7 @@ import '../providers/bookmark_provider.dart';
 import '../widgets/wallpaper_card.dart';
 import 'wallpaper_detail_screen.dart';
 import '../utils/date_formatter.dart';
+import '../utils/ad_helper.dart';
 
 class BookmarksScreen extends StatelessWidget {
   const BookmarksScreen({super.key});
@@ -55,14 +56,18 @@ class BookmarksScreen extends StatelessWidget {
                               wallpaper: wallpaper,
                               height: height,
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => WallpaperDetailScreen(
-                                      wallpapers: bookmarks,
-                                      initialIndex: index,
-                                    ),
-                                  ),
+                                AdHelper.showInterstitialAd(
+                                  onAdClosed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => WallpaperDetailScreen(
+                                          wallpapers: bookmarks,
+                                          initialIndex: index,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             );

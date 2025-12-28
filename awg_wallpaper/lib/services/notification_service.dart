@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -136,30 +137,35 @@ class NotificationService {
       if (token != null) {
         final box = Hive.box('cache');
         await box.put('fcm_token', token);
-        debugPrint('FCM Token saved: $token');
+        debugPrint('NotificationService: FCM Token saved to local cache');
 
-        debugPrint('FCM Token saved: $token');
-        await _sendTokenToBackend(token);
+        await sendTokenToBackend(token);
       }
     } catch (e) {
-      debugPrint('Error getting FCM token: $e');
+      debugPrint('NotificationService: Error getting FCM token: $e');
     }
   }
 
   /// Send FCM token to backend
-  Future<void> _sendTokenToBackend(String token) async {
+  Future<void> sendTokenToBackend(String token) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final idToken = await user.getIdToken();
         if (idToken != null) {
+          debugPrint('NotificationService: Sending FCM token to backend...');
           final apiService = ApiService();
           apiService.setAuthToken(idToken);
           await apiService.updateFCMToken(token);
+        } else {
+          debugPrint('NotificationService: Could not get Firebase ID token');
         }
+      } else {
+        debugPrint(
+            'NotificationService: No currentUser found, skipping token sync');
       }
     } catch (e) {
-      debugPrint('Error sending FCM token to backend: $e');
+      debugPrint('NotificationService: Error sending FCM token to backend: $e');
     }
   }
 
@@ -169,8 +175,8 @@ class NotificationService {
     await box.put('fcm_token', token);
     debugPrint('FCM Token refreshed: $token');
 
-    debugPrint('FCM Token refreshed: $token');
-    await _sendTokenToBackend(token);
+    debugPrint('NotificationService: FCM Token refreshed: $token');
+    await sendTokenToBackend(token);
   }
 
   /// Handle foreground messages
@@ -188,7 +194,28 @@ class NotificationService {
     final notification = message.notification;
     final android = message.notification?.android;
 
+    // Get image URL from notification or data payload
+    String? imageUrl = message.notification?.android?.imageUrl ??
+        message.notification?.apple?.imageUrl ??
+        message.data['imageUrl'];
+
     if (notification != null) {
+      // Try to download the image for BigPictureStyle
+      ByteArrayAndroidBitmap? bigPicture;
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        try {
+          final response = await http.get(Uri.parse(imageUrl));
+          if (response.statusCode == 200) {
+            bigPicture = ByteArrayAndroidBitmap(response.bodyBytes);
+            debugPrint(
+                'NotificationService: Image downloaded for notification');
+          }
+        } catch (e) {
+          debugPrint(
+              'NotificationService: Failed to download notification image: $e');
+        }
+      }
+
       await _localNotifications.show(
         notification.hashCode,
         notification.title,
@@ -203,6 +230,16 @@ class NotificationService {
             icon: android?.smallIcon ?? '@mipmap/ic_launcher',
             enableVibration: true,
             playSound: true,
+            // Add BigPicture style if image is available
+            styleInformation: bigPicture != null
+                ? BigPictureStyleInformation(
+                    bigPicture,
+                    hideExpandedLargeIcon: true,
+                    contentTitle: notification.title,
+                    summaryText: notification.body,
+                  )
+                : null,
+            largeIcon: bigPicture,
           ),
         ),
         payload: message.data.isNotEmpty ? message.data.toString() : null,

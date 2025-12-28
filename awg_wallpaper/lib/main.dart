@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:upgrader/upgrader.dart';
 import 'config/theme.dart';
 import 'providers/wallpaper_provider.dart';
@@ -14,9 +15,17 @@ import 'providers/theme_provider.dart';
 import 'providers/pack_provider.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
+import 'services/auth_service.dart';
+import 'utils/ad_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Mobile Ads
+  await MobileAds.instance.initialize();
+
+  // Preload Interstitial Ad
+  AdHelper.loadInterstitialAd();
 
   // Initialize Hive
   await Hive.initFlutter();
@@ -27,6 +36,13 @@ void main() async {
   // Initialize Firebase
   try {
     await Firebase.initializeApp();
+
+    // Initialize AuthService singleton (restores session if user was logged in)
+    try {
+      await AuthService().initialize();
+    } catch (e) {
+      debugPrint('AuthService init failed: $e');
+    }
 
     // Initialize notification service
     try {
