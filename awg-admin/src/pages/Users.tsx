@@ -56,9 +56,11 @@ export default function Users() {
                 await usersApi.delete(userId);
                 // Refresh list
                 fetchUsers();
-            } catch (error) {
+                alert('User deleted successfully');
+            } catch (error: any) {
                 console.error('Failed to delete user:', error);
-                alert('Failed to delete user. Please try again.');
+                const errorMessage = error.response?.data?.error || 'Failed to delete user. Please try again.';
+                alert(errorMessage);
             }
         }
     };
