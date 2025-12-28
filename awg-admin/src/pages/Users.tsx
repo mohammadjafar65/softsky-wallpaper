@@ -12,6 +12,7 @@ interface User {
     downloads: number;
     isActive: boolean;
     createdAt: string;
+    hasFcmToken: boolean;
 }
 
 export default function Users() {
@@ -102,6 +103,7 @@ export default function Users() {
                                 <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">User</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Provider</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Plan</th>
+                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Push Status</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Downloads</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Joined</th>
                                 <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
@@ -111,14 +113,14 @@ export default function Users() {
                             {isLoading ? (
                                 [...Array(5)].map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td colSpan={6} className="px-6 py-4">
+                                        <td colSpan={7} className="px-6 py-4">
                                             <div className="h-10 bg-slate-800/50 rounded-xl" />
                                         </td>
                                     </tr>
                                 ))
                             ) : users.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
                                         <div className="flex flex-col items-center gap-3">
                                             <div className="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center">
                                                 <MagnifyingGlassIcon className="w-6 h-6 text-slate-500" />
@@ -157,8 +159,8 @@ export default function Users() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border capitalize w-fit ${user.subscription.plan === 'free' || (user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime')
-                                                        ? 'bg-slate-800/50 border-slate-700 text-slate-400'
-                                                        : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                                                    ? 'bg-slate-800/50 border-slate-700 text-slate-400'
+                                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                                                     }`}>
                                                     {user.subscription.plan === 'free' || (user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime')
                                                         ? (user.subscription.plan !== 'free' ? `${user.subscription.plan} (Expired)` : 'free')
@@ -170,6 +172,15 @@ export default function Users() {
                                                     </span>
                                                 )}
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium ${user.hasFcmToken
+                                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                                : 'bg-slate-800/50 border-slate-700 text-slate-500'
+                                                }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${user.hasFcmToken ? 'bg-emerald-500' : 'bg-slate-500'}`} />
+                                                {user.hasFcmToken ? 'Ready' : 'No Token'}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-slate-300 font-medium font-mono">{user.downloads}</span>
