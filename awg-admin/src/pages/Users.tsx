@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { usersApi } from '../services/api';
-import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon, TrashIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 
 interface User {
     id: string;
@@ -48,6 +48,19 @@ export default function Users() {
         e.preventDefault();
         setPage(1);
         fetchUsers();
+    };
+
+    const handleDeleteUser = async (userId: string, userName: string) => {
+        if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+            try {
+                await usersApi.delete(userId);
+                // Refresh list
+                fetchUsers();
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+                alert('Failed to delete user. Please try again.');
+            }
+        }
     };
 
     return (
@@ -193,9 +206,25 @@ export default function Users() {
                                             })}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-slate-400 hover:text-violet-400 transition-colors font-medium text-sm">
-                                                Edit
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        // TODO: Implement edit user modal
+                                                        console.log('Edit user:', user.id);
+                                                    }}
+                                                    className="p-2 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                                                    title="Edit user"
+                                                >
+                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteUser(user.id, user.displayName)}
+                                                    className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                                    title="Delete user"
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
