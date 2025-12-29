@@ -45,8 +45,10 @@ export default function Wallpapers() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const observerTarget = useRef<HTMLDivElement>(null);
 
     // Edit Mode State
     const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
@@ -74,8 +76,12 @@ export default function Wallpapers() {
     }, []);
 
     useEffect(() => {
-        fetchWallpapers();
-    }, [page, selectedCategory]);
+        // Reset and fetch from page 1 when category changes
+        setPage(1);
+        setWallpapers([]);
+        setHasMore(true);
+        fetchWallpapers(true);
+    }, [selectedCategory]);
 
     // Clean up object URLs to avoid memory leaks
     useEffect(() => {
@@ -83,6 +89,28 @@ export default function Wallpapers() {
             previewUrls.forEach(url => URL.revokeObjectURL(url));
         };
     }, [previewUrls]);
+
+    // Infinite scroll observer
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoading) {
+                    fetchWallpapers(false);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => {
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
+            }
+        };
+    }, [hasMore, isLoadingMore, isLoading, page]);
 
     const fetchCategories = async () => {
         try {
@@ -102,19 +130,35 @@ export default function Wallpapers() {
         }
     };
 
-    const fetchWallpapers = async () => {
-        setIsLoading(true);
+    const fetchWallpapers = async (reset = false) => {
+        if (!hasMore && !reset) return;
+
+        const loading = reset ? setIsLoading : setIsLoadingMore;
+        loading(true);
+
         try {
-            const params: any = { page, limit: 12 };
+            const params: any = { page: reset ? 1 : page, limit: 20 };
             if (selectedCategory !== 'all') params.category = selectedCategory;
 
             const response = await wallpapersApi.getAll(params);
-            setWallpapers(response.data.wallpapers || []);
-            setTotalPages(response.data.pagination?.pages || 1);
+            const newWallpapers = response.data.wallpapers || [];
+
+            if (reset) {
+                setWallpapers(newWallpapers);
+                setPage(2);
+            } else {
+                setWallpapers(prev => [...prev, ...newWallpapers]);
+                setPage(prev => prev + 1);
+            }
+
+            // Check if there are more pages
+            const totalPages = response.data.pagination?.pages || 1;
+            const currentPage = reset ? 1 : page;
+            setHasMore(currentPage < totalPages);
         } catch (error) {
             console.error('Failed to fetch wallpapers:', error);
         } finally {
-            setIsLoading(false);
+            loading(false);
         }
     };
 
@@ -259,6 +303,16 @@ export default function Wallpapers() {
         setSelectedIds(newSet);
     };
 
+    const handleSelectAllVisible = () => {
+        if (selectedIds.size === wallpapers.length) {
+            // Deselect all
+            setSelectedIds(new Set());
+        } else {
+            // Select all visible
+            setSelectedIds(new Set(wallpapers.map(w => w.id)));
+        }
+    };
+
     const handleEditClick = (wallpaper: Wallpaper) => {
         setEditingWallpaper(wallpaper);
         setFormData({
@@ -327,13 +381,29 @@ export default function Wallpapers() {
                 </div>
                 <div className="flex gap-2">
                     {selectedIds.size > 0 && (
+                        <>
+                            <button
+                                onClick={handleBulkDelete}
+                                className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-medium transition-all"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                                <span className="hidden md:inline">Delete ({selectedIds.size})</span>
+                                <span className="md:hidden">({selectedIds.size})</span>
+                            </button>
+                        </>
+                    )}
+                    {wallpapers.length > 0 && (
                         <button
-                            onClick={handleBulkDelete}
-                            className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-medium transition-all"
+                            onClick={handleSelectAllVisible}
+                            className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 font-medium transition-all"
                         >
-                            <TrashIcon className="w-5 h-5" />
-                            <span className="hidden md:inline">Delete ({selectedIds.size})</span>
-                            <span className="md:hidden">({selectedIds.size})</span>
+                            <CheckCircleIcon className="w-5 h-5" />
+                            <span className="hidden md:inline">
+                                {selectedIds.size === wallpapers.length ? 'Deselect All' : `Select All (${wallpapers.length})`}
+                            </span>
+                            <span className="md:hidden">
+                                {selectedIds.size === wallpapers.length ? 'None' : 'All'}
+                            </span>
                         </button>
                     )}
                     <button
@@ -437,8 +507,8 @@ export default function Wallpapers() {
                                             handleTogglePro(wallpaper);
                                         }}
                                         className={`p-2 backdrop-blur-md rounded-xl text-white transition shadow-lg ${wallpaper.isPro
-                                                ? 'bg-amber-500/90 hover:bg-amber-600 shadow-amber-500/20'
-                                                : 'bg-slate-600/90 hover:bg-slate-700 shadow-slate-500/20'
+                                            ? 'bg-amber-500/90 hover:bg-amber-600 shadow-amber-500/20'
+                                            : 'bg-slate-600/90 hover:bg-slate-700 shadow-slate-500/20'
                                             }`}
                                         title={wallpaper.isPro ? 'Mark as Free' : 'Mark as Pro'}
                                     >
@@ -469,41 +539,20 @@ export default function Wallpapers() {
                 </div>
             )}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-8">
-                    <button
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        className="px-4 py-2 rounded-xl bg-slate-900/50 border border-slate-700/50 text-slate-400 disabled:opacity-50 hover:bg-slate-800 transition-colors text-sm font-medium"
-                    >
-                        Previous
-                    </button>
-                    <div className="hidden md:flex gap-1">
-                        {[...Array(totalPages)].map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setPage(i + 1)}
-                                className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${page === i + 1
-                                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
-                                    : 'bg-slate-900/50 text-slate-500 hover:bg-slate-800 border border-slate-700/50'
-                                    }`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                    </div>
-                    {/* Mobile friendly simple pagination */}
-                    <span className="md:hidden text-slate-400 text-sm">
-                        Page {page} of {totalPages}
-                    </span>
-                    <button
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                        className="px-4 py-2 rounded-xl bg-slate-900/50 border border-slate-700/50 text-slate-400 disabled:opacity-50 hover:bg-slate-800 transition-colors text-sm font-medium"
-                    >
-                        Next
-                    </button>
+            {/* Infinite Scroll Loading Indicator */}
+            {!isLoading && wallpapers.length > 0 && (
+                <div ref={observerTarget} className="py-8">
+                    {isLoadingMore && (
+                        <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-slate-400 text-sm font-medium">Loading more wallpapers...</p>
+                        </div>
+                    )}
+                    {!hasMore && (
+                        <div className="text-center">
+                            <p className="text-slate-500 text-sm font-medium">No more wallpapers to load</p>
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -314,7 +314,10 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
           final item = mixedProWallpapers[index];
 
           if (item == 'native_ad') {
-            return const NativeAdWidget();
+            return AspectRatio(
+              aspectRatio: 0.65,
+              child: NativeAdWidget(height: double.infinity),
+            );
           }
 
           final wallpaper = item;

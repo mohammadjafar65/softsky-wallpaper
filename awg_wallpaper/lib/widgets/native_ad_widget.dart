@@ -36,6 +36,36 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     _nativeAd = NativeAd(
       adUnitId: AdHelper.nativeAdUnitId,
       request: const AdRequest(),
+      nativeTemplateStyle: NativeTemplateStyle(
+        // Use Google's built-in medium template (no native code required)
+        templateType: TemplateType.medium,
+        mainBackgroundColor: const Color(0xFF1E1E1E), // Match dark theme
+        cornerRadius: 15.0, // Match wallpaper card corner radius
+        callToActionTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: const Color(0xFF6C63FF),
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        primaryTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          style: NativeTemplateFontStyle.bold,
+          size: 14.0,
+        ),
+        secondaryTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white70,
+          backgroundColor: Colors.transparent,
+          style: NativeTemplateFontStyle.normal,
+          size: 12.0,
+        ),
+        tertiaryTextStyle: NativeTemplateTextStyle(
+          textColor: Colors.white60,
+          backgroundColor: Colors.transparent,
+          style: NativeTemplateFontStyle.normal,
+          size: 11.0,
+        ),
+      ),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           debugPrint('$NativeAd loaded successfully.');
@@ -73,22 +103,9 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     }
 
     if (_nativeAdIsLoaded && _nativeAd != null) {
-      return Container(
+      return SizedBox(
         height: widget.height,
-        alignment: Alignment.center,
-        margin: const EdgeInsets.symmetric(
-            vertical: 8.0, horizontal: 0.0), // Reduced horizontal margin
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
+        width: double.infinity,
         child: AdWidget(ad: _nativeAd!),
       );
     }

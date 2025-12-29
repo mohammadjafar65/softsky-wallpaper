@@ -360,7 +360,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
           } else if (item == 'native_ad') {
-            return const NativeAdWidget();
+            return AspectRatio(
+              aspectRatio: 0.65,
+              child: NativeAdWidget(height: double.infinity),
+            );
           }
           return const SizedBox.shrink();
         },

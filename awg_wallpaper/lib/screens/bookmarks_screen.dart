@@ -190,7 +190,7 @@ class BookmarksScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: AppTheme.textWhite,
               ),
             ),
             const SizedBox(height: 12),
