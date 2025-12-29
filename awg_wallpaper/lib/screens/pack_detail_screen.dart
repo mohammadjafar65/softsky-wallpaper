@@ -47,14 +47,14 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppTheme.darkBackground,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_pack == null) {
       return const Scaffold(
-        backgroundColor: AppTheme.background,
+        backgroundColor: AppTheme.darkBackground,
         body: Center(child: Text("Pack not found")),
       );
     }
@@ -70,7 +70,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -144,22 +144,22 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'About this collection',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primary,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _pack!.description,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          height: 1.6,
-                          color: AppTheme.textSecondary,
-                        ),
-                  ),
-                  const SizedBox(height: 32),
+                  // Text(
+                  //   'About this collection',
+                  //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  //         fontWeight: FontWeight.bold,
+                  //         color: AppTheme.primary,
+                  //       ),
+                  // ),
+                  // const SizedBox(height: 12),
+                  // Text(
+                  //   _pack!.description,
+                  //   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  //         height: 1.6,
+                  //         color: AppTheme.textSecondary,
+                  //       ),
+                  // ),
+                  // const SizedBox(height: 32),
                   Row(
                     children: [
                       Container(
@@ -176,7 +176,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Curated Wallpapers',
+                        'Wallpapers',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -186,7 +186,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceVariant,
+                          color: AppTheme.darkSurfaceVariant,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(

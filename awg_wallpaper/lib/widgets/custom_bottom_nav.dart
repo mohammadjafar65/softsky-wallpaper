@@ -15,52 +15,55 @@ class CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(25, 0, 25, 60),
+      margin: const EdgeInsets.fromLTRB(26, 0, 26, 60),
       height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(50),
-      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(50),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _NavIcon(
-                icon: Icons.collections_outlined,
-                activeIcon: Icons.collections_rounded,
-                isSelected: currentIndex == 0,
-                color: AppTheme.textSecondary,
-                onTap: () => onTap(0),
-              ),
-              _NavIcon(
-                icon: Icons.workspace_premium_outlined,
-                activeIcon: Icons.workspace_premium_rounded,
-                isSelected: currentIndex == 4,
-                color: AppTheme.textSecondary,
-                onTap: () => onTap(4),
-              ),
-              _CenterIcon(
-                isSelected: currentIndex == 2,
-                onTap: () => onTap(2),
-              ),
-              _NavIcon(
-                icon: Icons.bookmark_border_rounded,
-                activeIcon: Icons.bookmark_rounded,
-                isSelected: currentIndex == 3,
-                color: AppTheme.textSecondary,
-                onTap: () => onTap(3),
-              ),
-              _NavIcon(
-                icon: Icons.folder_outlined,
-                activeIcon: Icons.folder_rounded,
-                isSelected: currentIndex == 1,
-                color: AppTheme.textSecondary,
-                onTap: () => onTap(1),
-              ),
-            ],
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(50),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _NavIcon(
+                  icon: Icons.collections_outlined,
+                  activeIcon: Icons.collections_rounded,
+                  isSelected: currentIndex == 0,
+                  color: AppTheme.textSecondary,
+                  onTap: () => onTap(0),
+                ),
+                _NavIcon(
+                  icon: Icons.workspace_premium_outlined,
+                  activeIcon: Icons.workspace_premium_outlined,
+                  isSelected: currentIndex == 4,
+                  color: AppTheme.textSecondary,
+                  onTap: () => onTap(4),
+                ),
+                _CenterIcon(
+                  isSelected: currentIndex == 2,
+                  onTap: () => onTap(2),
+                ),
+                _NavIcon(
+                  icon: Icons.bookmark_border_rounded,
+                  activeIcon: Icons.bookmark_rounded,
+                  isSelected: currentIndex == 3,
+                  color: AppTheme.textSecondary,
+                  onTap: () => onTap(3),
+                ),
+                _NavIcon(
+                  icon: Icons.folder_outlined,
+                  activeIcon: Icons.folder_rounded,
+                  isSelected: currentIndex == 1,
+                  color: AppTheme.textSecondary,
+                  onTap: () => onTap(1),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -140,19 +143,19 @@ class _CenterIcon extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               AppTheme.primary,
-              AppTheme.primary.withOpacity(0.4),
+              AppTheme.primary,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withOpacity(0.4),
-              blurRadius: 10,
-              offset: const Offset(0, 0),
-            ),
-          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: AppTheme.primary.withOpacity(0.4),
+          //     blurRadius: 10,
+          //     offset: const Offset(0, 0),
+          //   ),
+          // ],
         ),
         child: const Icon(
           Icons.panorama_outlined,

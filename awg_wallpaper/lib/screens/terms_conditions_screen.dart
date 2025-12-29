@@ -7,12 +7,13 @@ class TermsConditionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
-        title: const Text('Terms & Conditions', style: TextStyle(color: AppTheme.textPrimary)),
+        title: const Text('Terms & Conditions',
+            style: TextStyle(color: AppTheme.textWhite)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: const IconThemeData(color: AppTheme.textWhite),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -24,20 +25,26 @@ class TermsConditionsScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: AppTheme.textWhite,
               ),
             ),
             const SizedBox(height: 16),
-             const Text(
+            const Text(
               'Last updated: December 01, 2025',
-              style: TextStyle(color: AppTheme.textSecondary, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                  color: AppTheme.textSecondary, fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 24),
-            _buildSection('1. Agreement to Terms', 'By accessing our app, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the service.'),
-            _buildSection('2. Content', 'Our service allows you to view and download wallpapers. You may not distribute, modify, transmit, reuse, download, repost, copy, or use said Content, whether in whole or in part, for commercial purposes or for personal gain, without express advance written permission from us.'),
-            _buildSection('3. Pro Subscription', 'Some parts of the Service are billed on a subscription basis ("Subscription(s)"). You will be billed in advance on a recurring and periodic basis.'),
-            _buildSection('4. Termination', 'We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.'),
-             _buildSection('5. Changes', 'We reserve the right, at our sole discretion, to modify or replace these Terms at any time.'),
+            _buildSection('1. Agreement to Terms',
+                'By accessing our app, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the service.'),
+            _buildSection('2. Content',
+                'Our service allows you to view and download wallpapers. You may not distribute, modify, transmit, reuse, download, repost, copy, or use said Content, whether in whole or in part, for commercial purposes or for personal gain, without express advance written permission from us.'),
+            _buildSection('3. Pro Subscription',
+                'Some parts of the Service are billed on a subscription basis ("Subscription(s)"). You will be billed in advance on a recurring and periodic basis.'),
+            _buildSection('4. Termination',
+                'We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.'),
+            _buildSection('5. Changes',
+                'We reserve the right, at our sole discretion, to modify or replace these Terms at any time.'),
           ],
         ),
       ),
@@ -55,7 +62,7 @@ class TermsConditionsScreen extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: AppTheme.textWhite,
             ),
           ),
           const SizedBox(height: 8),

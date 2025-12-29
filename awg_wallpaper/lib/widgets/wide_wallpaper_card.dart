@@ -26,13 +26,13 @@ class WideWallpaperCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.xl),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primary.withOpacity(0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: AppTheme.primary.withOpacity(0.15),
+            //     blurRadius: 12,
+            //     offset: const Offset(0, 8),
+            //   ),
+            // ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.xl),

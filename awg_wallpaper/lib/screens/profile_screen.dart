@@ -37,6 +37,7 @@ class ProfileScreen extends StatelessWidget {
                 final isLoggedIn = snapshot.hasData && snapshot.data != null;
 
                 return SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.only(bottom: 100),
                   child: Column(
                     children: [
@@ -67,51 +68,51 @@ class ProfileScreen extends StatelessWidget {
                         isDark: isDark,
                         children: [
                           // Dark Mode Toggle
-                          _buildSettingsTile(
-                            icon: Icons.dark_mode_rounded,
-                            title: 'Dark Mode',
-                            subtitle: subscriptionProvider.isPro
-                                ? null
-                                : 'PRO Feature',
-                            iconColor: subscriptionProvider.isPro
-                                ? (isDark ? Colors.purple : Colors.deepPurple)
-                                : AppTheme.textMuted,
-                            isDark: isDark,
-                            trailing: subscriptionProvider.isPro
-                                ? Switch(
-                                    value: isDark,
-                                    onChanged: (val) {
-                                      themeProvider.setDarkMode(val,
-                                          isPro: true);
-                                    },
-                                    activeColor: AppTheme.primary,
-                                  )
-                                : GestureDetector(
-                                    onTap: () =>
-                                        _showProRequiredDialog(context),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.gold,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.lock,
-                                              size: 12, color: Colors.black),
-                                          SizedBox(width: 4),
-                                          Text('PRO',
-                                              style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black)),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                          ),
+                          // _buildSettingsTile(
+                          //   icon: Icons.dark_mode_rounded,
+                          //   title: 'Dark Mode',
+                          //   subtitle: subscriptionProvider.isPro
+                          //       ? null
+                          //       : 'PRO Feature',
+                          //   iconColor: subscriptionProvider.isPro
+                          //       ? (isDark ? Colors.purple : Colors.deepPurple)
+                          //       : AppTheme.textMuted,
+                          //   isDark: isDark,
+                          //   trailing: subscriptionProvider.isPro
+                          //       ? Switch(
+                          //           value: isDark,
+                          //           onChanged: (val) {
+                          //             themeProvider.setDarkMode(val,
+                          //                 isPro: true);
+                          //           },
+                          //           activeColor: AppTheme.primary,
+                          //         )
+                          //       : GestureDetector(
+                          //           onTap: () =>
+                          //               _showProRequiredDialog(context),
+                          //           child: Container(
+                          //             padding: const EdgeInsets.symmetric(
+                          //                 horizontal: 8, vertical: 4),
+                          //             decoration: BoxDecoration(
+                          //               color: AppTheme.gold,
+                          //               borderRadius: BorderRadius.circular(6),
+                          //             ),
+                          //             child: const Row(
+                          //               mainAxisSize: MainAxisSize.min,
+                          //               children: [
+                          //                 Icon(Icons.lock,
+                          //                     size: 12, color: Colors.black),
+                          //                 SizedBox(width: 4),
+                          //                 Text('PRO',
+                          //                     style: TextStyle(
+                          //                         fontSize: 10,
+                          //                         fontWeight: FontWeight.bold,
+                          //                         color: Colors.black)),
+                          //               ],
+                          //             ),
+                          //           ),
+                          //         ),
+                          // ),
                           if (subscriptionProvider.isPro)
                             _buildSettingsTile(
                               icon: Icons.card_membership_rounded,
@@ -328,7 +329,7 @@ class ProfileScreen extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isDark ? AppTheme.darkSurface : Colors.white,
+              color: AppTheme.darkSurface,
             ),
             child: isLoggedIn && user.photoURL != null
                 ? ClipOval(
@@ -348,7 +349,7 @@ class ProfileScreen extends StatelessWidget {
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
+            color: AppTheme.textWhite,
           ),
         ),
         const SizedBox(height: 6),
@@ -356,7 +357,8 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: provider.isPro ? AppTheme.gold : AppTheme.surfaceVariant,
+              color:
+                  provider.isPro ? AppTheme.gold : AppTheme.darkSurfaceVariant,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -505,9 +507,9 @@ class ProfileScreen extends StatelessWidget {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-            color: AppTheme.getSurface(isDark),
+            color: AppTheme.darkBackground,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.getSurfaceVariant(isDark)),
+            border: Border.all(color: AppTheme.darkSurfaceVariant),
           ),
           child: Column(
             children: [
@@ -518,7 +520,7 @@ class ProfileScreen extends StatelessWidget {
                     height: 1,
                     thickness: 1,
                     indent: 56,
-                    color: AppTheme.getSurfaceVariant(isDark),
+                    color: AppTheme.darkSurfaceVariant,
                   ),
               ],
             ],
@@ -555,7 +557,7 @@ class ProfileScreen extends StatelessWidget {
       title: Text(
         title,
         style: TextStyle(
-          color: AppTheme.getTextPrimary(isDark),
+          color: AppTheme.textWhite,
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),

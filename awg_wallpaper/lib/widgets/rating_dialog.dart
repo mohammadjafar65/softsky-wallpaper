@@ -17,7 +17,7 @@ class _RatingDialogState extends State<RatingDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppTheme.surface,
+      backgroundColor: AppTheme.darkSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -35,7 +35,7 @@ class _RatingDialogState extends State<RatingDialog> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: AppTheme.textWhite,
               ),
             ),
             const SizedBox(height: 8),
@@ -88,7 +88,8 @@ class _RatingDialogState extends State<RatingDialog> {
                         _inAppReview.requestReview();
                       } else {
                         // Fallback to open store listing
-                         _inAppReview.openStoreListing(appStoreId: '...', microsoftStoreId: '...');
+                        _inAppReview.openStoreListing(
+                            appStoreId: '...', microsoftStoreId: '...');
                       }
                     },
                     child: Container(
@@ -101,7 +102,7 @@ class _RatingDialogState extends State<RatingDialog> {
                         'Submit',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

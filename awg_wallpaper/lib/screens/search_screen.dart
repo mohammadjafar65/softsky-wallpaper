@@ -35,7 +35,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Consumer2<SearchProvider, WallpaperProvider>(
           builder: (context, searchProvider, wallpaperProvider, child) {
@@ -72,13 +72,13 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.surface,
+                color: AppTheme.darkSurface,
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppTheme.surfaceVariant),
+                border: Border.all(color: AppTheme.darkSurfaceVariant),
               ),
               child: const Icon(
                 Icons.arrow_back_rounded,
-                color: AppTheme.textPrimary,
+                color: AppTheme.textWhite,
                 size: 20,
               ),
             ),
@@ -87,20 +87,13 @@ class _SearchScreenState extends State<SearchScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppTheme.surface,
+                color: AppTheme.darkSurface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: _focusNode.hasFocus
-                      ? AppTheme.primary
-                      : AppTheme.surfaceVariant,
+                      ? AppTheme.darkSurfaceVariant
+                      : AppTheme.darkSurfaceVariant,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: TextField(
                 controller: _controller,
@@ -264,7 +257,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.textWhite,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -301,7 +294,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             Text(
                               cat.name,
                               style: const TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: AppTheme.textWhite,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),

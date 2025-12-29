@@ -8,13 +8,13 @@ class ContactUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
         title: const Text('Contact Us',
-            style: TextStyle(color: AppTheme.textPrimary)),
+            style: TextStyle(color: AppTheme.textWhite)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: const IconThemeData(color: AppTheme.textWhite),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -26,7 +26,7 @@ class ContactUsScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: AppTheme.textWhite,
               ),
             ),
             const SizedBox(height: 12),
@@ -70,7 +70,7 @@ class ContactUsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: AppTheme.darkSurface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -100,7 +100,7 @@ class ContactUsScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.textWhite,
                     ),
                   ),
                   const SizedBox(height: 4),

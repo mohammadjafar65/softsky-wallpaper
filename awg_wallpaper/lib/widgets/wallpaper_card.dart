@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
 import '../config/theme.dart';
+import '../config/cached_image_config.dart';
 import '../models/wallpaper.dart';
 import '../providers/bookmark_provider.dart';
 
@@ -94,10 +94,14 @@ class _WallpaperCardState extends State<WallpaperCard>
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Image
+                // Image with optimized caching
                 CachedNetworkImage(
                   imageUrl: widget.wallpaper.thumbnailUrl,
+                  cacheManager: CachedImageConfig.cacheManager,
                   fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 300),
+                  fadeOutDuration: const Duration(milliseconds: 100),
+                  memCacheWidth: 400, // Optimize memory usage for grid view
                   placeholder: (context, url) => Container(
                     color: AppTheme.surfaceVariant,
                     child: const Center(

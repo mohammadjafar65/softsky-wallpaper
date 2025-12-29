@@ -3,22 +3,22 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ==================== LIGHT THEME COLORS ====================
-  static const primary = Color(0xFF5AB2FF); // Primary Blue
-  static const primaryVariant = Color(0xFFFFD1DC); // Light Pink
-  static const accent = Color(0xFFB5EAEA); // Pastel Blue
+  static const primary = Color(0xFFF4C430); // Primary Blue
+  static const primaryVariant = Color(0xFFF4C430); // Light Pink
+  static const accent = Color(0xFFF4C430); // Pastel Blue
   static const background = Color(0xFFFFFFFF); // Pure White
   static const surface = Color(0xFFF8F9FA); // Very Light Grey
   static const surfaceVariant = Color(0xFFEDF2F7); // Light Grey
   static const surfaceLight = Color(0xFFFFFFFF);
 
   static const textPrimary = Color(0xFF2D3436); // Dark Charcoal
-  static const textSecondary = Color(0xFF636E72); // Medium Grey
+  static const textSecondary = Color(0xFFE6E8EB); // Medium Grey
   static const textMuted = Color(0xFFB2BEC3); // Light Grey
   static const textWhite = Color(0xFFFFFFFF); // Pure White
   static const textBlack = Color(0xFF000000); // Pure Black
 
   // ==================== DARK THEME COLORS ====================
-  static const darkBackground = Color(0xFF0D0D0D); // Deep Black
+  static const darkBackground = Color(0xFF111111); // Deep Black
   static const darkSurface = Color(0xFF1A1A1A); // Dark Surface
   static const darkSurfaceVariant = Color(0xFF2D2D2D); // Slightly Lighter
   static const darkSurfaceLight = Color(0xFF333333);
@@ -67,8 +67,8 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  static const shimmerBase = Color(0xFFF0F0F0);
-  static const shimmerHighlight = Color(0xFFFFFFFF);
+  static const shimmerBase = Color(0xFF2A2A2A);
+  static const shimmerHighlight = Color(0xFF3D3D3D);
 
   // ==================== LIGHT THEME ====================
   static ThemeData get lightTheme {

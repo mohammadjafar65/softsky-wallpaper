@@ -28,12 +28,12 @@ class CategoryChip extends StatelessWidget {
                   colors: [AppTheme.primary, AppTheme.primary],
                 )
               : null,
-          color: isSelected ? null : AppTheme.surfaceVariant,
+          color: isSelected ? null : AppTheme.darkSurfaceVariant,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: isSelected
               ? null
               : Border.all(
-                  color: AppTheme.surfaceVariant, // Fixed: was surfaceLight
+                  color: AppTheme.darkSurfaceVariant, // Fixed: was surfaceLight
                   width: 1,
                 ),
           // boxShadow: isSelected

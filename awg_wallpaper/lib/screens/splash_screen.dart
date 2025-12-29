@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
     _enableSecureMode();
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
@@ -89,9 +89,9 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 200));
     _controller.forward();
 
-    // Reduced delay for faster app launch (animation duration is 2500ms,
-    // but we can navigate at 1800ms since main content is visible by then)
-    await Future.delayed(const Duration(milliseconds: 1800));
+    // Reduced delay for faster app launch (animation duration is 2000ms,
+    // but we can navigate at 1200ms since main content is visible by then)
+    await Future.delayed(const Duration(milliseconds: 1200));
     if (mounted) {
       Navigator.pushReplacement(
         context,

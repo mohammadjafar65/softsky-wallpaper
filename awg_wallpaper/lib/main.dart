@@ -24,33 +24,33 @@ void main() async {
   // Initialize Mobile Ads
   await MobileAds.instance.initialize();
 
-  // Preload Interstitial Ad
-  AdHelper.loadInterstitialAd();
-
-  // Initialize Hive
+  // Initialize Hive (required before app starts)
   await Hive.initFlutter();
   await Hive.openBox('bookmarks');
   await Hive.openBox('settings');
   await Hive.openBox('cache');
 
-  // Initialize Firebase
+  // Initialize Firebase (required before app starts)
   try {
     await Firebase.initializeApp();
 
-    // Initialize AuthService singleton (restores session if user was logged in)
-    try {
-      await AuthService().initialize();
-    } catch (e) {
+    // Initialize AuthService singleton in background (non-blocking)
+    // This restores session if user was logged in
+    AuthService().initialize().catchError((e) {
       debugPrint('AuthService init failed: $e');
-    }
+    });
 
-    // Initialize notification service
-    try {
-      await NotificationService().initialize();
+    // Initialize notification service in background (non-blocking)
+    NotificationService().initialize().then((_) {
       debugPrint('Notification service initialized');
-    } catch (e) {
+    }).catchError((e) {
       debugPrint('Notification service init failed: $e');
-    }
+    });
+
+    // Preload Interstitial Ad after a short delay (non-blocking)
+    Future.delayed(const Duration(milliseconds: 500), () {
+      AdHelper.loadInterstitialAd();
+    });
   } catch (e) {
     debugPrint('Firebase init failed: $e');
     runApp(MaterialApp(
@@ -133,7 +133,7 @@ class AWGWallpaperApp extends StatelessWidget {
           return MaterialApp(
             title: 'SoftSky Wallpaper App',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
+            theme: AppTheme.darkTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
             home: UpgradeAlert(

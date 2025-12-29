@@ -103,7 +103,7 @@ class BookmarksScreen extends StatelessWidget {
               Text(
                 'FAVORITES',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.textWhite,
                       fontSize: 28,
                     ),
               ),

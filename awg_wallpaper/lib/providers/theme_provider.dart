@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 /// ThemeProvider manages the app's theme state (light/dark mode).
 /// Dark mode is a Pro-only feature - free users see the feature locked.
 class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.dark;
   late Box _box;
   bool _isInitialized = false;
 
@@ -25,7 +25,7 @@ class ThemeProvider extends ChangeNotifier {
 
   void _loadThemePreference() {
     final savedTheme = _box.get('themeMode', defaultValue: 'light') as String;
-    _themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.dark;
   }
 
   Future<void> _saveThemePreference() async {
@@ -41,8 +41,7 @@ class ThemeProvider extends ChangeNotifier {
       return false;
     }
 
-    _themeMode =
-        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.dark : ThemeMode.dark;
     await _saveThemePreference();
     notifyListeners();
     return true;
@@ -55,7 +54,7 @@ class ThemeProvider extends ChangeNotifier {
       return false;
     }
 
-    _themeMode = enabled ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = enabled ? ThemeMode.dark : ThemeMode.dark;
     await _saveThemePreference();
     notifyListeners();
     return true;
@@ -63,7 +62,7 @@ class ThemeProvider extends ChangeNotifier {
 
   /// Force light mode (used when user's Pro subscription expires)
   Future<void> forceToLightMode() async {
-    _themeMode = ThemeMode.light;
+    _themeMode = ThemeMode.dark;
     await _saveThemePreference();
     notifyListeners();
   }

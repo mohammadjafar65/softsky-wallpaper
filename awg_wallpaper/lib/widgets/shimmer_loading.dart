@@ -5,7 +5,7 @@ import '../config/theme.dart';
 class ShimmerLoading extends StatelessWidget {
   final int itemCount;
   final bool isWide;
-  
+
   const ShimmerLoading({
     super.key,
     this.itemCount = 6,
@@ -15,14 +15,12 @@ class ShimmerLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppTheme.surfaceVariant,
-      highlightColor: Colors.white,
-      child: isWide
-          ? _buildWideGrid()
-          : _buildStaggeredGrid(),
+      baseColor: AppTheme.darkSurfaceVariant,
+      highlightColor: Colors.black,
+      child: isWide ? _buildWideGrid() : _buildStaggeredGrid(),
     );
   }
-  
+
   Widget _buildStaggeredGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -38,14 +36,14 @@ class ShimmerLoading extends StatelessWidget {
       itemBuilder: (context, index) {
         return Container(
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: AppTheme.darkSurface,
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         );
       },
     );
   }
-  
+
   Widget _buildWideGrid() {
     return ListView.builder(
       shrinkWrap: true,
@@ -57,7 +55,7 @@ class ShimmerLoading extends StatelessWidget {
           height: 180,
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: AppTheme.darkSurface,
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         );
@@ -72,7 +70,7 @@ class ShimmerPackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppTheme.surfaceVariant,
+      baseColor: AppTheme.darkSurfaceVariant,
       highlightColor: Colors.white,
       child: Container(
         width: 160,

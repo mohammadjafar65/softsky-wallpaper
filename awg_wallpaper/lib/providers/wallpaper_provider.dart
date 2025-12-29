@@ -64,27 +64,35 @@ class WallpaperProvider extends ChangeNotifier {
   }
 
   Future<void> _initializeData() async {
-    // Load from API first to prevent blank screen
-    // Cache is used as fallback only when API fails
+    // Cache-first strategy: Load cached data immediately, then refresh from API
     _isLoading = true;
     _error = null;
-    notifyListeners();
 
+    // 1. Load from cache first (synchronous, instant display)
+    _loadFromCache();
+
+    // If we have cached data, show it immediately
+    if (_wallpapers.isNotEmpty) {
+      _isLoading = false;
+      notifyListeners();
+    }
+
+    // 2. Then fetch fresh data from API in background
     try {
       await _loadFromApi();
+      _isLoading = false;
+      notifyListeners();
     } catch (e) {
       debugPrint('API initialization failed: $e');
-      // API failed, try loading from cache as fallback
-      _loadFromCache();
+      // If API fails but we have cached data, that's okay
       if (_wallpapers.isEmpty) {
         _error = 'Failed to connect to server.';
       } else {
-        debugPrint('API failed but we have cached data');
+        debugPrint('API failed but showing cached data');
       }
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> _loadFromApi() async {
@@ -94,9 +102,9 @@ class WallpaperProvider extends ChangeNotifier {
 
       final results = await Future.wait([
         _apiService.getCategories(),
-        _apiService.getWallpapers(page: 1, limit: 30, isWide: false),
-        _apiService.getWallpapers(page: 1, limit: 20, isWide: true),
-        _packService.getPacks(page: 1, limit: 50),
+        _apiService.getWallpapers(page: 1, limit: 20, isWide: false),
+        _apiService.getWallpapers(page: 1, limit: 15, isWide: true),
+        _packService.getPacks(page: 1, limit: 20),
         _apiService.getWallpapers(
             page: 1, limit: 1, isPro: true, isWide: false),
       ]);

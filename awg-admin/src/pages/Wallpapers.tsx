@@ -11,6 +11,7 @@ import {
     ArrowDownTrayIcon,
     CheckCircleIcon,
     PencilIcon,
+    StarIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
@@ -288,6 +289,28 @@ export default function Wallpapers() {
         }
     };
 
+    const handleTogglePro = async (wallpaper: Wallpaper) => {
+        const newProStatus = !wallpaper.isPro;
+
+        // Optimistic update
+        setWallpapers(prev =>
+            prev.map(w => w.id === wallpaper.id ? { ...w, isPro: newProStatus } : w)
+        );
+
+        try {
+            await wallpapersApi.update(wallpaper.id, {
+                isPro: newProStatus,
+            });
+            toast.success(`Wallpaper marked as ${newProStatus ? 'Pro' : 'Free'}`);
+        } catch (error) {
+            // Revert on error
+            setWallpapers(prev =>
+                prev.map(w => w.id === wallpaper.id ? { ...w, isPro: !newProStatus } : w)
+            );
+            toast.error('Failed to update wallpaper status');
+        }
+    };
+
     const resetForm = () => {
         setFormData({ title: '', categories: [], tags: '', isPro: false, isWide: false, packId: '' });
         setSelectedFiles([]);
@@ -408,6 +431,19 @@ export default function Wallpapers() {
                                     </div>
                                 </div>
                                 <div className="absolute top-2 right-2 flex gap-2 transform -translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleTogglePro(wallpaper);
+                                        }}
+                                        className={`p-2 backdrop-blur-md rounded-xl text-white transition shadow-lg ${wallpaper.isPro
+                                                ? 'bg-amber-500/90 hover:bg-amber-600 shadow-amber-500/20'
+                                                : 'bg-slate-600/90 hover:bg-slate-700 shadow-slate-500/20'
+                                            }`}
+                                        title={wallpaper.isPro ? 'Mark as Free' : 'Mark as Pro'}
+                                    >
+                                        <StarIcon className="w-4 h-4" />
+                                    </button>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

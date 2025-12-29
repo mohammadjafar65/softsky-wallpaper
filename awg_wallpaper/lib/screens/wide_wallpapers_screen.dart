@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -96,7 +98,7 @@ class WideWallpapersScreen extends StatelessWidget {
               Text(
                 'SCAPES',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.textWhite,
                       fontSize: 28,
                     ),
               ),
@@ -122,17 +124,23 @@ class WideWallpapersScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
             },
-            child: Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.surfaceVariant),
-              ),
-              child: const Icon(
-                Icons.person_rounded,
-                color: AppTheme.textPrimary,
-                size: 22,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.15)),
+                  ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    color: Colors.white,
+                    size: 23,
+                  ),
+                ),
               ),
             ),
           ),

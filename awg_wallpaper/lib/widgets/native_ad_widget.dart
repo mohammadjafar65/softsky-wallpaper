@@ -35,21 +35,24 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
     _nativeAd = NativeAd(
       adUnitId: AdHelper.nativeAdUnitId,
-      factoryId:
-          'listTile', // Make sure to implement this in native code if using custom layouts,
-      // or use 'listTileMedium' if available/configured.
-      // For test ads on Flutter, simple layouts often just work.
       request: const AdRequest(),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
-          debugPrint('$NativeAd loaded.');
-          setState(() {
-            _nativeAdIsLoaded = true;
-          });
+          debugPrint('$NativeAd loaded successfully.');
+          if (mounted) {
+            setState(() {
+              _nativeAdIsLoaded = true;
+            });
+          }
         },
         onAdFailedToLoad: (ad, error) {
           debugPrint('$NativeAd failed to load: $error');
           ad.dispose();
+          if (mounted) {
+            setState(() {
+              _nativeAdIsLoaded = false;
+            });
+          }
         },
       ),
     )..load();

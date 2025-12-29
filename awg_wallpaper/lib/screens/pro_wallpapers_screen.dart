@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -56,7 +58,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         bottom: false,
         child: Consumer<WallpaperProvider>(
@@ -64,7 +66,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
             return RefreshIndicator(
               onRefresh: provider.refresh,
               color: AppTheme.primary,
-              backgroundColor: AppTheme.surface,
+              backgroundColor: AppTheme.darkSurface,
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
@@ -117,7 +119,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                 Text(
                   'EXCLUSIVE',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        color: AppTheme.textPrimary,
+                        color: AppTheme.textWhite,
                         fontSize: 28,
                       ),
                 ),
@@ -150,17 +152,24 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     MaterialPageRoute(builder: (_) => const SearchScreen()),
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.surfaceVariant),
-                  ),
-                  child: const Icon(
-                    Icons.search_rounded,
-                    color: AppTheme.textPrimary,
-                    size: 22,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: const Icon(
+                        Icons.search_rounded,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -172,17 +181,24 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.surfaceVariant),
-                  ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: AppTheme.textPrimary,
-                    size: 22,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
                   ),
                 ),
               ),

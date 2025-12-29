@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -31,19 +33,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    // Ensure data is loaded when screen first appears
+    // Provider automatically loads data on initialization
+    // Only refresh if there's an actual error
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WallpaperProvider>();
-      if (provider.allWallpapers.isEmpty && !provider.isLoading) {
+
+      // Only refresh if there's an error and no data
+      if (provider.error != null && provider.allWallpapers.isEmpty) {
         provider.refresh();
       }
 
-      // Load packs for Pro Collections section
+      // Load packs for Pro Collections section (from existing provider data)
       final packProvider = context.read<PackProvider>();
       if (provider.packs.isNotEmpty) {
         packProvider.setPacksFromProvider(provider.packs);
-      } else if (packProvider.packs.isEmpty && !packProvider.isLoading) {
-        packProvider.fetchPacks();
       }
     });
   }
@@ -67,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         bottom: false,
         child: Consumer<WallpaperProvider>(
@@ -75,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return RefreshIndicator(
               onRefresh: provider.refresh,
               color: AppTheme.primary,
-              backgroundColor: AppTheme.surface,
+              backgroundColor: AppTheme.darkSurface,
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
@@ -136,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'TODAY',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.textWhite,
                       fontSize: 28,
                     ),
               ),
@@ -162,17 +165,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const SearchScreen()),
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.surfaceVariant),
-                  ),
-                  child: const Icon(
-                    Icons.search_rounded,
-                    color: AppTheme.textPrimary,
-                    size: 22,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: const Icon(
+                        Icons.search_rounded,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -184,17 +194,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.surfaceVariant),
-                  ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: AppTheme.textPrimary,
-                    size: 22,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
                   ),
                 ),
               ),
