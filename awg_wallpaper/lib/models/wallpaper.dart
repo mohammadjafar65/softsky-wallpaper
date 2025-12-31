@@ -4,7 +4,6 @@ class Wallpaper {
   final String imageUrl;
   final String thumbnailUrl;
   final String category;
-  final List<String> tags;
   final bool isWide;
   final bool isPro;
   final String? packId;
@@ -16,7 +15,6 @@ class Wallpaper {
     required this.imageUrl,
     required this.thumbnailUrl,
     required this.category,
-    this.tags = const [],
     this.isWide = false,
     this.isPro = false,
     this.packId,
@@ -30,7 +28,6 @@ class Wallpaper {
       'imageUrl': imageUrl,
       'thumbnailUrl': thumbnailUrl,
       'category': category,
-      'tags': tags,
       'isWide': isWide,
       'isPro': isPro,
       'packId': packId,
@@ -67,9 +64,6 @@ class Wallpaper {
       imageUrl: ensureHttps(json['imageUrl']?.toString()),
       thumbnailUrl: ensureHttps(json['thumbnailUrl']?.toString()),
       category: parseCategory(json['category']),
-      tags:
-          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
-              [],
       isWide: json['isWide'] as bool? ?? false,
       isPro: json['isPro'] as bool? ?? false,
       packId: json['packId']?.toString(), // Use toString() for safety
@@ -85,7 +79,6 @@ class Wallpaper {
     String? imageUrl,
     String? thumbnailUrl,
     String? category,
-    List<String>? tags,
     bool? isWide,
     bool? isPro,
     String? packId,
@@ -97,7 +90,6 @@ class Wallpaper {
       imageUrl: imageUrl ?? this.imageUrl,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       category: category ?? this.category,
-      tags: tags ?? this.tags,
       isWide: isWide ?? this.isWide,
       isPro: isPro ?? this.isPro,
       packId: packId ?? this.packId,

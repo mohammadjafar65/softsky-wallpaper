@@ -329,31 +329,11 @@ class WallpaperProvider extends ChangeNotifier {
     }
   }
 
-  String? _selectedTag;
-  String? get selectedTag => _selectedTag;
-
-  void setSelectedTag(String? tag) {
-    if (_selectedTag == tag) return;
-    _selectedTag = tag;
-    notifyListeners();
-  }
-
-  List<String> get availableTags {
-    final tags = <String>{};
-    for (var w in _wallpapers) {
-      if (w.tags.isNotEmpty) {
-        tags.addAll(w.tags);
-      }
-    }
-    return tags.toList()..sort();
-  }
-
   Future<void> refresh() async {
     _currentPage = 1;
     _hasMore = true;
     _wallpapers = [];
     _wideWallpapers = [];
-    _selectedTag = null;
     await _initializeData();
   }
 }

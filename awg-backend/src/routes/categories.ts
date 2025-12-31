@@ -18,6 +18,11 @@ router.get("/", async (req, res) => {
             queryBuilder.where("category.isActive = :isActive", { isActive: true });
         }
 
+        const minWallpapers = parseInt(req.query.minWallpapers as string) || 0;
+        if (minWallpapers > 0) {
+            queryBuilder.andWhere("category.wallpaperCount >= :minWallpapers", { minWallpapers });
+        }
+
         const categories = await queryBuilder
             .orderBy("category.name", "ASC")
             .getMany();

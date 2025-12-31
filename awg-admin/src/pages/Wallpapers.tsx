@@ -21,7 +21,6 @@ interface Wallpaper {
     imageUrl: string;
     thumbnailUrl: string;
     category: { name: string; slug: string; id: string };
-    tags: string[];
     isPro: boolean;
     downloads: number;
 }
@@ -63,6 +62,8 @@ export default function Wallpapers() {
         isPro: false,
         isWide: false,
         packId: '',
+        newCategoryName: '',
+        newCategoryEmoji: '',
     });
     // Changed from selectedFile to selectedFiles
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -192,8 +193,8 @@ export default function Wallpapers() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedFiles.length === 0 || !formData.title || formData.categories.length === 0) {
-            toast.error('Please fill all required fields, select at least one category, and one file');
+        if (selectedFiles.length === 0 || !formData.title || (formData.categories.length === 0 && !formData.newCategoryName)) {
+            toast.error('Please fill all required fields, select at least one category or create a new one, and one file');
             return;
         }
 
@@ -201,7 +202,7 @@ export default function Wallpapers() {
         setUploadProgress(0);
         let successCount = 0;
         let failCount = 0;
-        const totalOperations = selectedFiles.length * formData.categories.length;
+        const totalOperations = selectedFiles.length * (formData.categories.length + (formData.newCategoryName ? 1 : 0));
         let completedOperations = 0;
 
         try {
@@ -230,6 +231,37 @@ export default function Wallpapers() {
                         successCount++;
                     } catch (error: any) {
                         console.error(`Failed to upload ${file.name} to category ${catId}`, error.response?.data || error);
+                        failCount++;
+                    }
+
+                    completedOperations++;
+                    setUploadProgress(Math.round((completedOperations / totalOperations) * 100));
+                }
+
+                // If new category is specified
+                if (formData.newCategoryName) {
+                    const data = new FormData();
+                    data.append('image', file);
+
+                    const titleBase = selectedFiles.length > 1
+                        ? `${formData.title} ${i + 1}`
+                        : formData.title;
+
+                    data.append('title', titleBase);
+                    data.append('categoryName', formData.newCategoryName);
+                    if (formData.newCategoryEmoji) {
+                        data.append('categoryEmoji', formData.newCategoryEmoji);
+                    }
+                    data.append('tags', formData.tags);
+                    data.append('isPro', formData.isPro.toString());
+                    data.append('isWide', formData.isWide.toString());
+                    if (formData.packId) data.append('packId', formData.packId);
+
+                    try {
+                        await wallpapersApi.create(data);
+                        successCount++;
+                    } catch (error: any) {
+                        console.error(`Failed to upload ${file.name} to new category ${formData.newCategoryName}`, error.response?.data || error);
                         failCount++;
                     }
 
@@ -319,10 +351,12 @@ export default function Wallpapers() {
         setFormData({
             title: wallpaper.title,
             categories: [wallpaper.category.id], // Pre-select existing category
-            tags: wallpaper.tags ? wallpaper.tags.join(', ') : '',
+            tags: '',
             isPro: wallpaper.isPro,
             isWide: false,
             packId: '',
+            newCategoryName: '',
+            newCategoryEmoji: '',
         });
         setShowEditModal(true);
     };
@@ -334,7 +368,6 @@ export default function Wallpapers() {
         try {
             await wallpapersApi.update(editingWallpaper.id, {
                 title: formData.title,
-                tags: formData.tags,
             });
             toast.success("Wallpaper updated");
             setShowEditModal(false);
@@ -368,7 +401,7 @@ export default function Wallpapers() {
     };
 
     const resetForm = () => {
-        setFormData({ title: '', categories: [], tags: '', isPro: false, isWide: false, packId: '' });
+        setFormData({ title: '', categories: [], tags: '', isPro: false, isWide: false, packId: '', newCategoryName: '', newCategoryEmoji: '' });
         setSelectedFiles([]);
         setPreviewUrls([]);
     };
@@ -661,6 +694,32 @@ export default function Wallpapers() {
                                         </div>
                                         <p className="text-xs text-slate-500 mt-1">Select multiple to upload copies to each</p>
                                     </div>
+
+                                    {/* Create New Category */}
+                                    <div className="mt-4 pt-4 border-t border-slate-800">
+                                        <label className="block text-sm font-semibold text-violet-400 mb-2">Or Create New Category</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div className="col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={formData.newCategoryName}
+                                                    onChange={(e) => setFormData({ ...formData, newCategoryName: e.target.value })}
+                                                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm"
+                                                    placeholder="Category Name"
+                                                />
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="text"
+                                                    value={formData.newCategoryEmoji}
+                                                    onChange={(e) => setFormData({ ...formData, newCategoryEmoji: e.target.value })}
+                                                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm text-center"
+                                                    placeholder="Emoji"
+                                                    maxLength={2}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -739,54 +798,47 @@ export default function Wallpapers() {
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div >
+            )
+            }
 
             {/* Edit Modal */}
-            {showEditModal && editingWallpaper && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
-                    <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-white/10 shadow-2xl overflow-hidden animate-scale-up">
-                        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
-                            <h2 className="text-xl font-bold text-white">Edit Wallpaper</h2>
-                            <button onClick={() => setShowEditModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                                <XMarkIcon className="w-6 h-6" />
-                            </button>
-                        </div>
-                        <div className="p-8">
-                            <form onSubmit={handleEditSubmit} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
-                                    <input
-                                        type="text"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-300 mb-2">Tags</label>
-                                    <input
-                                        type="text"
-                                        value={formData.tags}
-                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                        placeholder="nature, landscape (comma separated)"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="w-full py-4 rounded-xl bg-violet-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:bg-violet-700 transition-all"
-                                >
-                                    Save Changes
+            {
+                showEditModal && editingWallpaper && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
+                        <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-white/10 shadow-2xl overflow-hidden animate-scale-up">
+                            <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
+                                <h2 className="text-xl font-bold text-white">Edit Wallpaper</h2>
+                                <button onClick={() => setShowEditModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition">
+                                    <XMarkIcon className="w-6 h-6" />
                                 </button>
-                            </form>
+                            </div>
+                            <div className="p-8">
+                                <form onSubmit={handleEditSubmit} className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
+                                        <input
+                                            type="text"
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
+                                            required
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="w-full py-4 rounded-xl bg-violet-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:bg-violet-700 transition-all"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 

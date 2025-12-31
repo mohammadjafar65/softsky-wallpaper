@@ -212,22 +212,17 @@ router.post(
     upload.single("image"),
     async (req: AuthRequest, res) => {
         try {
-            const { title, category, tags, isWide, isPro, packId } = req.body;
-            console.log("Create wallpaper request body:", { title, category, tags, isWide, isPro, packId });
+            const { title, category, categoryName, categoryEmoji, tags, isWide, isPro, packId } = req.body;
+            console.log("Create wallpaper request body:", { title, category, categoryName, categoryEmoji, tags, isWide, isPro, packId });
 
             if (!req.file) {
                 return res.status(400).json({ error: "Image is required" });
             }
 
-            if (!title || !category) {
+            if (!title || (!category && !categoryName)) {
                 return res
                     .status(400)
                     .json({ error: "Title and category are required" });
-            }
-
-            const categoryId = parseInt(category);
-            if (isNaN(categoryId)) {
-                return res.status(400).json({ error: "Invalid category ID" });
             }
 
             // Upload to Cloudinary
@@ -240,12 +235,42 @@ router.post(
             const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
             const packRepository = AppDataSource.getRepository(Pack);
 
-            // Verify category exists
-            const categoryDoc = await categoryRepository.findOne({
-                where: { id: categoryId },
-            });
-            if (!categoryDoc) {
-                return res.status(400).json({ error: "Invalid category" });
+            let categoryDoc;
+            let categoryId: number;
+
+            if (categoryName) {
+                // Find or Create Category
+                const slug = categoryName
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/(^-|-$)/g, "");
+
+                categoryDoc = await categoryRepository.findOne({ where: { slug } });
+
+                if (!categoryDoc) {
+                    categoryDoc = categoryRepository.create({
+                        name: categoryName,
+                        slug,
+                        icon: categoryEmoji || "🎨",
+                        description: `Wallpapers for ${categoryName}`,
+                        isActive: true,
+                    });
+                    await categoryRepository.save(categoryDoc);
+                }
+                categoryId = categoryDoc.id;
+            } else {
+                categoryId = parseInt(category);
+                if (isNaN(categoryId)) {
+                    return res.status(400).json({ error: "Invalid category ID" });
+                }
+
+                // Verify category exists
+                categoryDoc = await categoryRepository.findOne({
+                    where: { id: categoryId },
+                });
+                if (!categoryDoc) {
+                    return res.status(400).json({ error: "Invalid category" });
+                }
             }
 
             let parsedPackId: number | undefined = undefined;
