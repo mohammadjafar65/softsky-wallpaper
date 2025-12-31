@@ -36,6 +36,21 @@ interface Pack {
     name: string;
 }
 
+const ADJECTIVES = ["Abstract", "Vibrant", "Dark", "Neon", "Minimal", "Colorful", "Dreamy", "Mystic", "Modern", "Retro", "Cosmic", "Epic", "Cinematic", "Elegant", "Wild", "Urban"];
+const NOUNS = ["Vibes", "Art", "Concept", "Design", "Vision", "Scene", "World", "Zone", "Style", "Mood", "Essence", "View", "Horizon", "Scape"];
+
+const generateRandomTitle = (categoryName: string) => {
+    const randomSuffix = Math.floor(Math.random() * 1000) + 1;
+    // 50% chance to be Adjective + Category, 50% Category + Noun
+    if (Math.random() > 0.5) {
+        const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+        return `${adj} ${categoryName} ${randomSuffix}`;
+    } else {
+        const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+        return `${categoryName} ${noun} ${randomSuffix}`;
+    }
+};
+
 export default function Wallpapers() {
     const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -193,8 +208,8 @@ export default function Wallpapers() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedFiles.length === 0 || !formData.title || (formData.categories.length === 0 && !formData.newCategoryName)) {
-            toast.error('Please fill all required fields, select at least one category or create a new one, and one file');
+        if (selectedFiles.length === 0 || (formData.categories.length === 0 && !formData.newCategoryName)) {
+            toast.error('Please select files and at least one category');
             return;
         }
 
@@ -214,12 +229,18 @@ export default function Wallpapers() {
                     const data = new FormData();
                     data.append('image', file);
 
-                    // Generate title: "Title" or "Title 1", "Title 2"...
-                    const titleBase = selectedFiles.length > 1
-                        ? `${formData.title} ${i + 1}`
-                        : formData.title;
+                    // Generate title
+                    let titleToUse = '';
+                    if (formData.title) {
+                        titleToUse = selectedFiles.length > 1 ? `${formData.title} ${i + 1}` : formData.title;
+                    } else {
+                        // Find category name
+                        const category = categories.find(c => c.id === catId);
+                        const categoryName = category ? category.name : 'Wallpaper';
+                        titleToUse = generateRandomTitle(categoryName);
+                    }
 
-                    data.append('title', titleBase);
+                    data.append('title', titleToUse);
                     data.append('category', catId); // Upload for this specific category
                     data.append('tags', formData.tags);
                     data.append('isPro', formData.isPro.toString());
@@ -243,11 +264,15 @@ export default function Wallpapers() {
                     const data = new FormData();
                     data.append('image', file);
 
-                    const titleBase = selectedFiles.length > 1
-                        ? `${formData.title} ${i + 1}`
-                        : formData.title;
+                    // Generate title
+                    let titleToUse = '';
+                    if (formData.title) {
+                        titleToUse = selectedFiles.length > 1 ? `${formData.title} ${i + 1}` : formData.title;
+                    } else {
+                        titleToUse = generateRandomTitle(formData.newCategoryName);
+                    }
 
-                    data.append('title', titleBase);
+                    data.append('title', titleToUse);
                     data.append('categoryName', formData.newCategoryName);
                     if (formData.newCategoryEmoji) {
                         data.append('categoryEmoji', formData.newCategoryEmoji);
@@ -667,8 +692,7 @@ export default function Wallpapers() {
                                             value={formData.title}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                            placeholder={selectedFiles.length > 1 ? "e.g. Nature Pack (will become Nature Pack 1, 2...)" : "e.g. Abstract Waves"}
-                                            required
+                                            placeholder={selectedFiles.length > 1 ? "Leave empty to auto-generate based on category" : "e.g. Abstract Waves (or leave empty for auto-gen)"}
                                         />
                                     </div>
 
