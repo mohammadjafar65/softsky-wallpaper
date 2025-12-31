@@ -21,8 +21,8 @@ import 'utils/ad_helper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Mobile Ads
-  await MobileAds.instance.initialize();
+  // Initialize Mobile Ads (non-blocking)
+  MobileAds.instance.initialize();
 
   // Initialize Hive (required before app starts)
   await Hive.initFlutter();

@@ -31,20 +31,20 @@ class NativeAdFactoryExample(
             // Headline
             val headlineView = findViewById<TextView>(R.id.ad_headline)
             headlineView.text = nativeAd.headline
-            headlineTextView = headlineView
+            this.headlineView = headlineView
 
             // Body
             nativeAd.body?.let { body ->
                 val bodyView = findViewById<TextView>(R.id.ad_body)
                 bodyView.text = body
-                this.bodyTextView = bodyView
+                this.bodyView = bodyView
             }
 
             // Call to action
             nativeAd.callToAction?.let { cta ->
                 val ctaView = findViewById<Button>(R.id.ad_call_to_action)
                 ctaView.text = cta
-                this.callToActionTextView = ctaView
+                this.callToActionView = ctaView
             }
 
             // Icon
