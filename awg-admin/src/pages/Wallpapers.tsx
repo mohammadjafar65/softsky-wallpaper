@@ -21,6 +21,7 @@ interface Wallpaper {
     imageUrl: string;
     thumbnailUrl: string;
     category: { name: string; slug: string; id: string };
+    tags: string[];
     isPro: boolean;
     downloads: number;
 }
@@ -318,7 +319,7 @@ export default function Wallpapers() {
         setFormData({
             title: wallpaper.title,
             categories: [wallpaper.category.id], // Pre-select existing category
-            tags: '',
+            tags: wallpaper.tags ? wallpaper.tags.join(', ') : '',
             isPro: wallpaper.isPro,
             isWide: false,
             packId: '',
@@ -333,6 +334,7 @@ export default function Wallpapers() {
         try {
             await wallpapersApi.update(editingWallpaper.id, {
                 title: formData.title,
+                tags: formData.tags,
             });
             toast.success("Wallpaper updated");
             setShowEditModal(false);
@@ -761,6 +763,16 @@ export default function Wallpapers() {
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
                                         required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-300 mb-2">Tags</label>
+                                    <input
+                                        type="text"
+                                        value={formData.tags}
+                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
+                                        placeholder="nature, landscape (comma separated)"
                                     />
                                 </div>
                                 <button

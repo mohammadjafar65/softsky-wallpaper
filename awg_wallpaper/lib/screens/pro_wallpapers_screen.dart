@@ -80,6 +80,11 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     child: _buildCategories(context, provider),
                   ),
 
+                  // Tags
+                  SliverToBoxAdapter(
+                    child: _buildTags(context, provider),
+                  ),
+
                   // Section Title
                   // SliverToBoxAdapter(
                   //   child: _buildSectionTitle(provider),
@@ -264,6 +269,9 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
         .where((w) =>
             provider.selectedCategory == 'all' ||
             w.category == provider.selectedCategory)
+        .where((w) =>
+            provider.selectedTag == null ||
+            w.tags.contains(provider.selectedTag))
         .toList();
 
     if (proWallpapers.isEmpty) {
@@ -347,6 +355,52 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
           );
         },
         childCount: mixedProWallpapers.length,
+      ),
+    );
+  }
+
+  Widget _buildTags(BuildContext context, WallpaperProvider provider) {
+    final tags = provider.availableTags;
+    if (tags.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(5, 0, 0, 15),
+      height: 32,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: tags.length,
+        itemBuilder: (context, index) {
+          final tag = tags[index];
+          final isSelected = provider.selectedTag == tag;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              selected: isSelected,
+              label: Text(tag),
+              onSelected: (bool selected) {
+                provider.setSelectedTag(selected ? tag : null);
+              },
+              backgroundColor: AppTheme.darkSurface,
+              selectedColor: AppTheme.primary,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : AppTheme.textMuted,
+                fontSize: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected
+                      ? Colors.transparent
+                      : Colors.white.withOpacity(0.1),
+                ),
+              ),
+              showCheckmark: false,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+            ),
+          );
+        },
       ),
     );
   }
