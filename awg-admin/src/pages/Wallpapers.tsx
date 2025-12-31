@@ -261,30 +261,46 @@ export default function Wallpapers() {
 
                 // If new category is specified
                 if (formData.newCategoryName) {
-                    const data = new FormData();
-                    data.append('image', file);
-
-                    // Generate title
-                    let titleToUse = '';
-                    if (formData.title) {
-                        titleToUse = selectedFiles.length > 1 ? `${formData.title} ${i + 1}` : formData.title;
-                    } else {
-                        titleToUse = generateRandomTitle(formData.newCategoryName);
-                    }
-
-                    data.append('title', titleToUse);
-                    data.append('categoryName', formData.newCategoryName);
-                    if (formData.newCategoryEmoji) {
-                        data.append('categoryEmoji', formData.newCategoryEmoji);
-                    }
-                    data.append('tags', formData.tags);
-                    data.append('isPro', formData.isPro.toString());
-                    data.append('isWide', formData.isWide.toString());
-                    if (formData.packId) data.append('packId', formData.packId);
-
                     try {
-                        await wallpapersApi.create(data);
-                        successCount++;
+                        let newCategoryId = "";
+
+                        // Check if category already exists in local list to avoid duplicates/errors
+                        const existingCat = categories.find(c => c.name.toLowerCase() === formData.newCategoryName.toLowerCase());
+                        if (existingCat) {
+                            newCategoryId = existingCat.id;
+                        } else {
+                            // Create the category first
+                            const catResponse = await categoriesApi.create({
+                                name: formData.newCategoryName,
+                                icon: formData.newCategoryEmoji || "🎨"
+                            });
+                            newCategoryId = catResponse.data.category.id;
+                            // Refresh categories list
+                            fetchCategories();
+                        }
+
+                        if (newCategoryId) {
+                            const data = new FormData();
+                            data.append('image', file);
+
+                            // Generate title
+                            let titleToUse = '';
+                            if (formData.title) {
+                                titleToUse = selectedFiles.length > 1 ? `${formData.title} ${i + 1}` : formData.title;
+                            } else {
+                                titleToUse = generateRandomTitle(formData.newCategoryName);
+                            }
+
+                            data.append('title', titleToUse);
+                            data.append('category', newCategoryId); // Use the new ID
+                            data.append('tags', formData.tags);
+                            data.append('isPro', formData.isPro.toString());
+                            data.append('isWide', formData.isWide.toString());
+                            if (formData.packId) data.append('packId', formData.packId);
+
+                            await wallpapersApi.create(data);
+                            successCount++;
+                        }
                     } catch (error: any) {
                         console.error(`Failed to upload ${file.name} to new category ${formData.newCategoryName}`, error.response?.data || error);
                         failCount++;
