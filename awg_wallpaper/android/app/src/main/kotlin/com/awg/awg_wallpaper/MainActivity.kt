@@ -59,43 +59,92 @@ class MainActivity : FlutterActivity() {
                         result.error("INVALID_PATH", "Wallpaper path is null", null)
                         return@setMethodCallHandler
                     }
-                    
-                    try {
-                        val wallpaperManager = WallpaperManager.getInstance(applicationContext)
-                        val file = File(path)
-                        
-                        if (!file.exists()) {
-                            result.error("FILE_NOT_FOUND", "Wallpaper file not found", null)
-                            return@setMethodCallHandler
+
+                    // Move to background thread
+                    Thread {
+                        try {
+                            val wallpaperManager = WallpaperManager.getInstance(applicationContext)
+                            val file = File(path)
+                            
+                            if (!file.exists()) {
+                                runOnUiThread { result.error("FILE_NOT_FOUND", "Wallpaper file not found", null) }
+                                return@Thread
+                            }
+                            
+                            val bitmap = BitmapFactory.decodeFile(path)
+                            
+                            if (bitmap == null) {
+                                runOnUiThread { result.error("DECODE_ERROR", "Could not decode image", null) }
+                                return@Thread
+                            }
+                            
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                when (location) {
+                                    0 -> wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                                    1 -> wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                                    2 -> {
+                                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                                        wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                                    }
+                                }
+                            } else {
+                                wallpaperManager.setBitmap(bitmap)
+                            }
+                            
+                            bitmap.recycle() // Important!
+                            runOnUiThread { result.success(true) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("SET_WALLPAPER_ERROR", e.message, null) }
                         }
-                        
-                        val bitmap = BitmapFactory.decodeFile(path)
-                        
-                        if (bitmap == null) {
-                            result.error("DECODE_ERROR", "Could not decode image", null)
-                            return@setMethodCallHandler
-                        }
-                        
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            // Android 7.0+ supports separate home/lock screen wallpapers
-                            when (location) {
-                                0 -> wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
-                                1 -> wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
-                                2 -> {
-                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
-                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                    }.start()
+                }
+                "saveToGallery" -> {
+                    val path = call.argument<String>("path")
+                    if (path == null) {
+                        result.error("INVALID_PATH", "Path is null", null)
+                        return@setMethodCallHandler
+                    }
+
+                    Thread {
+                         try {
+                            val file = File(path)
+                            if (!file.exists()) {
+                                runOnUiThread { result.error("FILE_NOT_FOUND", "File does not exist", null) }
+                                return@Thread
+                            }
+
+                            val values = android.content.ContentValues().apply {
+                                put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "awg_wallpaper_${System.currentTimeMillis()}.jpg")
+                                put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    put(android.provider.MediaStore.Images.Media.IS_PENDING, 1)
+                                    put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/SoftSky")
                                 }
                             }
-                        } else {
-                            // Older Android versions - set as system wallpaper
-                            wallpaperManager.setBitmap(bitmap)
+
+                            val resolver = applicationContext.contentResolver
+                            val uri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+
+                            if (uri != null) {
+                                resolver.openOutputStream(uri).use { outputStream ->
+                                    java.io.FileInputStream(file).use { inputStream ->
+                                        inputStream.copyTo(outputStream!!)
+                                    }
+                                }
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    values.clear()
+                                    values.put(android.provider.MediaStore.Images.Media.IS_PENDING, 0)
+                                    resolver.update(uri, values, null, null)
+                                }
+                                runOnUiThread { result.success(true) }
+                            } else {
+                                runOnUiThread { result.error("SAVE_ERROR", "Failed to create MediaStore entry", null) }
+                            }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("SAVE_ERROR", e.message, null) }
                         }
-                        
-                        bitmap.recycle()
-                        result.success(true)
-                    } catch (e: Exception) {
-                        result.error("SET_WALLPAPER_ERROR", e.message, null)
-                    }
+                    }.start()
                 }
                 else -> {
                     result.notImplemented()

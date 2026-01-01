@@ -11,12 +11,22 @@ class ManageSubscriptionScreen extends StatelessWidget {
     // Determine status from provider
     final provider = context.watch<SubscriptionProvider>();
     final isPro = provider.isPro;
-    final expiresDate = DateTime.now().add(const Duration(days: 30)); // Mock date
+    final plan = provider.currentPlan;
+    final expiresDate = provider.expiryDate;
+
+    // Formatting date
+    String dateStr = 'Never';
+    if (expiresDate != null) {
+      dateStr = '${expiresDate.day}/${expiresDate.month}/${expiresDate.year}';
+    }
+
+    final isLifetime = plan == SubscriptionPlan.lifetime;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Subscription', style: TextStyle(color: AppTheme.textPrimary)),
+        title: const Text('Subscription',
+            style: TextStyle(color: AppTheme.textPrimary)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppTheme.textPrimary),
@@ -44,11 +54,12 @@ class ManageSubscriptionScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.workspace_premium_rounded, size: 48, color: Colors.black),
+                  const Icon(Icons.workspace_premium_rounded,
+                      size: 48, color: Colors.black),
                   const SizedBox(height: 16),
-                  const Text(
-                    'PRO PLAN ACTIVE',
-                    style: TextStyle(
+                  Text(
+                    isPro ? 'PRO PLAN ACTIVE' : 'FREE PLAN',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -56,42 +67,63 @@ class ManageSubscriptionScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Renews on ${expiresDate.day}/${expiresDate.month}/${expiresDate.year}',
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
+                  if (isPro && !isLifetime)
+                    Text(
+                      'Renews on $dateStr',
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
+                  if (isLifetime)
+                    const Text(
+                      'Lifetime Access',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  if (!isPro)
+                    const Text(
+                      'Upgrade to unlock all features',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
                 ],
               ),
             ),
             const SizedBox(height: 32),
-            _buildInfoTile('Plan', 'Yearly Pro'),
-            _buildInfoTile('Status', 'Active'),
-            _buildInfoTile('Next Billing Date', '${expiresDate.day}/${expiresDate.month}/${expiresDate.year}'),
-            _buildInfoTile('Payment Method', 'Google Play'),
-            
+            _buildInfoTile('Plan', provider.getPlanName(plan)),
+            _buildInfoTile('Status', isPro ? 'Active' : 'Inactive'),
+            if (isPro && !isLifetime)
+              _buildInfoTile('Next Billing Date', dateStr),
+            if (isPro) _buildInfoTile('Payment Method', 'Google Play'),
             const Spacer(),
-            
-            OutlinedButton(
-              onPressed: () {
-                // Mock cancel
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please manage subscription in Google Play Store')),
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: const BorderSide(color: AppTheme.error),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                minimumSize: const Size(double.infinity, 50),
+            if (isPro)
+              OutlinedButton(
+                onPressed: () {
+                  // Mock cancel
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Please manage subscription in Google Play Store')),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: const BorderSide(color: AppTheme.error),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: const Text(
+                  'Cancel Subscription',
+                  style: TextStyle(
+                      color: AppTheme.error, fontWeight: FontWeight.bold),
+                ),
               ),
-              child: const Text(
-                'Cancel Subscription',
-                style: TextStyle(color: AppTheme.error, fontWeight: FontWeight.bold),
-              ),
-            ),
             const SizedBox(height: 20),
           ],
         ),
@@ -105,8 +137,14 @@ class ManageSubscriptionScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
-          Text(value, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 16)),
+          Text(label,
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
+          Text(value,
+              style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16)),
         ],
       ),
     );

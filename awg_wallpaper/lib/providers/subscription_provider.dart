@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 enum SubscriptionPlan { free, monthly, annual, lifetime }
 
@@ -71,6 +72,73 @@ class SubscriptionProvider extends ChangeNotifier {
 
   SubscriptionProvider() {
     _initBox();
+    _initAuthListener();
+  }
+
+  void _initAuthListener() {
+    AuthService().authStateChanges.listen((user) {
+      if (user != null) {
+        // User logged in, might be too early for token, but good to check
+        checkBackendSubscription();
+      }
+    });
+
+    AuthService().onSyncComplete.listen((_) {
+      debugPrint('Sync complete, checking subscription...');
+      checkBackendSubscription();
+    });
+  }
+
+  Future<void> checkBackendSubscription() async {
+    try {
+      final status = await _apiService.getSubscriptionStatus();
+      await updateFromStatus(status);
+    } catch (e) {
+      debugPrint('Failed to check backend subscription: $e');
+    }
+  }
+
+  /// Update subscription status from backend data
+  Future<void> updateFromStatus(SubscriptionStatus status) async {
+    try {
+      SubscriptionPlan plan;
+      switch (status.plan) {
+        case 'monthly':
+          plan = SubscriptionPlan.monthly;
+          break;
+        case 'annual':
+          plan = SubscriptionPlan.annual;
+          break;
+        case 'lifetime':
+          plan = SubscriptionPlan.lifetime;
+          break;
+        default:
+          plan = SubscriptionPlan.free;
+      }
+
+      // Logic to determine if we should overwrite local state
+      bool trustBackend = false;
+
+      if (plan != SubscriptionPlan.free) {
+        if (status.expiryDate != null &&
+            status.expiryDate!.isAfter(DateTime.now())) {
+          trustBackend = true;
+        } else if (plan == SubscriptionPlan.lifetime) {
+          trustBackend = true;
+        }
+      }
+
+      if (trustBackend) {
+        _currentPlan = plan;
+        _expiryDate = status.expiryDate;
+        _isSubscribed = true;
+        await _saveSubscription();
+        notifyListeners();
+        debugPrint('Subscription updated from backend: $plan');
+      }
+    } catch (e) {
+      debugPrint('Error updating subscription from backend: $e');
+    }
   }
 
   Future<void> _initBox() async {

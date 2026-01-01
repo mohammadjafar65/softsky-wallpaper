@@ -20,9 +20,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
-        leading: const BackButton(color: AppTheme.textPrimary),
+        leading: const BackButton(color: AppTheme.textWhite),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.textWhite,
                 ),
               ),
               const SizedBox(height: 8),
@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
-                    foregroundColor: AppTheme.textPrimary,
+                    foregroundColor: AppTheme.textWhite,
                     side: BorderSide(color: Colors.grey[300]!),
                   ),
                 ),
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.darkSurface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

@@ -20,10 +20,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: Colors.transparent,
@@ -41,7 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.textWhite,
                 ),
               ),
               const SizedBox(height: 8),
@@ -53,7 +53,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              
+
               // Name Field
               _buildTextField(
                 controller: _nameController,
@@ -61,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 icon: Icons.person_outline_rounded,
               ),
               const SizedBox(height: 20),
-              
+
               // Email Field
               _buildTextField(
                 controller: _emailController,
@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 icon: Icons.email_outlined,
               ),
               const SizedBox(height: 20),
-              
+
               // Password Field
               _buildTextField(
                 controller: _passwordController,
@@ -77,9 +77,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Register Button
               SizedBox(
                 width: double.infinity,
@@ -88,7 +88,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
                     shadowColor: AppTheme.primary.withOpacity(0.4),
                   ),
@@ -96,26 +97,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
                         )
                       : const Text(
                           'Sign Up',
                           style: TextStyle(
-                            fontSize: 16, 
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Login Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Already have an account? ', style: TextStyle(color: AppTheme.textSecondary)),
+                  const Text('Already have an account? ',
+                      style: TextStyle(color: AppTheme.textSecondary)),
                   GestureDetector(
                     onTap: () {
                       Navigator.pushReplacement(
@@ -139,7 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-  
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -148,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.darkSurface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -166,7 +169,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           labelStyle: const TextStyle(color: AppTheme.textMuted),
           prefixIcon: Icon(icon, color: AppTheme.textMuted),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );

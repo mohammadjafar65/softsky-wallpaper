@@ -13,9 +13,11 @@ import 'providers/search_provider.dart';
 import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/pack_provider.dart';
+import 'providers/auto_wallpaper_provider.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'services/auth_service.dart';
+import 'services/auto_wallpaper_service.dart';
 import 'utils/ad_helper.dart';
 
 void main() async {
@@ -45,6 +47,11 @@ void main() async {
       debugPrint('Notification service initialized');
     }).catchError((e) {
       debugPrint('Notification service init failed: $e');
+    });
+
+    // Initialize Auto Wallpaper Service (for background tasks)
+    AutoWallpaperService().initialize().catchError((e) {
+      debugPrint('AutoWallpaperService init failed: $e');
     });
 
     // Preload Interstitial Ad after a short delay (non-blocking)
@@ -114,6 +121,7 @@ class AWGWallpaperApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => PackProvider()),
+        ChangeNotifierProvider(create: (_) => AutoWallpaperProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

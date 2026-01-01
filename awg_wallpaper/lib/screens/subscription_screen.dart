@@ -186,6 +186,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final features = [
       'Unlock all Premium Collections',
       'Remove all ads',
+      'Auto Wallpaper Changer',
+      'Smart Day/Night Mode',
+      'Batch Download Support',
       'High-speed downloads',
       'Priority 24/7 support',
     ];
@@ -259,6 +262,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final Color backgroundColor = isSelected
         ? AppTheme.primary.withOpacity(0.05)
         : Theme.of(context).cardColor;
+
+    final price = Provider.of<SubscriptionProvider>(context, listen: false)
+        .getPriceForPlan(plan);
 
     return GestureDetector(
       onTap: () => setState(() => _selectedPlan = plan),
@@ -345,7 +351,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      details['price'] as String,
+                      price,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,

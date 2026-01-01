@@ -15,6 +15,8 @@ interface User {
     hasFcmToken: boolean;
 }
 
+import EditUserModal from '../components/EditUserModal';
+
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +24,10 @@ export default function Users() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [planFilter, setPlanFilter] = useState('all');
+
+    // Edit Modal State
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -50,13 +56,17 @@ export default function Users() {
         fetchUsers();
     };
 
+    const handleEditUser = (user: User) => {
+        setSelectedUser(user);
+        setIsEditModalOpen(true);
+    };
+
     const handleDeleteUser = async (userId: string, userName: string) => {
         if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
             try {
                 await usersApi.delete(userId);
                 // Refresh list
                 fetchUsers();
-                alert('User deleted successfully');
             } catch (error: any) {
                 console.error('Failed to delete user:', error);
                 const errorMessage = error.response?.data?.error || 'Failed to delete user. Please try again.';
@@ -210,10 +220,7 @@ export default function Users() {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    onClick={() => {
-                                                        // TODO: Implement edit user modal
-                                                        console.log('Edit user:', user.id);
-                                                    }}
+                                                    onClick={() => handleEditUser(user)}
                                                     className="p-2 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
                                                     title="Edit user"
                                                 >
@@ -269,6 +276,16 @@ export default function Users() {
                     </button>
                 </div>
             )}
+
+            <EditUserModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                user={selectedUser}
+                onSuccess={() => {
+                    fetchUsers();
+                    setIsEditModalOpen(false);
+                }}
+            />
         </div>
     );
 }

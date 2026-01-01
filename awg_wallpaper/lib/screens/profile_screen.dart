@@ -11,8 +11,11 @@ import 'contact_us_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
 import 'manage_subscription_screen.dart';
+import 'auto_wallpaper_settings_screen.dart';
 
 import '../services/auth_service.dart';
+import '../services/batch_download_service.dart';
+import '../providers/auto_wallpaper_provider.dart';
 import 'auth/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -29,10 +32,10 @@ class ProfileScreen extends StatelessWidget {
         builder: (context, snapshot) {
           return SafeArea(
             bottom: false,
-            child: Consumer3<BookmarkProvider, SubscriptionProvider,
-                ThemeProvider>(
+            child: Consumer4<BookmarkProvider, SubscriptionProvider,
+                ThemeProvider, AutoWallpaperProvider>(
               builder: (context, bookmarkProvider, subscriptionProvider,
-                  themeProvider, child) {
+                  themeProvider, autoWallpaperProvider, child) {
                 final isDark = themeProvider.isDarkMode;
                 final isLoggedIn = snapshot.hasData && snapshot.data != null;
 
@@ -184,6 +187,58 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
 
+                      // PRO FEATURES section - only for Pro users
+                      if (subscriptionProvider.isPro) ...[
+                        const SizedBox(height: 20),
+                        _buildSettingsGroup(
+                          title: 'PRO FEATURES',
+                          isDark: isDark,
+                          children: [
+                            _buildSettingsTile(
+                              icon: Icons.auto_awesome_rounded,
+                              title: 'Auto Wallpaper',
+                              subtitle: autoWallpaperProvider.isEnabled
+                                  ? 'Active'
+                                  : 'Schedule automatic changes',
+                              iconColor: Colors.purple,
+                              isDark: isDark,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const AutoWallpaperSettingsScreen(),
+                                ),
+                              ),
+                            ),
+                            _buildSettingsTile(
+                              icon: Icons.brightness_6_rounded,
+                              title: 'Day/Night Mode',
+                              subtitle: autoWallpaperProvider.isDayNightEnabled
+                                  ? 'Active'
+                                  : 'Auto switch wallpapers',
+                              iconColor: Colors.orange,
+                              isDark: isDark,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const AutoWallpaperSettingsScreen(),
+                                ),
+                              ),
+                            ),
+                            _buildSettingsTile(
+                              icon: Icons.download_for_offline_rounded,
+                              title: 'Batch Download',
+                              subtitle: 'Download all bookmarks',
+                              iconColor: Colors.teal,
+                              isDark: isDark,
+                              onTap: () => _showBatchDownloadDialog(
+                                  context, bookmarkProvider),
+                            ),
+                          ],
+                        ),
+                      ],
+
                       const SizedBox(height: 20),
 
                       _buildSettingsGroup(
@@ -234,7 +289,7 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       Text(
-                        'Version 3.0.10',
+                        'Version 3.0.13',
                         style: TextStyle(
                           color: AppTheme.textMuted.withOpacity(0.5),
                           fontSize: 12,
@@ -624,5 +679,103 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showBatchDownloadDialog(
+      BuildContext context, BookmarkProvider bookmarkProvider) {
+    if (bookmarkProvider.bookmarks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No bookmarks to download')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Batch Download'),
+        content: Text(
+            'Download all ${bookmarkProvider.bookmarks.length} bookmarked wallpapers?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _startBatchDownload(context, bookmarkProvider);
+            },
+            child: const Text('Download All'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _startBatchDownload(
+      BuildContext context, BookmarkProvider bookmarkProvider) {
+    final service = BatchDownloadService();
+
+    // Show progress dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return StreamBuilder<BatchDownloadProgress>(
+            stream: service.progressStream,
+            builder: (context, snapshot) {
+              final progress = snapshot.data;
+
+              if (progress?.isComplete == true) {
+                // Close dialog after a short delay
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (context.mounted) Navigator.pop(context);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              progress?.error ?? 'All wallpapers downloaded!')),
+                    );
+                  }
+                });
+              }
+
+              return AlertDialog(
+                title: const Text('Downloading...'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    LinearProgressIndicator(value: progress?.progress ?? 0),
+                    const SizedBox(height: 16),
+                    Text(progress?.currentWallpaper != null
+                        ? 'Downloading: ${progress!.currentWallpaper}'
+                        : 'Preparing...'),
+                    const SizedBox(height: 8),
+                    Text(progress?.progressText ??
+                        '0/${bookmarkProvider.bookmarks.length}'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      service.cancelDownload();
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    ).then((_) {
+      service.dispose(); // Cleanup
+    });
+
+    // Start download
+    service.downloadWallpapers(bookmarkProvider.bookmarks);
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
@@ -40,6 +41,10 @@ class AuthService {
   String? _backendToken;
 
   String? get backendToken => _backendToken;
+
+  // Stream to notify when backend sync is complete
+  final _syncCompleteController = StreamController<bool>.broadcast();
+  Stream<bool> get onSyncComplete => _syncCompleteController.stream;
 
   // Stream of auth changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -171,6 +176,8 @@ class AuthService {
       // Store backend token for authenticated API requests
       _backendToken = response.token;
       _apiService.setAuthToken(response.token);
+
+      _syncCompleteController.add(true);
 
       debugPrint('User synced with backend successfully');
 

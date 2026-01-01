@@ -830,41 +830,131 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showApplySheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor ??
-          Theme.of(context).cardColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 70),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                width: 36,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          decoration: BoxDecoration(
+            color: Colors.grey[900]!.withOpacity(0.9),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            border:
+                Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            Text('Set Wallpaper',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color)),
-            const SizedBox(height: 20),
-            _sheetItem(Icons.home_rounded, 'Home Screen', () {
-              Navigator.pop(ctx);
-              _applyWallpaper(0);
-            }),
-            _sheetItem(Icons.lock_rounded, 'Lock Screen', () {
-              Navigator.pop(ctx);
-              _applyWallpaper(1);
-            }),
-            _sheetItem(Icons.smartphone_rounded, 'Both Screens', () {
-              Navigator.pop(ctx);
-              _applyWallpaper(2);
-            }),
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Set Wallpaper',
+                style: GoogleFonts.outfit(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Choose where to apply this wallpaper',
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  color: Colors.white54,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildApplyOption(
+                      icon: Icons.home_rounded,
+                      label: 'Home\nScreen',
+                      color: const Color(0xFF6C63FF),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _applyWallpaper(0);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildApplyOption(
+                      icon: Icons.lock_rounded,
+                      label: 'Lock\nScreen',
+                      color: const Color(0xFFFF6584),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _applyWallpaper(1);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildApplyOption(
+                      icon: Icons.smartphone_rounded,
+                      label: 'Both\nScreens',
+                      color: const Color(0xFF00BFA5),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _applyWallpaper(2);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildApplyOption({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
+            ),
           ],
         ),
       ),
@@ -1049,19 +1139,22 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       final url = _currentWallpaper.imageUrl;
       final file = await DefaultCacheManager().getSingleFile(url);
 
-      // Save to external storage
-      // Note: This needs permission handling in real app
-      // For now, we simulate success
-      await Future.delayed(const Duration(seconds: 1));
+      const platform = MethodChannel('com.awg.wallpaper/wallpaper');
+      final result =
+          await platform.invokeMethod('saveToGallery', {'path': file.path});
 
       if (mounted) {
         Navigator.pop(context); // Close progress dialog
-        _showSuccessMsg('Downloaded ($quality) successfully');
+        if (result == true) {
+          _showSuccessMsg('Downloaded to Gallery successfully');
+        } else {
+          _showMsg('Download failed');
+        }
       }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
-        _showMsg('Download failed');
+        _showMsg('Download failed: ${e.toString()}');
       }
     }
   }
@@ -1110,23 +1203,63 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.7),
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
-          backgroundColor: Theme.of(context).dialogBackgroundColor,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(color: AppTheme.primary),
-                const SizedBox(height: 16),
-                Text('Downloading...',
-                    style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color)),
-              ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900]!.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                        strokeWidth: 3,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Downloading...',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Saving to your gallery',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white60,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -1138,23 +1271,63 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.7),
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
-          backgroundColor: Theme.of(context).dialogBackgroundColor,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(color: AppTheme.primary),
-                const SizedBox(height: 16),
-                Text('Applying wallpaper...',
-                    style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color)),
-              ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900]!.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                        strokeWidth: 3,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Applying Wallpaper...',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Making your screen awesome',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white60,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -1165,38 +1338,89 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showManualSetDialog(String path) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.8),
       builder: (ctx) => Dialog(
-        backgroundColor: Theme.of(context).dialogBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.settings_rounded,
-                  color: Theme.of(context).iconTheme.color, size: 40),
-              const SizedBox(height: 16),
-              Text(
-                'Manual Setup',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey[900]!.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'We saved the wallpaper to your gallery. Please set it manually from there.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.settings_display_rounded,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Manual Setup Required',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'We saved the wallpaper to your gallery. Please set it manually from your device settings.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.primary, AppTheme.accent],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primary.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'Got it',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child:
-                    const Text('OK', style: TextStyle(color: AppTheme.primary)),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1206,32 +1430,79 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showSuccessMsg(String msg) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withOpacity(0.8),
       builder: (ctx) => Dialog(
-        backgroundColor: Theme.of(context).dialogBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle_rounded,
-                  color: AppTheme.success, size: 50),
-              const SizedBox(height: 16),
-              Text(
-                msg,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              decoration: BoxDecoration(
+                color: Colors.grey[900]!.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.success.withOpacity(0.15),
+                    blurRadius: 30,
+                    spreadRadius: 0,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Great!',
-                    style: TextStyle(color: AppTheme.primary)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Glowing Success Icon
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.success.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.success.withOpacity(0.2),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: AppTheme.success,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Success!',
+                    style: GoogleFonts.outfit(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    msg,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      color: Colors.white70,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildPrimaryBtn(
+                    label: 'Done',
+                    icon: Icons.done_rounded,
+                    onTap: () => Navigator.pop(ctx),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

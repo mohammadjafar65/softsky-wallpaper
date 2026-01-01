@@ -10,6 +10,7 @@ import '../widgets/wallpaper_card.dart';
 import '../utils/ad_helper.dart';
 import '../widgets/native_ad_widget.dart';
 import '../providers/subscription_provider.dart';
+import '../services/batch_download_service.dart';
 
 class PackDetailScreen extends StatefulWidget {
   final String packId;
@@ -90,6 +91,21 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
+            actions: [
+              if (isPro)
+                Container(
+                  margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.download_rounded, color: Colors.white),
+                    onPressed: () => _startBatchDownload(context),
+                  ),
+                ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: false,
               background: Stack(
@@ -250,5 +266,96 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
         ],
       ),
     );
+  }
+
+  void _startBatchDownload(BuildContext context) {
+    if (_pack == null || _pack!.wallpapers.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Download Pack'),
+        content: Text(
+            'Download all ${_pack!.wallpapers.length} wallpapers from this pack?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _performDownload(context);
+            },
+            child: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _performDownload(BuildContext context) {
+    final service = BatchDownloadService();
+
+    // Show progress dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return StreamBuilder<BatchDownloadProgress>(
+            stream: service.progressStream,
+            builder: (context, snapshot) {
+              final progress = snapshot.data;
+
+              if (progress?.isComplete == true) {
+                // Close dialog after a short delay
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (context.mounted) Navigator.pop(context);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(progress?.error ??
+                              'Pack downloaded successfully!')),
+                    );
+                  }
+                });
+              }
+
+              return AlertDialog(
+                title: const Text('Downloading...'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    LinearProgressIndicator(value: progress?.progress ?? 0),
+                    const SizedBox(height: 16),
+                    Text(progress?.currentWallpaper != null
+                        ? 'Downloading: ${progress!.currentWallpaper}'
+                        : 'Preparing...'),
+                    const SizedBox(height: 8),
+                    Text(progress?.progressText ??
+                        '0/${_pack!.wallpapers.length}'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      service.cancelDownload();
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    ).then((_) {
+      service.dispose(); // Cleanup
+    });
+
+    // Start download
+    service.downloadWallpapers(_pack!.wallpapers);
   }
 }
