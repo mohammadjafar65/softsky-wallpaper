@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:ui';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -28,11 +30,29 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
+  bool _isOffline = false;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+
+    // Monitor network connectivity
+    _connectivitySub = Connectivity()
+        .onConnectivityChanged
+        .listen((List<ConnectivityResult> results) {
+      final offline =
+          results.isEmpty || results.every((r) => r == ConnectivityResult.none);
+      if (offline != _isOffline) {
+        if (mounted) setState(() => _isOffline = offline);
+        // Auto-refresh when connectivity is restored
+        if (!offline && mounted) {
+          context.read<WallpaperProvider>().refresh();
+        }
+      }
+    });
+
     // Provider automatically loads data on initialization
     // Only refresh if there's an actual error
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -53,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _connectivitySub?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -71,39 +92,96 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
-      body: SafeArea(
-        bottom: false,
-        child: Consumer<WallpaperProvider>(
-          builder: (context, provider, child) {
-            return RefreshIndicator(
-              onRefresh: provider.refresh,
-              color: AppTheme.primary,
-              backgroundColor: AppTheme.darkSurface,
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  // App Bar / Header
-                  SliverToBoxAdapter(
-                    child: _buildHeader(context),
-                  ),
-
-                  // Mixed Content Grid (Wallpapers + Collections)
-                  if (provider.isLoading && provider.allWallpapers.isEmpty)
-                    const SliverToBoxAdapter(
-                      child: ShimmerLoading(),
-                    )
-                  else
-                    _buildMixedContentGrid(context, provider),
-
-                  // Bottom padding for nav bar
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 100),
-                  ),
-                ],
+      body: Column(
+        children: [
+          // Offline Banner
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: SafeArea(
+              bottom: false,
+              child: Container(
+                width: double.infinity,
+                color: Colors.orange.shade800,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded,
+                        color: Colors.white, size: 18),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'No internet connection. Showing cached content.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            );
-          },
-        ),
+            ),
+            crossFadeState: _isOffline
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 300),
+          ),
+          // Main Content
+          Expanded(
+            child: SafeArea(
+              top: false,
+              bottom: false,
+              child: Consumer<WallpaperProvider>(
+                builder: (context, provider, child) {
+                  return RefreshIndicator(
+                    onRefresh: provider.refresh,
+                    color: AppTheme.primary,
+                    backgroundColor: AppTheme.darkSurface,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        // App Bar / Header
+                        SliverToBoxAdapter(
+                          child: _buildHeader(context),
+                        ),
+
+                        // Mixed Content Grid (Wallpapers + Collections)
+                        if (provider.isLoading &&
+                            provider.allWallpapers.isEmpty)
+                          const SliverToBoxAdapter(
+                            child: ShimmerLoading(),
+                          )
+                        else
+                          _buildMixedContentGrid(context, provider),
+
+                        // Bottom Loading Indicator
+                        if (provider.isLoading &&
+                            provider.allWallpapers.isNotEmpty)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        // Bottom padding for nav bar
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 100),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -144,16 +222,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
               ),
               const SizedBox(height: 4),
-              if (Provider.of<WallpaperProvider>(context).totalFreeWallpapers >
-                  0)
-                Text(
-                  '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalFreeWallpapers} Free Wallpapers',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
+              Text(
+                Provider.of<WallpaperProvider>(context).totalFreeWallpapers > 0
+                    ? '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalFreeWallpapers} Free Wallpapers'
+                    : _getFormattedDate(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
             ],
           ),
           Row(
@@ -172,10 +250,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.15)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
                       ),
                       child: const Icon(
                         Icons.search_rounded,
@@ -201,10 +279,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.15)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
                       ),
                       child: const Icon(
                         Icons.person_rounded,

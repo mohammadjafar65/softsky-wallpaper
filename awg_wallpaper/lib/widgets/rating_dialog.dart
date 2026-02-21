@@ -11,7 +11,7 @@ class RatingDialog extends StatefulWidget {
 }
 
 class _RatingDialogState extends State<RatingDialog> {
-  double _rating = 5.0;
+  // double _rating = 5.0;
   final InAppReview _inAppReview = InAppReview.instance;
 
   @override
@@ -60,9 +60,7 @@ class _RatingDialogState extends State<RatingDialog> {
                 color: AppTheme.gold,
               ),
               onRatingUpdate: (rating) {
-                setState(() {
-                  _rating = rating;
-                });
+                // Rating updated
               },
             ),
             const SizedBox(height: 24),

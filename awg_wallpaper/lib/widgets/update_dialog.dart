@@ -100,7 +100,7 @@ class UpdateDialog extends StatelessWidget {
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.grey.shade800.withOpacity(0.3)
+                          ? Colors.grey.shade800.withValues(alpha: 0.3)
                           : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -264,3 +264,4 @@ class UpdateDialog extends StatelessWidget {
     }
   }
 }
+

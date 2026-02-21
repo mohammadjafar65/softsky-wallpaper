@@ -1,0 +1,18 @@
+﻿Analyzing awg_wallpaper...                                      
+
+warning - The value of the field '_isInitialized' isn't used - lib\providers\bookmark_provider.dart:9:8 - unused_field
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\auto_wallpaper_settings_screen.dart:342:50 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\auto_wallpaper_settings_screen.dart:363:50 - use_build_context_synchronously
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\auto_wallpaper_settings_screen.dart:711:21 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\auto_wallpaper_settings_screen.dart:712:21 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\auto_wallpaper_settings_screen.dart:759:21 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\screens\auto_wallpaper_settings_screen.dart:760:21 - deprecated_member_use
+warning - The declaration '_getFormattedDate' isn't referenced - lib\screens\home_screen_helper_dummy.dart:1:8 - unused_element
+warning - The value of the field '_currentCarouselIndex' isn't used - lib\screens\packs_screen.dart:23:7 - unused_field
+warning - The value of the local variable 'featuredPacks' isn't used - lib\screens\packs_screen.dart:50:19 - unused_local_variable
+   info - The file name 'splash_screen copy.dart' isn't a lower_case_with_underscores identifier - lib\screens\splash_screen copy.dart:1:1 - file_names
+warning - The value of the field '_logoFade' isn't used - lib\screens\splash_screen copy.dart:19:26 - unused_field
+warning - The value of the field '_logoFade' isn't used - lib\screens\splash_screen.dart:18:26 - unused_field
+warning - The value of the field '_logoScale' isn't used - lib\screens\splash_screen.dart:19:26 - unused_field
+warning - The declaration '_buildTag' isn't referenced - lib\screens\wallpaper_detail_screen.dart:1016:10 - unused_element
+

@@ -106,3 +106,4 @@ class Wallpaper {
   @override
   int get hashCode => id.hashCode;
 }
+

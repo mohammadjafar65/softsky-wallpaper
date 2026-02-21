@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import '../models/wallpaper_pack.dart';
-import '../models/wallpaper.dart';
 
 class PackService {
   // Retry configuration
@@ -67,8 +66,10 @@ class PackService {
     try {
       final response = await _executeWithRetry(
         () => http
-            .get(Uri.parse(
-                '${ApiService.baseUrl}/packs?page=$page&limit=$limit'))
+            .get(
+              Uri.parse('${ApiService.baseUrl}/packs?page=$page&limit=$limit'),
+              headers: ApiService().headers,
+            )
             .timeout(const Duration(seconds: 30)),
       );
 
@@ -93,7 +94,10 @@ class PackService {
     try {
       final response = await _executeWithRetry(
         () => http
-            .get(Uri.parse('${ApiService.baseUrl}/packs/$id'))
+            .get(
+              Uri.parse('${ApiService.baseUrl}/packs/$id'),
+              headers: ApiService().headers,
+            )
             .timeout(const Duration(seconds: 30)),
       );
 

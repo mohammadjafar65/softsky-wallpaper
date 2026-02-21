@@ -5,6 +5,14 @@ import { authenticate, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
+// Known valid product IDs (keep in sync with your Google Play console)
+const KNOWN_PRODUCT_IDS = new Set([
+    "ssw_pro_monthly",
+    "ssw_pro_annual",
+    "ssw_pro_lifetime",
+    // Add any additional product IDs here
+]);
+
 // Verify and update subscription from purchase
 router.post("/verify", authenticate, async (req: AuthRequest, res) => {
     try {
@@ -16,9 +24,20 @@ router.post("/verify", authenticate, async (req: AuthRequest, res) => {
                 .json({ error: "Purchase token and plan are required" });
         }
 
-        // TODO: Verify purchase with Google Play API
-        // For now, we'll trust the client and update the subscription
-        // In production, you should verify the purchase token with Google Play Developer API
+        // Validate productId if provided
+        if (productId && !KNOWN_PRODUCT_IDS.has(productId)) {
+            console.warn(`Unknown productId received: ${productId}`);
+            return res.status(400).json({ error: "Invalid product ID" });
+        }
+
+        // Validate plan
+        const validPlans = ["monthly", "annual", "lifetime"];
+        if (!validPlans.includes(plan)) {
+            return res.status(400).json({ error: "Invalid plan" });
+        }
+
+        // TODO: Verify purchase with Google Play Developer API for production security
+        // For now, we validate productId/plan consistency and trust token
 
         const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOne({
@@ -50,6 +69,7 @@ router.post("/verify", authenticate, async (req: AuthRequest, res) => {
         user.subscriptionPurchaseToken = purchaseToken;
 
         await userRepository.save(user);
+        console.log(`Subscription verified: user=${req.user?.id} plan=${plan} productId=${productId} expires=${expiryDate.toISOString()}`);
 
         res.json({
             message: "Subscription verified successfully",

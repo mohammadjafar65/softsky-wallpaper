@@ -148,3 +148,4 @@ class BatchDownloadService {
     _progressController.close();
   }
 }
+

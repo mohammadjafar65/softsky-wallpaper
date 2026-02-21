@@ -15,8 +15,8 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
 
   late Animation<double> _bgFade;
-  late Animation<double> _logoFade;
-  late Animation<double> _logoScale;
+  // late Animation<double> _logoFade;
+  // late Animation<double> _logoScale;
   late Animation<double> _textFade;
   late Animation<double> _taglineFade;
 
@@ -39,20 +39,20 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // Logo (character) fade: 0.2 -> 0.5
-    _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.2, 0.5, curve: Curves.easeOut),
-      ),
-    );
+    // _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+    //   CurvedAnimation(
+    //     parent: _controller,
+    //     curve: const Interval(0.2, 0.5, curve: Curves.easeOut),
+    //   ),
+    // );
 
     // Logo scale: 0.2 -> 0.5
-    _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.2, 0.5, curve: Curves.easeOutBack),
-      ),
-    );
+    // _logoScale = Tween<double>(begin: 0.8, end: 1.0).animate(
+    //   CurvedAnimation(
+    //     parent: _controller,
+    //     curve: const Interval(0.2, 0.5, curve: Curves.easeOutBack),
+    //   ),
+    // );
 
     // "Soft Sky" text fade: 0.4 -> 0.7
     _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -179,7 +179,7 @@ class _SplashScreenState extends State<SplashScreen>
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -193,7 +193,7 @@ class _SplashScreenState extends State<SplashScreen>
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             letterSpacing: 0.5,
                           ),
                         ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import '../config/theme.dart';
 
 enum AdType { banner, interstitial, native }
@@ -33,13 +32,13 @@ class AdBanner extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.surfaceVariant.withOpacity(0.9),
-            AppTheme.surface.withOpacity(0.9),
+            AppTheme.surfaceVariant.withValues(alpha: 0.9),
+            AppTheme.surface.withValues(alpha: 0.9),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.textMuted.withOpacity(0.3),
+          color: AppTheme.textMuted.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -53,8 +52,8 @@ class AdBanner extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppTheme.primary.withOpacity(0.3),
-                      AppTheme.accent.withOpacity(0.2),
+                      AppTheme.primary.withValues(alpha: 0.3),
+                      AppTheme.accent.withValues(alpha: 0.2),
                     ],
                   ),
                   borderRadius: const BorderRadius.horizontal(
@@ -122,7 +121,7 @@ class AdBanner extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
-                color: AppTheme.textMuted.withOpacity(0.3),
+                color: AppTheme.textMuted.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: const Text(
@@ -142,7 +141,7 @@ class AdBanner extends StatelessWidget {
   
   Widget _buildInterstitialAd() {
     return Container(
-      color: Colors.black.withOpacity(0.9),
+      color: Colors.black.withValues(alpha: 0.9),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -155,13 +154,13 @@ class AdBanner extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppTheme.primary.withOpacity(0.3),
-                    AppTheme.accent.withOpacity(0.2),
+                    AppTheme.primary.withValues(alpha: 0.3),
+                    AppTheme.accent.withValues(alpha: 0.2),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: AppTheme.primary.withOpacity(0.3),
+                  color: AppTheme.primary.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -177,7 +176,7 @@ class AdBanner extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.gold.withOpacity(0.4),
+                          color: AppTheme.gold.withValues(alpha: 0.4),
                           blurRadius: 20,
                         ),
                       ],
@@ -204,7 +203,7 @@ class AdBanner extends StatelessWidget {
                       'Unlock all wallpapers, remove ads, and get new content first!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 14,
                       ),
                     ),
@@ -222,7 +221,7 @@ class AdBanner extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primary.withOpacity(0.5),
+                          color: AppTheme.primary.withValues(alpha: 0.5),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -250,7 +249,7 @@ class AdBanner extends StatelessWidget {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -291,8 +290,8 @@ class AdBanner extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppTheme.primary.withOpacity(0.3),
-                      AppTheme.accent.withOpacity(0.2),
+                      AppTheme.primary.withValues(alpha: 0.3),
+                      AppTheme.accent.withValues(alpha: 0.2),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(10),
@@ -328,7 +327,7 @@ class AdBanner extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.textMuted.withOpacity(0.3),
+                  color: AppTheme.textMuted.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
@@ -346,7 +345,7 @@ class AdBanner extends StatelessWidget {
           Text(
             'Discover thousands of stunning wallpapers. Upgrade to Pro for the best experience!',
             style: TextStyle(
-              color: AppTheme.textSecondary.withOpacity(0.8),
+              color: AppTheme.textSecondary.withValues(alpha: 0.8),
               fontSize: 12,
             ),
           ),
@@ -427,3 +426,4 @@ class _AdLoadingPlaceholderState extends State<AdLoadingPlaceholder>
     );
   }
 }
+

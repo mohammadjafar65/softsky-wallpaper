@@ -42,7 +42,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   height: 300,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.primary.withOpacity(0.1),
+                    color: AppTheme.primary.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -121,7 +121,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
               if (_isProcessing)
                 Container(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   child: const Center(
                     child: CircularProgressIndicator(color: AppTheme.primary),
                   ),
@@ -140,7 +140,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
+              color: AppTheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -173,7 +173,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     .textTheme
                     .bodyMedium
                     ?.color
-                    ?.withOpacity(0.8),
+                    ?.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -199,7 +199,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.1),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -211,7 +211,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.success.withOpacity(0.1),
+                          color: AppTheme.success.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.check_rounded,
@@ -256,11 +256,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final Color borderColor = isSelected
         ? AppTheme.primary
         : (isAnnual
-            ? AppTheme.primary.withOpacity(0.3)
-            : Theme.of(context).dividerColor.withOpacity(0.1));
+            ? AppTheme.primary.withValues(alpha: 0.3)
+            : Theme.of(context).dividerColor.withValues(alpha: 0.1));
 
     final Color backgroundColor = isSelected
-        ? AppTheme.primary.withOpacity(0.05)
+        ? AppTheme.primary.withValues(alpha: 0.05)
         : Theme.of(context).cardColor;
 
     final price = Provider.of<SubscriptionProvider>(context, listen: false)
@@ -284,7 +284,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               boxShadow: isSelected || isAnnual
                   ? [
                       BoxShadow(
-                        color: AppTheme.primary.withOpacity(0.1),
+                        color: AppTheme.primary.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 4),
                       )
@@ -341,7 +341,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               .textTheme
                               .bodyMedium
                               ?.color
-                              ?.withOpacity(0.7),
+                              ?.withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -368,7 +368,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             .textTheme
                             .bodyMedium
                             ?.color
-                            ?.withOpacity(0.7),
+                            ?.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -392,7 +392,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withOpacity(0.3),
+                      color: AppTheme.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -425,7 +425,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -533,3 +533,4 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 }
+

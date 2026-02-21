@@ -2,8 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../config/theme.dart';
 import '../providers/pack_provider.dart';
 import '../providers/wallpaper_provider.dart';
@@ -22,7 +20,7 @@ class PacksScreen extends StatefulWidget {
 }
 
 class _PacksScreenState extends State<PacksScreen> {
-  int _currentCarouselIndex = 0;
+  // int _currentCarouselIndex = 0;
 
   @override
   void initState() {
@@ -49,7 +47,7 @@ class _PacksScreenState extends State<PacksScreen> {
         child: Consumer<PackProvider>(
           builder: (context, provider, child) {
             // Use pro packs as featured for now, or mix
-            final featuredPacks = provider.proPacks.take(5).toList();
+            // final featuredPacks = provider.proPacks.take(5).toList();
 
             return RefreshIndicator(
               onRefresh: () => provider.fetchPacks(refresh: true),
@@ -109,10 +107,11 @@ class _PacksScreenState extends State<PacksScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                        color: Colors.white.withOpacity(0.15)),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.15)),
                                   ),
                                   child: const Icon(
                                     Icons.person_rounded,

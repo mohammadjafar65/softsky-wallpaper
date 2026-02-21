@@ -79,3 +79,4 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 }
+

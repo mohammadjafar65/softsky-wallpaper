@@ -84,7 +84,7 @@ class _WallpaperCardState extends State<WallpaperCard>
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -130,7 +130,7 @@ class _WallpaperCardState extends State<WallpaperCard>
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withOpacity(0.4),
+                          Colors.black.withValues(alpha: 0.4),
                           Colors.transparent,
                         ],
                       ),
@@ -188,7 +188,7 @@ class _WallpaperCardState extends State<WallpaperCard>
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -212,3 +212,4 @@ class _WallpaperCardState extends State<WallpaperCard>
     );
   }
 }
+

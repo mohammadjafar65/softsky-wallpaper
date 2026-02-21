@@ -26,3 +26,4 @@ class CachedImageConfig {
   /// Cache duration for full images
   static const Duration fullImageCacheDuration = Duration(days: 60);
 }
+

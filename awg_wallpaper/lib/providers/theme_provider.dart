@@ -33,28 +33,19 @@ class ThemeProvider extends ChangeNotifier {
         'themeMode', _themeMode == ThemeMode.dark ? 'dark' : 'light');
   }
 
-  /// Toggle dark mode. Only works if user is a Pro subscriber.
-  /// Returns true if the toggle was successful, false if user is not Pro.
-  Future<bool> toggleDarkMode({required bool isPro}) async {
-    if (!isPro) {
-      // Free users cannot enable dark mode
-      return false;
-    }
-
-    _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.dark : ThemeMode.dark;
+  /// Toggle dark mode.
+  /// Returns true if the toggle was successful.
+  Future<bool> toggleDarkMode() async {
+    _themeMode =
+        _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
     await _saveThemePreference();
     notifyListeners();
     return true;
   }
 
-  /// Set dark mode explicitly. Only works if user is a Pro subscriber.
-  Future<bool> setDarkMode(bool enabled, {required bool isPro}) async {
-    if (!isPro && enabled) {
-      // Free users cannot enable dark mode
-      return false;
-    }
-
-    _themeMode = enabled ? ThemeMode.dark : ThemeMode.dark;
+  /// Set dark mode explicitly.
+  Future<bool> setDarkMode(bool enabled) async {
+    _themeMode = enabled ? ThemeMode.dark : ThemeMode.light;
     await _saveThemePreference();
     notifyListeners();
     return true;

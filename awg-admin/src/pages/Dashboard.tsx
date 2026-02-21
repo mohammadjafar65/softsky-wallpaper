@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usersApi, wallpapersApi, categoriesApi } from '../services/api';
 import {
@@ -8,6 +8,8 @@ import {
     CreditCardIcon,
     ArrowRightIcon,
     ArrowDownTrayIcon,
+    UserPlusIcon,
+    ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 interface Stats {
@@ -16,7 +18,10 @@ interface Stats {
     totalUsers: number;
     proUsers: number;
     totalWallpaperDownloads: number;
+    newUsersThisMonth: number;
 }
+
+const AUTO_REFRESH_INTERVAL = 60 * 1000; // 60 seconds
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -26,14 +31,30 @@ export default function Dashboard() {
         totalUsers: 0,
         proUsers: 0,
         totalWallpaperDownloads: 0,
+        newUsersThisMonth: 0,
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         fetchStats();
+
+        // Auto-refresh every 60 seconds
+        intervalRef.current = setInterval(() => {
+            fetchStats(true);
+        }, AUTO_REFRESH_INTERVAL);
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
     }, []);
 
-    const fetchStats = async () => {
+    const fetchStats = async (silent = false) => {
+        if (!silent) setIsLoading(true);
+        else setIsRefreshing(true);
+
         try {
             const [wallpapersRes, categoriesRes, usersRes] = await Promise.all([
                 wallpapersApi.getAll({ limit: 1 }),
@@ -47,11 +68,14 @@ export default function Dashboard() {
                 totalUsers: usersRes.data.totalUsers || 0,
                 proUsers: usersRes.data.proUsers || 0,
                 totalWallpaperDownloads: usersRes.data.totalWallpaperDownloads || 0,
+                newUsersThisMonth: usersRes.data.newUsersThisMonth || 0,
             });
+            setLastUpdated(new Date());
         } catch (error) {
             console.error('Failed to fetch stats:', error);
         } finally {
             setIsLoading(false);
+            setIsRefreshing(false);
         }
     };
 
@@ -96,6 +120,14 @@ export default function Dashboard() {
             bg: 'bg-rose-500/10',
             border: 'border-rose-500/20'
         },
+        {
+            name: 'New This Month',
+            value: stats.newUsersThisMonth,
+            icon: UserPlusIcon,
+            color: 'text-cyan-400',
+            bg: 'bg-cyan-500/10',
+            border: 'border-cyan-500/20'
+        },
     ];
 
     const quickActions = [
@@ -133,33 +165,45 @@ export default function Dashboard() {
                     <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard Overview</h1>
                     <p className="text-slate-400 mt-2 text-lg">Detailed statistics of your platform performance.</p>
                 </div>
+                <div className="flex items-center gap-3">
+                    {lastUpdated && (
+                        <span className="text-xs text-slate-500">
+                            Updated {lastUpdated.toLocaleTimeString()}
+                        </span>
+                    )}
+                    <button
+                        onClick={() => fetchStats(true)}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/5 text-slate-300 text-sm transition-colors disabled:opacity-50"
+                        title="Refresh now"
+                    >
+                        <ArrowPathIcon className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Stats Grid — 2 cols on mobile, 3 on md, 6 on xl */}
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
                 {statCards.map((card) => (
                     <div
                         key={card.name}
-                        className={`group relative p-6 rounded-2xl bg-slate-900/50 border ${card.border} backdrop-blur-sm hover:transform hover:scale-[1.02] transition-all duration-300 shadow-lg`}
+                        className={`group relative p-5 rounded-2xl bg-slate-900/50 border ${card.border} backdrop-blur-sm hover:transform hover:scale-[1.02] transition-all duration-300 shadow-lg`}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                        <div className="relative flex justify-between items-start">
-                            <div>
-                                <p className="text-slate-400 text-sm font-medium">{card.name}</p>
-                                <div className="mt-4 flex items-baseline gap-2">
-                                    <h3 className="text-3xl font-bold text-white">
-                                        {isLoading ? (
-                                            <div className="h-8 w-16 bg-slate-800 animate-pulse rounded" />
-                                        ) : (
-                                            card.value.toLocaleString()
-                                        )}
-                                    </h3>
-                                </div>
+                        <div className="relative">
+                            <div className={`w-10 h-10 rounded-xl ${card.bg} flex items-center justify-center mb-3`}>
+                                <card.icon className={`w-5 h-5 ${card.color}`} />
                             </div>
-                            <div className={`p-3 rounded-xl ${card.bg} ${card.color}`}>
-                                <card.icon className="w-6 h-6" />
-                            </div>
+                            <p className="text-slate-400 text-xs font-medium leading-tight">{card.name}</p>
+                            <h3 className="text-2xl font-bold text-white mt-1">
+                                {isLoading ? (
+                                    <div className="h-7 w-14 bg-slate-800 animate-pulse rounded" />
+                                ) : (
+                                    card.value.toLocaleString()
+                                )}
+                            </h3>
                         </div>
                     </div>
                 ))}
@@ -192,4 +236,3 @@ export default function Dashboard() {
         </div>
     );
 }
-

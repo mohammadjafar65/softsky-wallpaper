@@ -46,7 +46,7 @@ class ManageSubscriptionScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.gold.withOpacity(0.3),
+                    color: AppTheme.gold.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -150,3 +150,4 @@ class ManageSubscriptionScreen extends StatelessWidget {
     );
   }
 }
+

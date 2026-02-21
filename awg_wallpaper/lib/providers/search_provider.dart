@@ -178,3 +178,4 @@ class SearchProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+

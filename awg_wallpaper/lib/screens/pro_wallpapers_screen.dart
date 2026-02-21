@@ -33,8 +33,9 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
     // Ensure data is loaded when screen first appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WallpaperProvider>();
-      if (provider.allWallpapers.isEmpty && !provider.isLoading) {
-        provider.refresh();
+      // Always try to load pro wallpapers if list is empty
+      if (provider.proWallpapersList.isEmpty && !provider.isProLoading) {
+        provider.loadProWallpapers(refresh: true);
       }
     });
   }
@@ -49,8 +50,8 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<WallpaperProvider>();
-      if (!provider.isLoading && provider.hasMore) {
-        provider.loadMoreWallpapers();
+      if (!provider.isProLoading && provider.hasMorePro) {
+        provider.loadMoreProWallpapers();
       }
     }
   }
@@ -64,7 +65,9 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
         child: Consumer<WallpaperProvider>(
           builder: (context, provider, child) {
             return RefreshIndicator(
-              onRefresh: provider.refresh,
+              onRefresh: () async {
+                await provider.loadProWallpapers(refresh: true);
+              },
               color: AppTheme.primary,
               backgroundColor: AppTheme.darkSurface,
               child: CustomScrollView(
@@ -80,18 +83,28 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     child: _buildCategories(context, provider),
                   ),
 
-                  // Section Title
-                  // SliverToBoxAdapter(
-                  //   child: _buildSectionTitle(provider),
-                  // ),
-
                   // Wallpaper Grid
-                  if (provider.isLoading)
+                  if (provider.isProLoading &&
+                      provider.proWallpapersList.isEmpty)
                     const SliverToBoxAdapter(
                       child: ShimmerLoading(),
                     )
                   else
                     _buildWallpaperGrid(context, provider),
+
+                  // Bottom Loading Indicator
+                  if (provider.isProLoading &&
+                      provider.proWallpapersList.isNotEmpty)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
 
                   // Bottom padding for nav bar
                   const SliverToBoxAdapter(
@@ -115,31 +128,39 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
+              Row(children: const [
                 Text(
                   'EXCLUSIVE',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        color: AppTheme.textWhite,
-                        fontSize: 28,
-                      ),
+                  style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    fontFamily:
+                        'Outfit', // Assuming font family, otherwise uses theme
+                  ),
                 ),
-                const Icon(
+                SizedBox(width: 8),
+                Icon(
                   Icons.star_rounded,
                   size: 30,
                   color: Colors.amberAccent,
                 ),
               ]),
               const SizedBox(height: 4),
-              if (Provider.of<WallpaperProvider>(context).totalProWallpapers >
-                  0)
-                Text(
-                  '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Pro Wallpapers',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
+              // Use total count from provider if available, or just list length
+              // For Pro wallpapers, we might not have a separate total count variable updated by loadProWallpapers yet
+              // But provider has totalProWallpapers from initial sync (which is just limit:1).
+              // Let's use the list length or "Loading..."
+              Text(
+                Provider.of<WallpaperProvider>(context).totalProWallpapers > 0
+                    ? '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Pro Wallpapers'
+                    : DateFormatter.format(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
             ],
           ),
           // const SizedBox(width: 43),
@@ -159,10 +180,10 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.15)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
                       ),
                       child: const Icon(
                         Icons.search_rounded,
@@ -188,10 +209,10 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border:
-                            Border.all(color: Colors.white.withOpacity(0.15)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
                       ),
                       child: const Icon(
                         Icons.person_rounded,
@@ -219,52 +240,26 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
         itemCount: provider.categories.length,
         itemBuilder: (context, index) {
           final category = provider.categories[index];
-          final isSelected = provider.selectedCategory == category.id;
+          // Use slug as the identifier — this is what the backend filters by
+          final slugKey = category.slug ?? category.id;
+          final isSelected = provider.selectedProCategory == slugKey;
 
           return CategoryChip(
             category: category,
             isSelected: isSelected,
-            onTap: () => provider.setSelectedCategory(category.id),
+            onTap: () {
+              provider.setSelectedProCategory(slugKey);
+              provider.loadProWallpapers(refresh: true);
+            },
           );
         },
       ),
     );
   }
 
-  // Widget _buildSectionTitle(WallpaperProvider provider) {
-  //   final categoryName = provider.selectedCategory == 'all'
-  //       ? 'All Pro Wallpapers'
-  //       : provider.categories
-  //           .firstWhere((c) => c.id == provider.selectedCategory)
-  //           .name;
-
-  //   return Padding(
-  //     padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         Text(
-  //           categoryName,
-  //           style: const TextStyle(
-  //             fontSize: 20,
-  //             fontWeight: FontWeight.bold,
-  //             color: AppTheme.textPrimary,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildWallpaperGrid(BuildContext context, WallpaperProvider provider) {
-    // Filter to show only PRO wallpapers (not wide)
-    // Included wallpapers in packs as they are also pro wallpapers
-    final proWallpapers = provider.allWallpapers
-        .where((w) => w.isPro && !w.isWide)
-        .where((w) =>
-            provider.selectedCategory == 'all' ||
-            w.category == provider.selectedCategory)
-        .toList();
+    // Use the dedicated Pro list
+    final proWallpapers = provider.proWallpapersList;
 
     if (proWallpapers.isEmpty) {
       return SliverToBoxAdapter(
@@ -276,11 +271,11 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                 Icon(
                   Icons.workspace_premium_outlined,
                   size: 64,
-                  color: AppTheme.textMuted.withOpacity(0.5),
+                  color: AppTheme.textMuted.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No pro wallpapers in this category',
+                  'No pro wallpapers found',
                   style: TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 16,
@@ -293,7 +288,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
       );
     }
 
-    // Mix native ads into pro wallpapers list (ONLY FOR NON-PRO)
+    // Mix native ads (only for non-pro users)
     final List<dynamic> mixedProWallpapers = [];
     final isPro = context.read<SubscriptionProvider>().isPro;
 

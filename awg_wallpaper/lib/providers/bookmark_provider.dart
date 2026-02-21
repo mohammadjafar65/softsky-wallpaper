@@ -6,21 +6,21 @@ import '../models/wallpaper.dart';
 class BookmarkProvider extends ChangeNotifier {
   final List<Wallpaper> _bookmarks = [];
   late Box _box;
-  bool _isInitialized = false;
-  
+  // bool _isInitialized = false;
+
   List<Wallpaper> get bookmarks => _bookmarks;
   int get bookmarkCount => _bookmarks.length;
-  
+
   BookmarkProvider() {
     _initBox();
   }
-  
+
   Future<void> _initBox() async {
     _box = Hive.box('bookmarks');
     _loadBookmarks();
-    _isInitialized = true;
+    // _isInitialized = true;
   }
-  
+
   void _loadBookmarks() {
     final List<dynamic>? storedBookmarks = _box.get('bookmarks');
     if (storedBookmarks != null) {
@@ -36,18 +36,17 @@ class BookmarkProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> _saveBookmarks() async {
-    final List<String> serialized = _bookmarks
-        .map((w) => jsonEncode(w.toJson()))
-        .toList();
+    final List<String> serialized =
+        _bookmarks.map((w) => jsonEncode(w.toJson())).toList();
     await _box.put('bookmarks', serialized);
   }
-  
+
   bool isBookmarked(String wallpaperId) {
     return _bookmarks.any((w) => w.id == wallpaperId);
   }
-  
+
   Future<void> toggleBookmark(Wallpaper wallpaper) async {
     if (isBookmarked(wallpaper.id)) {
       await removeBookmark(wallpaper.id);
@@ -55,7 +54,7 @@ class BookmarkProvider extends ChangeNotifier {
       await addBookmark(wallpaper);
     }
   }
-  
+
   Future<void> addBookmark(Wallpaper wallpaper) async {
     if (!isBookmarked(wallpaper.id)) {
       _bookmarks.insert(0, wallpaper);
@@ -63,13 +62,13 @@ class BookmarkProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> removeBookmark(String wallpaperId) async {
     _bookmarks.removeWhere((w) => w.id == wallpaperId);
     await _saveBookmarks();
     notifyListeners();
   }
-  
+
   Future<void> clearAllBookmarks() async {
     _bookmarks.clear();
     await _saveBookmarks();

@@ -36,9 +36,8 @@ void main() async {
   try {
     await Firebase.initializeApp();
 
-    // Initialize AuthService singleton in background (non-blocking)
-    // This restores session if user was logged in
-    AuthService().initialize().catchError((e) {
+    // Initialize AuthService singleton (critical for session restoration)
+    await AuthService().initialize().catchError((e) {
       debugPrint('AuthService init failed: $e');
     });
 
@@ -141,7 +140,7 @@ class AWGWallpaperApp extends StatelessWidget {
           return MaterialApp(
             title: 'SoftSky Wallpaper App',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.darkTheme,
+            theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
             home: UpgradeAlert(

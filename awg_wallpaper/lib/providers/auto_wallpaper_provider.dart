@@ -216,3 +216,4 @@ class AutoWallpaperProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

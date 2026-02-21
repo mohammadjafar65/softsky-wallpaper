@@ -437,7 +437,23 @@ router.delete("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) 
             );
         }
 
-        await wallpaperRepository.delete(req.params.id);
+        await wallpaperRepository.delete(parseInt(req.params.id));
+
+        // Delete from Cloudinary (extract public_id from the URL)
+        // Cloudinary URLs follow: .../upload/vXXXXX/folder/filename.ext
+        try {
+            const urlParts = wallpaper.imageUrl.split("/upload/");
+            if (urlParts.length === 2) {
+                // Remove version segment (vXXXXXX/) if present, then strip extension
+                const pathWithoutVersion = urlParts[1].replace(/^v\d+\//, "");
+                const publicId = pathWithoutVersion.replace(/\.[^.]+$/, "");
+                await deleteFromCloudinary(publicId);
+                console.log(`Deleted Cloudinary image: ${publicId}`);
+            }
+        } catch (cloudinaryError) {
+            // Log but don't fail the request if Cloudinary cleanup fails
+            console.error("Failed to delete Cloudinary image (non-fatal):", cloudinaryError);
+        }
 
         res.json({ message: "Wallpaper deleted successfully" });
     } catch (error) {

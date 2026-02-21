@@ -1,11 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/bookmark_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
-import '../widgets/ad_banner.dart';
 import '../widgets/rating_dialog.dart';
+
 import 'subscription_screen.dart';
 import 'contact_us_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -14,7 +15,6 @@ import 'manage_subscription_screen.dart';
 import 'auto_wallpaper_settings_screen.dart';
 
 import '../services/auth_service.dart';
-import '../services/batch_download_service.dart';
 import '../providers/auto_wallpaper_provider.dart';
 import 'auth/login_screen.dart';
 
@@ -39,266 +39,285 @@ class ProfileScreen extends StatelessWidget {
                 final isDark = themeProvider.isDarkMode;
                 final isLoggedIn = snapshot.hasData && snapshot.data != null;
 
-                return SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 100),
-                  child: Column(
-                    children: [
-                      // Header
-                      _buildHeader(context, isDark),
+                return Stack(
+                  children: [
+                    // Animated background gradient orbs
+                    Positioned(
+                      top: -100,
+                      right: -50,
+                      child: Container(
+                        width: 250,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              AppTheme.primary.withValues(alpha: 0.2),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 100,
+                      left: -80,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.purple.withValues(alpha: 0.15),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
 
-                      const SizedBox(height: 20),
-
-                      // Avatar & Info
-                      _buildUserInfo(context, subscriptionProvider, isDark),
-
-                      const SizedBox(height: 30),
-
-                      // Stats
-                      _buildStats(
-                          bookmarkProvider, subscriptionProvider, isDark),
-
-                      const SizedBox(height: 30),
-
-                      // Pro Banner
-                      if (!subscriptionProvider.isPro) _buildProButton(context),
-
-                      const SizedBox(height: 20),
-
-                      // Settings Groups
-                      _buildSettingsGroup(
-                        title: 'PREFERENCES',
-                        isDark: isDark,
+                    // Main content
+                    SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 100),
+                      child: Column(
                         children: [
-                          // Dark Mode Toggle
-                          // _buildSettingsTile(
-                          //   icon: Icons.dark_mode_rounded,
-                          //   title: 'Dark Mode',
-                          //   subtitle: subscriptionProvider.isPro
-                          //       ? null
-                          //       : 'PRO Feature',
-                          //   iconColor: subscriptionProvider.isPro
-                          //       ? (isDark ? Colors.purple : Colors.deepPurple)
-                          //       : AppTheme.textMuted,
-                          //   isDark: isDark,
-                          //   trailing: subscriptionProvider.isPro
-                          //       ? Switch(
-                          //           value: isDark,
-                          //           onChanged: (val) {
-                          //             themeProvider.setDarkMode(val,
-                          //                 isPro: true);
-                          //           },
-                          //           activeColor: AppTheme.primary,
-                          //         )
-                          //       : GestureDetector(
-                          //           onTap: () =>
-                          //               _showProRequiredDialog(context),
-                          //           child: Container(
-                          //             padding: const EdgeInsets.symmetric(
-                          //                 horizontal: 8, vertical: 4),
-                          //             decoration: BoxDecoration(
-                          //               color: AppTheme.gold,
-                          //               borderRadius: BorderRadius.circular(6),
-                          //             ),
-                          //             child: const Row(
-                          //               mainAxisSize: MainAxisSize.min,
-                          //               children: [
-                          //                 Icon(Icons.lock,
-                          //                     size: 12, color: Colors.black),
-                          //                 SizedBox(width: 4),
-                          //                 Text('PRO',
-                          //                     style: TextStyle(
-                          //                         fontSize: 10,
-                          //                         fontWeight: FontWeight.bold,
-                          //                         color: Colors.black)),
-                          //               ],
-                          //             ),
-                          //           ),
-                          //         ),
-                          // ),
-                          if (subscriptionProvider.isPro)
-                            _buildSettingsTile(
-                              icon: Icons.card_membership_rounded,
-                              title: 'Manage Subscription',
-                              subtitle: 'Active',
-                              iconColor: AppTheme.gold,
-                              isDark: isDark,
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ManageSubscriptionScreen())),
-                            ),
-                          _buildSettingsTile(
-                            icon: Icons.delete_outline_rounded,
-                            title: 'Clear Cache',
+                          // Header
+                          _buildHeader(context, isDark),
+
+                          const SizedBox(height: 32),
+
+                          // Avatar & Info
+                          _buildUserInfo(context, subscriptionProvider, isDark),
+
+                          const SizedBox(height: 32),
+
+                          // Stats Cards
+                          _buildStatsCards(
+                              bookmarkProvider, subscriptionProvider, isDark),
+
+                          const SizedBox(height: 24),
+
+                          // Pro Banner
+                          if (!subscriptionProvider.isPro)
+                            _buildProButton(context),
+
+                          const SizedBox(height: 24),
+
+                          // PRO FEATURES section
+                          _buildSettingsGroup(
+                            title: 'PRO FEATURES',
                             isDark: isDark,
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Cache cleared!')),
-                              );
-                            },
-                          ),
-
-                          // Logout Button
-                          if (isLoggedIn)
-                            _buildSettingsTile(
-                              icon: Icons.logout_rounded,
-                              title: 'Logout',
-                              iconColor: Colors.redAccent,
-                              isDark: isDark,
-                              onTap: () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Logout'),
-                                    content: const Text(
-                                        'Are you sure you want to logout?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, false),
-                                        child: const Text('Cancel'),
+                            children: [
+                              _buildProFeatureTile(
+                                icon: Icons.auto_awesome_rounded,
+                                title: 'Auto Wallpaper',
+                                subtitle: subscriptionProvider.isPro
+                                    ? (autoWallpaperProvider.isEnabled
+                                        ? 'Active • ${autoWallpaperProvider.getIntervalName(autoWallpaperProvider.interval)}'
+                                        : 'Schedule automatic changes')
+                                    : 'PRO Feature - Upgrade to unlock',
+                                iconColor: Colors.purple,
+                                gradientColors: [
+                                  Colors.purple.withValues(alpha: 0.2),
+                                  Colors.deepPurple.withValues(alpha: 0.1),
+                                ],
+                                isDark: isDark,
+                                showLock: !subscriptionProvider.isPro,
+                                onTap: () {
+                                  if (subscriptionProvider.isPro) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const AutoWallpaperSettingsScreen(),
                                       ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        child: const Text(
-                                          'Logout',
-                                          style: TextStyle(color: Colors.red),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (confirm == true) {
-                                  await authService.signOut();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text('Logged out successfully')),
                                     );
+                                  } else {
+                                    _showProRequiredDialog(context);
                                   }
-                                }
-                              },
+                                },
+                              ),
+                              _buildProFeatureTile(
+                                icon: Icons.brightness_6_rounded,
+                                title: 'Day/Night Mode',
+                                subtitle: subscriptionProvider.isPro
+                                    ? (autoWallpaperProvider.isDayNightEnabled
+                                        ? 'Active • Smart switching'
+                                        : 'Auto switch based on time')
+                                    : 'PRO Feature - Upgrade to unlock',
+                                iconColor: Colors.orange,
+                                gradientColors: [
+                                  Colors.orange.withValues(alpha: 0.2),
+                                  Colors.amber.withValues(alpha: 0.1),
+                                ],
+                                isDark: isDark,
+                                showLock: !subscriptionProvider.isPro,
+                                onTap: () {
+                                  if (subscriptionProvider.isPro) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const AutoWallpaperSettingsScreen(),
+                                      ),
+                                    );
+                                  } else {
+                                    _showProRequiredDialog(context);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // PREFERENCES section
+                          _buildSettingsGroup(
+                            title: 'PREFERENCES',
+                            isDark: isDark,
+                            children: [
+                              if (subscriptionProvider.isPro)
+                                _buildSettingsTile(
+                                  icon: Icons.card_membership_rounded,
+                                  title: 'Manage Subscription',
+                                  subtitle: 'Active',
+                                  iconColor: AppTheme.gold,
+                                  isDark: isDark,
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const ManageSubscriptionScreen())),
+                                ),
+                              _buildSettingsTile(
+                                icon: Icons.delete_outline_rounded,
+                                title: 'Clear Cache',
+                                subtitle: 'Free up storage space',
+                                isDark: isDark,
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Cache cleared!')),
+                                  );
+                                },
+                              ),
+
+                              // Logout Button
+                              if (isLoggedIn)
+                                _buildSettingsTile(
+                                  icon: Icons.logout_rounded,
+                                  title: 'Logout',
+                                  subtitle: 'Sign out of your account',
+                                  iconColor: Colors.redAccent,
+                                  isDark: isDark,
+                                  onTap: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Logout'),
+                                        content: const Text(
+                                            'Are you sure you want to logout?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context, true),
+                                            child: const Text(
+                                              'Logout',
+                                              style:
+                                                  TextStyle(color: Colors.red),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      await authService.signOut();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Logged out successfully')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // SUPPORT section
+                          _buildSettingsGroup(
+                            title: 'SUPPORT',
+                            isDark: isDark,
+                            children: [
+                              _buildSettingsTile(
+                                icon: Icons.star_border_rounded,
+                                title: 'Rate App',
+                                subtitle: 'Share your feedback',
+                                onTap: () => showDialog(
+                                    context: context,
+                                    builder: (_) => const RatingDialog()),
+                              ),
+                              _buildSettingsTile(
+                                icon: Icons.mail_outline_rounded,
+                                title: 'Contact Us',
+                                subtitle: 'Get help and support',
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const ContactUsScreen())),
+                              ),
+                              _buildSettingsTile(
+                                icon: Icons.privacy_tip_outlined,
+                                title: 'Privacy Policy',
+                                subtitle: 'View privacy policy',
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const PrivacyPolicyScreen())),
+                              ),
+                              _buildSettingsTile(
+                                icon: Icons.description_outlined,
+                                title: 'Terms of Service',
+                                subtitle: 'View terms and conditions',
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const TermsConditionsScreen())),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          Text(
+                            'Version 3.0.13',
+                            style: TextStyle(
+                              color: AppTheme.textMuted.withValues(alpha: 0.4),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
                             ),
+                          ),
+
+                          const SizedBox(height: 70),
                         ],
                       ),
-
-                      // PRO FEATURES section - only for Pro users
-                      if (subscriptionProvider.isPro) ...[
-                        const SizedBox(height: 20),
-                        _buildSettingsGroup(
-                          title: 'PRO FEATURES',
-                          isDark: isDark,
-                          children: [
-                            _buildSettingsTile(
-                              icon: Icons.auto_awesome_rounded,
-                              title: 'Auto Wallpaper',
-                              subtitle: autoWallpaperProvider.isEnabled
-                                  ? 'Active'
-                                  : 'Schedule automatic changes',
-                              iconColor: Colors.purple,
-                              isDark: isDark,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const AutoWallpaperSettingsScreen(),
-                                ),
-                              ),
-                            ),
-                            _buildSettingsTile(
-                              icon: Icons.brightness_6_rounded,
-                              title: 'Day/Night Mode',
-                              subtitle: autoWallpaperProvider.isDayNightEnabled
-                                  ? 'Active'
-                                  : 'Auto switch wallpapers',
-                              iconColor: Colors.orange,
-                              isDark: isDark,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const AutoWallpaperSettingsScreen(),
-                                ),
-                              ),
-                            ),
-                            _buildSettingsTile(
-                              icon: Icons.download_for_offline_rounded,
-                              title: 'Batch Download',
-                              subtitle: 'Download all bookmarks',
-                              iconColor: Colors.teal,
-                              isDark: isDark,
-                              onTap: () => _showBatchDownloadDialog(
-                                  context, bookmarkProvider),
-                            ),
-                          ],
-                        ),
-                      ],
-
-                      const SizedBox(height: 20),
-
-                      _buildSettingsGroup(
-                        title: 'SUPPORT',
-                        children: [
-                          _buildSettingsTile(
-                            icon: Icons.star_border_rounded,
-                            title: 'Rate App',
-                            onTap: () => showDialog(
-                                context: context,
-                                builder: (_) => const RatingDialog()),
-                          ),
-                          _buildSettingsTile(
-                            icon: Icons.mail_outline_rounded,
-                            title: 'Contact Us',
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const ContactUsScreen())),
-                          ),
-                          _buildSettingsTile(
-                            icon: Icons.privacy_tip_outlined,
-                            title: 'Privacy Policy',
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const PrivacyPolicyScreen())),
-                          ),
-                          _buildSettingsTile(
-                            icon: Icons.description_outlined,
-                            title: 'Terms of Service',
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const TermsConditionsScreen())),
-                          ),
-                        ],
-                      ),
-
-                      // if (!subscriptionProvider.isPro)
-                      //   const Padding(
-                      //     padding: EdgeInsets.all(20),
-                      //     child: AdBanner(adType: AdType.native),
-                      //   ),
-
-                      const SizedBox(height: 20),
-
-                      Text(
-                        'Version 3.0.13',
-                        style: TextStyle(
-                          color: AppTheme.textMuted.withOpacity(0.5),
-                          fontSize: 12,
-                        ),
-                      ),
-
-                      const SizedBox(height: 70),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -323,7 +342,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.getSurface(isDark),
+                    color: AppTheme.getSurface(isDark).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                     border:
                         Border.all(color: AppTheme.getSurfaceVariant(isDark)),
@@ -342,7 +361,7 @@ class ProfileScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppTheme.getTextPrimary(isDark),
-                    letterSpacing: 1,
+                    letterSpacing: 2,
                   ),
             ),
           ),
@@ -358,72 +377,113 @@ class ProfileScreen extends StatelessWidget {
 
     return Column(
       children: [
-        // Avatar
-        Container(
-          width: 100,
-          height: 100,
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: provider.isPro
-                  ? [AppTheme.gold, const Color(0xFFFFB700)]
-                  : [AppTheme.primary, AppTheme.accent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
-                    .withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppTheme.darkSurface,
-            ),
-            child: isLoggedIn && user.photoURL != null
-                ? ClipOval(
-                    child: Image.network(user.photoURL!, fit: BoxFit.cover))
-                : Icon(
-                    provider.isPro
-                        ? Icons.workspace_premium_rounded
-                        : Icons.person_rounded,
-                    size: 50,
-                    color: provider.isPro ? AppTheme.gold : AppTheme.primary,
+        // Avatar with glow effect
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glow effect
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
+                        .withValues(alpha: 0.4),
+                    blurRadius: 30,
+                    spreadRadius: 10,
                   ),
-          ),
+                ],
+              ),
+            ),
+            // Avatar
+            Container(
+              width: 110,
+              height: 110,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: provider.isPro
+                      ? [AppTheme.gold, const Color(0xFFFFB700)]
+                      : [AppTheme.primary, AppTheme.accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.darkSurface,
+                ),
+                child: isLoggedIn && user.photoURL != null
+                    ? ClipOval(
+                        child: Image.network(user.photoURL!, fit: BoxFit.cover))
+                    : Icon(
+                        provider.isPro
+                            ? Icons.workspace_premium_rounded
+                            : Icons.person_rounded,
+                        size: 55,
+                        color:
+                            provider.isPro ? AppTheme.gold : AppTheme.primary,
+                      ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Text(
           isLoggedIn ? (user.displayName ?? 'User') : 'Guest User',
           style: const TextStyle(
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: AppTheme.textWhite,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         if (isLoggedIn)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color:
-                  provider.isPro ? AppTheme.gold : AppTheme.darkSurfaceVariant,
+              gradient: provider.isPro
+                  ? const LinearGradient(
+                      colors: [AppTheme.gold, Color(0xFFFFB700)],
+                    )
+                  : null,
+              color: provider.isPro ? null : AppTheme.darkSurfaceVariant,
               borderRadius: BorderRadius.circular(20),
+              boxShadow: provider.isPro
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.gold.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
-            child: Text(
-              provider.isPro ? 'PREMIUM MEMBER' : 'FREE ACCOUNT',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: provider.isPro ? Colors.black : AppTheme.textSecondary,
-                letterSpacing: 1,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (provider.isPro)
+                  const Icon(
+                    Icons.star_rounded,
+                    color: Colors.black,
+                    size: 14,
+                  ),
+                if (provider.isPro) const SizedBox(width: 4),
+                Text(
+                  provider.isPro ? 'PREMIUM MEMBER' : 'FREE ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color:
+                        provider.isPro ? Colors.black : AppTheme.textSecondary,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
             ),
           )
         else
@@ -431,10 +491,19 @@ class ProfileScreen extends StatelessWidget {
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const LoginScreen())),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               decoration: BoxDecoration(
-                color: AppTheme.primary,
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.accent],
+                ),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Text(
                 'Sign In / Register',
@@ -450,30 +519,78 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStats(BookmarkProvider bookmarkProvider,
+  Widget _buildStatsCards(BookmarkProvider bookmarkProvider,
       SubscriptionProvider subscriptionProvider, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildStatItem('Saved', '${bookmarkProvider.bookmarkCount}', isDark),
-        _buildDivider(isDark),
-        // _buildStatItem('Downloads', '0', isDark),
-        // _buildDivider(isDark),
-        _buildStatItem(
-            'Plan', subscriptionProvider.isPro ? 'PRO' : 'Free', isDark),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              'Saved',
+              '${bookmarkProvider.bookmarkCount}',
+              Icons.favorite_rounded,
+              [
+                AppTheme.primary.withValues(alpha: 0.2),
+                AppTheme.primary.withValues(alpha: 0.05),
+              ],
+              AppTheme.primary,
+              isDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              'Plan',
+              subscriptionProvider.isPro ? 'PRO' : 'Free',
+              subscriptionProvider.isPro
+                  ? Icons.workspace_premium_rounded
+                  : Icons.account_circle_rounded,
+              subscriptionProvider.isPro
+                  ? [
+                      AppTheme.gold.withValues(alpha: 0.2),
+                      AppTheme.gold.withValues(alpha: 0.05),
+                    ]
+                  : [
+                      AppTheme.darkSurfaceVariant,
+                      AppTheme.darkSurface,
+                    ],
+              subscriptionProvider.isPro ? AppTheme.gold : AppTheme.textMuted,
+              isDark,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStatItem(String label, String value, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+  Widget _buildStatCard(String label, String value, IconData icon,
+      List<Color> gradientColors, Color iconColor, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: iconColor.withValues(alpha: 0.2),
+        ),
+      ),
       child: Column(
         children: [
+          Icon(
+            icon,
+            color: iconColor,
+            size: 28,
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppTheme.getTextPrimary(isDark),
             ),
@@ -484,18 +601,11 @@ class ProfileScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.getTextSecondary(isDark),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDivider(bool isDark) {
-    return Container(
-      width: 1,
-      height: 24,
-      color: AppTheme.getSurfaceVariant(isDark),
     );
   }
 
@@ -506,31 +616,35 @@ class ProfileScreen extends StatelessWidget {
         onTap: () => _openSubscription(context),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppTheme.gold, Color(0xFFFFB700)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.gold.withOpacity(0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+                color: AppTheme.gold.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Icon(Icons.star_rounded, color: Colors.black),
-              SizedBox(width: 8),
+              Icon(Icons.workspace_premium_rounded,
+                  color: Colors.black, size: 24),
+              SizedBox(width: 12),
               Text(
                 'UPGRADE TO PRO',
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
+                  fontSize: 16,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
@@ -548,40 +662,137 @@ class ProfileScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 36, bottom: 8),
+          padding: const EdgeInsets.only(left: 32, bottom: 12),
           child: Text(
             title,
             style: TextStyle(
-              color: AppTheme.getTextSecondary(isDark),
+              color: AppTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              letterSpacing: 1,
+              letterSpacing: 1.5,
             ),
           ),
         ),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.darkSurfaceVariant),
+            color: AppTheme.darkSurface.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.5),
+            ),
           ),
           child: Column(
             children: [
-              for (int i = 0; i < children.length; i++) ...[
+              for (int i = 0; i < children.length; i++) ...{
                 children[i],
                 if (i != children.length - 1)
                   Divider(
                     height: 1,
                     thickness: 1,
-                    indent: 56,
-                    color: AppTheme.darkSurfaceVariant,
+                    indent: 68,
+                    color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.3),
                   ),
-              ],
+              },
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildProFeatureTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color iconColor,
+    required List<Color> gradientColors,
+    VoidCallback? onTap,
+    bool isDark = false,
+    bool showLock = false,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      leading: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: iconColor.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 22,
+          color: iconColor,
+        ),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: AppTheme.textWhite,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+          subtitle,
+          style: TextStyle(
+            color: AppTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
+            fontSize: 13,
+          ),
+        ),
+      ),
+      trailing: showLock
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.gold.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppTheme.gold.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(
+                    Icons.lock_rounded,
+                    color: AppTheme.gold,
+                    size: 14,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'PRO',
+                    style: TextStyle(
+                      color: AppTheme.gold,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                color: iconColor,
+                size: 20,
+              ),
+            ),
     );
   }
 
@@ -596,12 +807,12 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return ListTile(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: (iconColor ?? AppTheme.primary).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          color: (iconColor ?? AppTheme.primary).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           icon,
@@ -611,25 +822,29 @@ class ProfileScreen extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: AppTheme.textWhite,
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: TextStyle(
-                color: AppTheme.getTextSecondary(isDark),
-                fontSize: 12,
+          ? Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                subtitle,
+                style: TextStyle(
+                  color:
+                      AppTheme.getTextSecondary(isDark).withValues(alpha: 0.7),
+                  fontSize: 12,
+                ),
               ),
             )
           : null,
       trailing: trailing ??
           Icon(
             Icons.chevron_right_rounded,
-            color: AppTheme.getTextMuted(isDark),
+            color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.5),
             size: 20,
           ),
     );
@@ -646,136 +861,70 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: AppTheme.darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
           children: [
-            Icon(Icons.star_rounded, color: AppTheme.gold),
-            SizedBox(width: 8),
-            Text('Pro Feature'),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.gold, Color(0xFFFFB700)],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.workspace_premium_rounded,
+                color: Colors.black,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'PRO Feature',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         content: const Text(
-          'Dark mode is available exclusively for Pro subscribers. Upgrade now to unlock this feature!',
+          'This feature is exclusive to PRO members. Upgrade now to unlock Auto Wallpaper and Day/Night Mode!',
+          style: TextStyle(
+            color: AppTheme.textSecondary,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Maybe Later'),
+            child: const Text(
+              'Maybe Later',
+              style: TextStyle(color: AppTheme.textMuted),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-              );
+              _openSubscription(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.gold,
               foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text('Upgrade'),
+            child: const Text(
+              'Upgrade to PRO',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
     );
-  }
-
-  void _showBatchDownloadDialog(
-      BuildContext context, BookmarkProvider bookmarkProvider) {
-    if (bookmarkProvider.bookmarks.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No bookmarks to download')),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Batch Download'),
-        content: Text(
-            'Download all ${bookmarkProvider.bookmarks.length} bookmarked wallpapers?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _startBatchDownload(context, bookmarkProvider);
-            },
-            child: const Text('Download All'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _startBatchDownload(
-      BuildContext context, BookmarkProvider bookmarkProvider) {
-    final service = BatchDownloadService();
-
-    // Show progress dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return StreamBuilder<BatchDownloadProgress>(
-            stream: service.progressStream,
-            builder: (context, snapshot) {
-              final progress = snapshot.data;
-
-              if (progress?.isComplete == true) {
-                // Close dialog after a short delay
-                Future.delayed(const Duration(seconds: 1), () {
-                  if (context.mounted) Navigator.pop(context);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              progress?.error ?? 'All wallpapers downloaded!')),
-                    );
-                  }
-                });
-              }
-
-              return AlertDialog(
-                title: const Text('Downloading...'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    LinearProgressIndicator(value: progress?.progress ?? 0),
-                    const SizedBox(height: 16),
-                    Text(progress?.currentWallpaper != null
-                        ? 'Downloading: ${progress!.currentWallpaper}'
-                        : 'Preparing...'),
-                    const SizedBox(height: 8),
-                    Text(progress?.progressText ??
-                        '0/${bookmarkProvider.bookmarks.length}'),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      service.cancelDownload();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-    ).then((_) {
-      service.dispose(); // Cleanup
-    });
-
-    // Start download
-    service.downloadWallpapers(bookmarkProvider.bookmarks);
   }
 }

@@ -131,9 +131,9 @@ class WideWallpapersScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.15)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                   ),
                   child: const Icon(
                     Icons.person_rounded,
@@ -156,13 +156,13 @@ class WideWallpapersScreen extends StatelessWidget {
   //     decoration: BoxDecoration(
   //       gradient: LinearGradient(
   //         colors: [
-  //           AppTheme.accent.withOpacity(0.15),
-  //           AppTheme.primary.withOpacity(0.15),
+  //           AppTheme.accent.withValues(alpha: 0.15),
+  //           AppTheme.primary.withValues(alpha: 0.15),
   //         ],
   //       ),
   //       borderRadius: BorderRadius.circular(AppRadius.lg),
   //       border: Border.all(
-  //         color: AppTheme.accent.withOpacity(0.3),
+  //         color: AppTheme.accent.withValues(alpha: 0.3),
   //         width: 1,
   //       ),
   //     ),
@@ -171,7 +171,7 @@ class WideWallpapersScreen extends StatelessWidget {
   //         Container(
   //           padding: const EdgeInsets.all(12),
   //           decoration: BoxDecoration(
-  //             color: AppTheme.accent.withOpacity(0.2),
+  //             color: AppTheme.accent.withValues(alpha: 0.2),
   //             borderRadius: BorderRadius.circular(12),
   //           ),
   //           child: const Icon(
@@ -235,3 +235,4 @@ class WideWallpapersScreen extends StatelessWidget {
   //   );
   // }
 }
+

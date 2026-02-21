@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'dart:convert';
 
 class VersionService {
   static final VersionService _instance = VersionService._internal();
@@ -132,3 +131,4 @@ class VersionService {
     await box.delete('play_store_version');
   }
 }
+

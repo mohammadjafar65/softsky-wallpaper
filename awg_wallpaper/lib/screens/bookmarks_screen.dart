@@ -8,7 +8,6 @@ import 'wallpaper_detail_screen.dart';
 import '../utils/date_formatter.dart';
 import '../utils/ad_helper.dart';
 import '../providers/subscription_provider.dart';
-import '../services/batch_download_service.dart';
 
 class BookmarksScreen extends StatelessWidget {
   const BookmarksScreen({super.key});
@@ -18,16 +17,6 @@ class BookmarksScreen extends StatelessWidget {
     return Consumer2<BookmarkProvider, SubscriptionProvider>(
       builder: (context, provider, subscriptionProvider, child) {
         return Scaffold(
-          floatingActionButton:
-              (subscriptionProvider.isPro && provider.bookmarks.isNotEmpty)
-                  ? FloatingActionButton.extended(
-                      onPressed: () => _startBatchDownload(context, provider),
-                      icon: const Icon(Icons.download_rounded),
-                      label: const Text('Download All'),
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
-                    )
-                  : null,
           body: SafeArea(
             bottom: false,
             child: CustomScrollView(
@@ -136,7 +125,7 @@ class BookmarksScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.error.withOpacity(0.1),
+                  color: AppTheme.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: const Icon(
@@ -187,13 +176,13 @@ class BookmarksScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
+                color: AppTheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.favorite_border_rounded,
                 size: 60,
-                color: AppTheme.primary.withOpacity(0.5),
+                color: AppTheme.primary.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -211,7 +200,7 @@ class BookmarksScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppTheme.textSecondary.withOpacity(0.8),
+                color: AppTheme.textSecondary.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -257,73 +246,5 @@ class BookmarksScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  void _startBatchDownload(
-      BuildContext context, BookmarkProvider bookmarkProvider) {
-    // Check if dialog is potentially already open (simple debounce/check)
-    // For now, we just create the service
-    final service = BatchDownloadService();
-
-    // Show progress dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return StreamBuilder<BatchDownloadProgress>(
-            stream: service.progressStream,
-            builder: (context, snapshot) {
-              final progress = snapshot.data;
-
-              if (progress?.isComplete == true) {
-                // Close dialog after a short delay
-                Future.delayed(const Duration(seconds: 1), () {
-                  if (context.mounted) Navigator.pop(context);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              progress?.error ?? 'All wallpapers downloaded!')),
-                    );
-                  }
-                });
-              }
-
-              return AlertDialog(
-                title: const Text('Downloading...'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    LinearProgressIndicator(value: progress?.progress ?? 0),
-                    const SizedBox(height: 16),
-                    Text(progress?.currentWallpaper != null
-                        ? 'Downloading: ${progress!.currentWallpaper}'
-                        : 'Preparing...'),
-                    const SizedBox(height: 8),
-                    Text(progress?.progressText ??
-                        '0/${bookmarkProvider.bookmarks.length}'),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      service.cancelDownload();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-    ).then((_) {
-      service.dispose(); // Cleanup
-    });
-
-    // Start download
-    service.downloadWallpapers(bookmarkProvider.bookmarks);
   }
 }

@@ -159,8 +159,16 @@ router.get("/me", authenticate, async (req: AuthRequest, res) => {
 });
 
 // Create initial admin (run once during setup)
+// Protected by ADMIN_SETUP_SECRET env var
 router.post("/setup-admin", async (req, res) => {
     try {
+        const setupSecret = req.headers["x-setup-secret"] as string;
+        const expectedSecret = process.env.ADMIN_SETUP_SECRET;
+
+        if (!expectedSecret || setupSecret !== expectedSecret) {
+            return res.status(403).json({ error: "Forbidden: Invalid setup secret" });
+        }
+
         const userRepository = AppDataSource.getRepository(User);
         const existingAdmin = await userRepository.findOne({
             where: { role: "admin" },
@@ -192,9 +200,16 @@ router.post("/setup-admin", async (req, res) => {
     }
 });
 
-// Reset admin password (for fixing login issues)
+// Reset admin password — protected by ADMIN_SETUP_SECRET
 router.post("/reset-admin", async (req, res) => {
     try {
+        const setupSecret = req.headers["x-setup-secret"] as string;
+        const expectedSecret = process.env.ADMIN_SETUP_SECRET;
+
+        if (!expectedSecret || setupSecret !== expectedSecret) {
+            return res.status(403).json({ error: "Forbidden: Invalid setup secret" });
+        }
+
         const userRepository = AppDataSource.getRepository(User);
         const admin = await userRepository.findOne({
             where: { role: "admin" },
@@ -215,54 +230,6 @@ router.post("/reset-admin", async (req, res) => {
     } catch (error) {
         console.error("Reset admin error:", error);
         res.status(500).json({ error: "Failed to reset admin password" });
-    }
-});
-
-// Debug endpoint to check admin user and password (REMOVE IN PRODUCTION)
-router.get("/debug-admin", async (req, res) => {
-    try {
-        const userRepository = AppDataSource.getRepository(User);
-
-        // Find admin user WITH password
-        const admin = await userRepository
-            .createQueryBuilder("user")
-            .addSelect("user.password")
-            .where("user.role = :role", { role: "admin" })
-            .getOne();
-
-        if (!admin) {
-            return res.json({
-                found: false,
-                message: "No admin user found in database"
-            });
-        }
-
-        // Test password comparison
-        const testPassword = "admin123";
-        const passwordMatch = admin.password
-            ? await admin.comparePassword(testPassword)
-            : false;
-
-        res.json({
-            found: true,
-            admin: {
-                id: admin.id,
-                email: admin.email,
-                displayName: admin.displayName,
-                role: admin.role,
-                authProvider: admin.authProvider,
-                hasPassword: !!admin.password,
-                passwordLength: admin.password?.length || 0,
-                passwordPrefix: admin.password?.substring(0, 10) || "none",
-            },
-            passwordTest: {
-                testPassword: testPassword,
-                matches: passwordMatch,
-            }
-        });
-    } catch (error: any) {
-        console.error("Debug admin error:", error);
-        res.status(500).json({ error: error.message });
     }
 });
 

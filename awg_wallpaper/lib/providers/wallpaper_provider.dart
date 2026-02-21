@@ -17,6 +17,7 @@ class WallpaperProvider extends ChangeNotifier {
   List<WallpaperPack> _packs = [];
   List<Category> _categories = [];
   String _selectedCategory = 'all';
+  String _selectedProCategory = 'all';
   int _totalWallpapers = 0;
   int _totalFreeWallpapers = 0;
   int _totalProWallpapers = 0;
@@ -27,6 +28,13 @@ class WallpaperProvider extends ChangeNotifier {
   int _currentPage = 1;
   int _totalPages = 1;
   bool _hasMore = true;
+
+  // Pro Pagination
+  List<Wallpaper> _proWallpapersList = [];
+  int _currentProPage = 1;
+  // int _totalProPages = 1; // Unused
+  bool _hasMorePro = true;
+  bool _isProLoading = false;
 
   // Use API mode (set to false to use sample data)
   // bool _useApi = true;
@@ -45,12 +53,18 @@ class WallpaperProvider extends ChangeNotifier {
   List<WallpaperPack> get proPacks => _packs.where((p) => p.isPro).toList();
   List<Category> get categories => _categories;
   String get selectedCategory => _selectedCategory;
+  String get selectedProCategory => _selectedProCategory;
   int get totalWallpapers => _totalWallpapers;
   int get totalFreeWallpapers => _totalFreeWallpapers;
   int get totalProWallpapers => _totalProWallpapers;
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
   String? get error => _error;
+
+  // Pro Getters
+  List<Wallpaper> get proWallpapersList => _proWallpapersList;
+  bool get hasMorePro => _hasMorePro;
+  bool get isProLoading => _isProLoading;
 
   WallpaperProvider() {
     _initializeData();
@@ -100,13 +114,37 @@ class WallpaperProvider extends ChangeNotifier {
       // Load data in parallel for better performance
       final stopwatch = Stopwatch()..start();
 
+      // Wrap each call in a try-catch to allow partial successes
       final results = await Future.wait([
-        _apiService.getCategories(),
-        _apiService.getWallpapers(page: 1, limit: 20, isWide: false),
-        _apiService.getWallpapers(page: 1, limit: 15, isWide: true),
-        _packService.getPacks(page: 1, limit: 20),
-        _apiService.getWallpapers(
-            page: 1, limit: 1, isPro: true, isWide: false),
+        _apiService.getCategories().catchError((e) {
+          debugPrint('Error loading categories: $e');
+          return <Category>[];
+        }),
+        _apiService
+            .getWallpapers(page: 1, limit: 20, isWide: false)
+            .catchError((e) {
+          debugPrint('Error loading wallpapers: $e');
+          return WallpapersResponse(
+              wallpapers: [], page: 1, limit: 20, total: 0, pages: 1);
+        }),
+        _apiService
+            .getWallpapers(page: 1, limit: 15, isWide: true)
+            .catchError((e) {
+          debugPrint('Error loading wide wallpapers: $e');
+          return WallpapersResponse(
+              wallpapers: [], page: 1, limit: 15, total: 0, pages: 1);
+        }),
+        _packService.getPacks(page: 1, limit: 20).catchError((e) {
+          debugPrint('Error loading packs: $e');
+          return <WallpaperPack>[];
+        }),
+        _apiService
+            .getWallpapers(page: 1, limit: 1, isPro: true, isWide: false)
+            .catchError((e) {
+          debugPrint('Error loading pro count: $e');
+          return WallpapersResponse(
+              wallpapers: [], page: 1, limit: 1, total: 0, pages: 1);
+        }),
       ]);
 
       debugPrint(
@@ -203,6 +241,16 @@ class WallpaperProvider extends ChangeNotifier {
       }
     }
 
+    // Load pro wallpapers from cache
+    if (box.containsKey('pro_wallpapers')) {
+      try {
+        final List<dynamic> proJson = json.decode(box.get('pro_wallpapers'));
+        _proWallpapersList = proJson.map((w) => Wallpaper.fromJson(w)).toList();
+      } catch (e) {
+        debugPrint('Error loading pro wallpapers from cache: $e');
+      }
+    }
+
     notifyListeners();
   }
 
@@ -219,6 +267,10 @@ class WallpaperProvider extends ChangeNotifier {
           json.encode(_wideWallpapers.map((w) => w.toJson()).toList()));
       // Save packs to cache
       box.put('packs', json.encode(_packs.map((p) => p.toJson()).toList()));
+      // Save pro wallpapers to cache
+      box.put('pro_wallpapers',
+          json.encode(_proWallpapersList.map((w) => w.toJson()).toList()));
+
       debugPrint('WallpaperProvider: Saved ${_packs.length} packs to cache');
     } catch (e) {
       debugPrint('Error saving to cache: $e');
@@ -294,6 +346,54 @@ class WallpaperProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadProWallpapers({bool refresh = false}) async {
+    if (_isProLoading || (!refresh && !_hasMorePro)) return;
+
+    _isProLoading = true;
+    notifyListeners();
+
+    if (refresh) {
+      _currentProPage = 1;
+      _proWallpapersList = [];
+      _hasMorePro = true;
+    }
+
+    try {
+      final response = await _apiService.getWallpapers(
+        page: _currentProPage,
+        limit: 20,
+        isPro: true,
+        isWide: false,
+        category: _selectedProCategory == 'all' ? null : _selectedProCategory,
+      );
+
+      if (refresh) {
+        _proWallpapersList = response.wallpapers;
+      } else {
+        _proWallpapersList.addAll(response.wallpapers);
+      }
+
+      _currentProPage = response.page + 1;
+      // _totalProPages = response.pages;
+      _hasMorePro = response.page < response.pages;
+    } catch (e) {
+      debugPrint('Failed to load pro wallpapers: $e');
+    }
+
+    _isProLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> loadMoreProWallpapers() async {
+    await loadProWallpapers(refresh: false);
+  }
+
+  void setSelectedProCategory(String category) {
+    if (_selectedProCategory == category) return;
+    _selectedProCategory = category;
+    notifyListeners();
+  }
+
   Wallpaper? getWallpaperById(String id) {
     try {
       return _wallpapers.firstWhere((w) => w.id == id);
@@ -301,14 +401,19 @@ class WallpaperProvider extends ChangeNotifier {
       try {
         return _wideWallpapers.firstWhere((w) => w.id == id);
       } catch (_) {
-        for (var pack in _packs) {
-          try {
-            return pack.wallpapers.firstWhere((w) => w.id == id);
-          } catch (_) {
-            continue;
+        try {
+          // Check pro list
+          return _proWallpapersList.firstWhere((w) => w.id == id);
+        } catch (_) {
+          for (var pack in _packs) {
+            try {
+              return pack.wallpapers.firstWhere((w) => w.id == id);
+            } catch (_) {
+              continue;
+            }
           }
+          return null;
         }
-        return null;
       }
     }
   }
@@ -334,6 +439,12 @@ class WallpaperProvider extends ChangeNotifier {
     _hasMore = true;
     _wallpapers = [];
     _wideWallpapers = [];
+
+    // Reset Pro
+    _currentProPage = 1;
+    _hasMorePro = true;
+    _proWallpapersList = [];
+
     await _initializeData();
   }
 }

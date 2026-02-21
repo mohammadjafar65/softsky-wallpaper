@@ -113,3 +113,4 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     return const SizedBox.shrink();
   }
 }
+

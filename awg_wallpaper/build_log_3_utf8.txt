@@ -1,0 +1,64 @@
+﻿Running Gradle task 'assembleDebug'...                          
+flutter : warning: [options] 
+source value 8 is obsolete 
+and will be removed in a 
+future release
+At line:1 char:1
++ flutter build apk --debug > 
+build_log_attempt_3.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (warning:   
+  [optio... future release:   
+ String) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+warning: [options] target 
+value 8 is obsolete and will 
+be removed in a future release
+warning: [options] To 
+suppress warnings about 
+obsolete options, use 
+-Xlint:-options.
+3 warnings
+Note: Some input files use or 
+override a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+warning: [options] source 
+value 8 is obsolete and will 
+be removed in a future release
+warning: [options] target 
+value 8 is obsolete and will 
+be removed in a future release
+warning: [options] To 
+suppress warnings about 
+obsolete options, use 
+-Xlint:-options.
+3 warnings
+warning: [options] source 
+value 8 is obsolete and will 
+be removed in a future release
+warning: [options] target 
+value 8 is obsolete and will 
+be removed in a future release
+warning: [options] To 
+suppress warnings about 
+obsolete options, use 
+-Xlint:-options.
+Note: D:\pub-cache\hosted\pub.
+dev\google_mobile_ads-5.3.1\an
+droid\src\main\java\io\flutter
+\plugins\googlemobileads\AdMes
+sageCodec.java uses or 
+overrides a deprecated API.
+Note: Recompile with 
+-Xlint:deprecation for 
+details.
+3 warnings
+Running Gradle task 'assembleDebug'...                            350.5s
+ΓêÜ Built build\app\outputs\flutter-apk\app-debug.apk

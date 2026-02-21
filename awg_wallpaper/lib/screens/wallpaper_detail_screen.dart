@@ -120,7 +120,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.35),
+                          Colors.black.withValues(alpha: 0.35),
                           Colors.transparent,
                         ],
                       ),
@@ -193,7 +193,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withValues(alpha: 0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -248,9 +248,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 child: Container(
                   height: 90,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -270,7 +271,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 width: 140,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -286,7 +287,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
     );
@@ -297,7 +298,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -408,12 +409,12 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFFFFD700).withOpacity(0.8),
-                const Color(0xFFFFA500).withOpacity(0.8),
+                const Color(0xFFFFD700).withValues(alpha: 0.8),
+                const Color(0xFFFFA500).withValues(alpha: 0.8),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
@@ -451,9 +452,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: Icon(icon, color: iconColor, size: 22),
           ),
@@ -476,9 +477,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Column(
                     children: [
@@ -554,7 +556,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showProPurchasePopup() {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
@@ -625,7 +627,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primary.withOpacity(0.3),
+                        color: AppTheme.primary.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -677,9 +679,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withOpacity(0.1)),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -837,10 +839,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           decoration: BoxDecoration(
-            color: Colors.grey[900]!.withOpacity(0.9),
+            color: Colors.grey[900]!.withValues(alpha: 0.9),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border:
-                Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+            border: Border(
+                top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -849,7 +851,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -929,18 +931,18 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
-                border: Border.all(color: color.withOpacity(0.3)),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
               ),
               child: Icon(icon, color: color, size: 28),
             ),
@@ -966,7 +968,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppTheme.primary.withOpacity(0.1),
+          color: AppTheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: AppTheme.primary),
@@ -1013,13 +1015,14 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     );
   }
 
+  /*
   Widget _buildTag(String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Text(
         label,
@@ -1031,6 +1034,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       ),
     );
   }
+  */
 
   Widget _buildActionBtn({
     required IconData icon,
@@ -1045,9 +1049,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: Icon(icon, color: Colors.white, size: 20),
           ),
@@ -1072,7 +1076,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
           borderRadius: BorderRadius.circular(13),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -1203,7 +1207,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
@@ -1216,12 +1220,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900]!.withOpacity(0.8),
+                  color: Colors.grey[900]!.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -1271,7 +1276,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       builder: (ctx) => PopScope(
         canPop: false,
         child: Dialog(
@@ -1284,12 +1289,13 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900]!.withOpacity(0.8),
+                  color: Colors.grey[900]!.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -1338,7 +1344,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showManualSetDialog(String path) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1349,9 +1355,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[900]!.withOpacity(0.9),
+                color: Colors.grey[900]!.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1359,7 +1365,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -1401,7 +1407,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primary.withOpacity(0.3),
+                            color: AppTheme.primary.withValues(alpha: 0.3),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -1430,7 +1436,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showSuccessMsg(String msg) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1441,12 +1447,12 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
               decoration: BoxDecoration(
-                color: Colors.grey[900]!.withOpacity(0.9),
+                color: Colors.grey[900]!.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.success.withOpacity(0.15),
+                    color: AppTheme.success.withValues(alpha: 0.15),
                     blurRadius: 30,
                     spreadRadius: 0,
                   ),
@@ -1459,11 +1465,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: AppTheme.success.withOpacity(0.1),
+                      color: AppTheme.success.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.success.withOpacity(0.2),
+                          color: AppTheme.success.withValues(alpha: 0.2),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),

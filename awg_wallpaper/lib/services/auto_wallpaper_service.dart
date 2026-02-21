@@ -441,3 +441,4 @@ class AutoWallpaperService {
     await setNextWallpaper();
   }
 }
+

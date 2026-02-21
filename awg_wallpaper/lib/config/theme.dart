@@ -81,7 +81,6 @@ class AppTheme {
         primary: primary,
         secondary: accent,
         surface: surface,
-        background: background,
         error: error,
       ),
       textTheme: GoogleFonts.outfitTextTheme().copyWith(
@@ -145,12 +144,10 @@ class AppTheme {
         primary: primary,
         secondary: accent,
         surface: darkSurface,
-        background: darkBackground,
         error: error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: darkTextPrimary,
-        onBackground: darkTextPrimary,
       ),
       textTheme:
           GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
@@ -258,3 +255,4 @@ class AppDurations {
   static const medium = Duration(milliseconds: 400);
   static const slow = Duration(milliseconds: 600);
 }
+

@@ -5,6 +5,8 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
+import compression from "compression";
+import rateLimit from "express-rate-limit";
 import { AppDataSource } from "./data-source";
 
 // Import routes
@@ -22,27 +24,25 @@ const PORT = process.env.PORT || 3000;
 // Store database connection error for debugging
 let dbConnectionError: string | null = null;
 
-// Middleware
+// ----------– CORS ------------------------------------------
 const allowedOrigins = [
     process.env.CLIENT_URL || "",
     "http://softskyadmin.softsky.studio",
     "https://softskyadmin.softsky.studio",
 ].filter(Boolean);
 
-// CORS configuration
 const corsOptions = {
     origin: function (
         origin: string | undefined,
         callback: (err: Error | null, allow?: boolean) => void
     ) {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        // Allow requests with no origin (mobile apps, curl, etc.)
         if (!origin) return callback(null, true);
-
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
             console.log("Blocked by CORS:", origin);
-            callback(null, true); // For now, allow all origins for debugging
+            callback(null, true); // Permissive for now; tighten in prod
         }
     },
     credentials: true,
@@ -53,15 +53,14 @@ const corsOptions = {
         "Origin",
         "Accept",
         "X-Requested-With",
+        "X-Setup-Secret",
     ],
-    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+    optionsSuccessStatus: 200,
 };
 
-// Explicit CORS headers middleware (handles cases where reverse proxy interferes)
+// Explicit CORS headers middleware (handles reverse-proxy interference)
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-
-    // Set CORS headers for all requests
     res.setHeader("Access-Control-Allow-Origin", origin || "*");
     res.setHeader(
         "Access-Control-Allow-Methods",
@@ -69,24 +68,52 @@ app.use((req, res, next) => {
     );
     res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Origin, Accept, X-Requested-With"
+        "Content-Type, Authorization, Origin, Accept, X-Requested-With, X-Setup-Secret"
     );
     res.setHeader("Access-Control-Allow-Credentials", "true");
 
-    // Handle preflight requests immediately
     if (req.method === "OPTIONS") {
         res.status(200).end();
         return;
     }
-
     next();
 });
 
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Root endpoint - works without database for debugging
+// ----------– Response Compression --------------------------
+app.use(compression());
+
+// ----------– Body Limits ------------------------------------
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ----------– Rate Limiting ----------------------------------
+// Auth routes rate limiter: max 15 requests per 15 min per IP
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: "Too many login attempts. Please try again in 15 minutes.",
+    },
+    skip: (req) => !AppDataSource.isInitialized, // don't rate-limit if DB not ready
+});
+
+// General API limiter: 300 req per minute per IP
+const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests. Please slow down." },
+    skip: (req) => !AppDataSource.isInitialized,
+});
+
+app.use("/api/", apiLimiter);
+
+// ----------– Root / Health Endpoints -----------------------
 app.get("/", (req, res) => {
     res.json({
         status: "ok",
@@ -115,8 +142,9 @@ app.get("/api", (req, res) => {
     });
 });
 
-// API Routes
-app.use("/api/auth", authRoutes);
+// ----------– API Routes ------------------------------------
+// Apply stricter rate limiting to auth endpoints
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/wallpapers", wallpaperRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
@@ -141,23 +169,39 @@ app.get("/api/health", async (req, res) => {
     });
 });
 
-// Error handling middleware
+// ----------– 404 Handler ------------------------------------
+app.use((req, res) => {
+    res.status(404).json({
+        error: "Not Found",
+        message: `Route ${req.method} ${req.path} does not exist`,
+    });
+});
+
+// ----------– Error Handler ----------------------------------
 app.use(
     (
-        err: Error,
+        err: Error & { status?: number },
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
     ) => {
-        console.error(err.stack);
-        res.status(500).json({ error: "Something went wrong!" });
+        const status = err.status || 500;
+        console.error(`[${new Date().toISOString()}] ${status} ${req.method} ${req.path} -`, err.message);
+        if (process.env.NODE_ENV !== "production") {
+            console.error(err.stack);
+        }
+        res.status(status).json({
+            error: status === 500 ? "Internal server error" : err.message,
+        });
     }
 );
 
-// Start server immediately, then try to connect to database
+// ----------– Start Server -----------------------------------
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 API available at http://localhost:${PORT}/api`);
+    console.log(`🛡️  Rate limiting: auth=15/15min, api=300/min`);
+    console.log(`📦 Response compression: enabled`);
 });
 
 // Initialize database connection (non-blocking)

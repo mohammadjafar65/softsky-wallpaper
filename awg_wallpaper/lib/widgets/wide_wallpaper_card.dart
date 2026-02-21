@@ -28,12 +28,12 @@ class WideWallpaperCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
@@ -75,7 +75,7 @@ class WideWallpaperCard extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.2),
+                        Colors.black.withValues(alpha: 0.2),
                         Colors.transparent,
                         Colors.transparent,
                       ],
@@ -97,10 +97,10 @@ class WideWallpaperCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
+                          color: Colors.black.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                            color: const Color(0xFFFFD700).withOpacity(0.3),
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
@@ -150,13 +150,13 @@ class WideWallpaperCard extends StatelessWidget {
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: isBookmarked
-                                    ? const Color(0xFFFF4081).withOpacity(0.2)
-                                    : Colors.black.withOpacity(0.3),
+                                    ? const Color(0xFFFF4081).withValues(alpha: 0.2)
+                                    : Colors.black.withValues(alpha: 0.3),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: isBookmarked
-                                      ? const Color(0xFFFF4081).withOpacity(0.5)
-                                      : Colors.white.withOpacity(0.2),
+                                      ? const Color(0xFFFF4081).withValues(alpha: 0.5)
+                                      : Colors.white.withValues(alpha: 0.2),
                                   width: 1,
                                 ),
                               ),
@@ -184,3 +184,4 @@ class WideWallpaperCard extends StatelessWidget {
     );
   }
 }
+

@@ -279,10 +279,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.1),
+                          color: AppTheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(AppRadius.full),
                           border: Border.all(
-                            color: AppTheme.primary.withOpacity(0.3),
+                            color: AppTheme.primary.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -386,7 +386,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Icon(
             Icons.search_off_rounded,
             size: 64,
-            color: AppTheme.textMuted.withOpacity(0.5),
+            color: AppTheme.textMuted.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -402,7 +402,7 @@ class _SearchScreenState extends State<SearchScreen> {
             'Try searching for something else',
             style: TextStyle(
               fontSize: 14,
-              color: AppTheme.textSecondary.withOpacity(0.8),
+              color: AppTheme.textSecondary.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -410,3 +410,4 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
+

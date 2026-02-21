@@ -34,7 +34,7 @@ class AuthService {
     }
 
     _initialized = true;
-    debugPrint('AuthService: Initialized (logged in: ${isLoggedIn})');
+    debugPrint('AuthService: Initialized (logged in: $isLoggedIn)');
   }
 
   // Backend API token (for authenticated requests)
@@ -177,9 +177,11 @@ class AuthService {
       _backendToken = response.token;
       _apiService.setAuthToken(response.token);
 
+      debugPrint(
+          'User synced with backend successfully. Token: ${response.token}');
+      debugPrint('Triggering onSyncComplete...');
       _syncCompleteController.add(true);
-
-      debugPrint('User synced with backend successfully');
+      debugPrint('onSyncComplete triggered');
 
       // Sync FCM token with backend now that we have an auth token
       try {
@@ -257,3 +259,4 @@ class AuthException implements Exception {
   @override
   String toString() => message;
 }
+

@@ -7,6 +7,11 @@ import '../models/category.dart';
 
 /// API Service for connecting to the AWG Backend
 class ApiService {
+  // Singleton pattern
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
+  ApiService._internal();
+
   // TODO: Update this URL to your deployed backend URL
   static const String baseUrl = 'https://softskyapi.softsky.studio/api';
 
@@ -76,12 +81,12 @@ class ApiService {
     _authToken = null;
   }
 
-  Map<String, String> get _headers {
-    final headers = {'Content-Type': 'application/json'};
+  Map<String, String> get headers {
+    final headersMap = {'Content-Type': 'application/json'};
     if (_authToken != null) {
-      headers['Authorization'] = 'Bearer $_authToken';
+      headersMap['Authorization'] = 'Bearer $_authToken';
     }
-    return headers;
+    return headersMap;
   }
 
   // ==================== WALLPAPERS ====================
@@ -114,7 +119,7 @@ class ApiService {
           .replace(queryParameters: queryParams);
       final response = await _executeWithRetry(
         () => http
-            .get(uri, headers: _headers)
+            .get(uri, headers: headers)
             .timeout(const Duration(seconds: 30)),
       );
 
@@ -141,7 +146,7 @@ class ApiService {
           .replace(queryParameters: {'q': query});
       final response = await _executeWithRetry(
         () => http
-            .get(uri, headers: _headers)
+            .get(uri, headers: headers)
             .timeout(const Duration(seconds: 30)),
       );
 
@@ -164,7 +169,7 @@ class ApiService {
         () => http
             .get(
               Uri.parse('$baseUrl/wallpapers/$id'),
-              headers: _headers,
+              headers: headers,
             )
             .timeout(const Duration(seconds: 30)),
       );
@@ -186,7 +191,7 @@ class ApiService {
     try {
       await http.post(
         Uri.parse('$baseUrl/wallpapers/$id/download'),
-        headers: _headers,
+        headers: headers,
       );
     } catch (e) {
       debugPrint('Error tracking download: $e');
@@ -202,7 +207,7 @@ class ApiService {
         () => http
             .get(
               Uri.parse('$baseUrl/categories'),
-              headers: _headers,
+              headers: headers,
             )
             .timeout(const Duration(seconds: 30)),
       );
@@ -231,7 +236,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/subscriptions/verify'),
-        headers: _headers,
+        headers: headers,
         body: json.encode({
           'purchaseToken': purchaseToken,
           'plan': plan,
@@ -256,7 +261,7 @@ class ApiService {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/subscriptions/status'),
-        headers: _headers,
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -284,7 +289,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/firebase/verify'),
-        headers: _headers,
+        headers: headers,
         body: json.encode({
           'firebaseUid': firebaseUid,
           'email': email,
@@ -316,7 +321,7 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/users/fcm-token'),
-        headers: _headers,
+        headers: headers,
         body: json.encode({'fcmToken': token}),
       );
 

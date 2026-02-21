@@ -56,7 +56,7 @@ class _TrendingSliderState extends State<TrendingSlider> {
             dotHeight: 8,
             dotWidth: 8,
             activeDotColor: Theme.of(context).primaryColor,
-            dotColor: Colors.grey.withOpacity(0.3),
+            dotColor: Colors.grey.withValues(alpha: 0.3),
             expansionFactor: 3,
             spacing: 8,
           ),
@@ -84,7 +84,7 @@ class _TrendingSliderState extends State<TrendingSlider> {
           borderRadius: BorderRadius.circular(15),
           // boxShadow: [
           //   BoxShadow(
-          //     color: Colors.black.withOpacity(0.2),
+          //     color: Colors.black.withValues(alpha: 0.2),
           //     blurRadius: 10,
           //     offset: const Offset(0, 5),
           //   ),
@@ -118,7 +118,7 @@ class _TrendingSliderState extends State<TrendingSlider> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withValues(alpha: 0.7),
                       ],
                     ),
                   ),
@@ -141,7 +141,7 @@ class _TrendingSliderState extends State<TrendingSlider> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -176,3 +176,4 @@ class _TrendingSliderState extends State<TrendingSlider> {
     );
   }
 }
+

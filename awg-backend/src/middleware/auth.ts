@@ -11,6 +11,11 @@ export interface AuthRequest extends Request {
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key_here";
 
+// Warn loudly if JWT secret is the insecure default
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === "your_jwt_secret_key_here") {
+    console.warn("⚠️  WARNING: JWT_SECRET is not set or is using the insecure default. Set a strong secret in your .env file!");
+}
+
 // Verify JWT token
 export const authenticate = async (
     req: AuthRequest,
@@ -87,6 +92,6 @@ export const generateToken = (user: {
     role: string;
 }): string => {
     return jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
-        expiresIn: "7d",
+        expiresIn: "30d",
     });
 };

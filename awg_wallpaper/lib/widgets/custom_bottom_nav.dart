@@ -23,9 +23,9 @@ class CustomBottomNav extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -103,7 +103,7 @@ class _NavIcon extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.primary.withOpacity(0.1)
+                    ? AppTheme.primary.withValues(alpha: 0.1)
                     : Colors.transparent,
                 shape: BoxShape.circle,
               ),
@@ -151,7 +151,7 @@ class _CenterIcon extends StatelessWidget {
           shape: BoxShape.circle,
           // boxShadow: [
           //   BoxShadow(
-          //     color: AppTheme.primary.withOpacity(0.4),
+          //     color: AppTheme.primary.withValues(alpha: 0.4),
           //     blurRadius: 10,
           //     offset: const Offset(0, 0),
           //   ),
@@ -166,3 +166,4 @@ class _CenterIcon extends StatelessWidget {
     );
   }
 }
+

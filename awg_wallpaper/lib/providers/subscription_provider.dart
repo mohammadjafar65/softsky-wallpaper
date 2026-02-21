@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -84,17 +83,29 @@ class SubscriptionProvider extends ChangeNotifier {
     });
 
     AuthService().onSyncComplete.listen((_) {
-      debugPrint('Sync complete, checking subscription...');
+      debugPrint(
+          'SubscriptionProvider: Sync complete event received. Checking subscription...');
       checkBackendSubscription();
     });
+
+    // Check if we are already synced (in case we missed the event)
+    if (AuthService().backendToken != null) {
+      debugPrint(
+          'SubscriptionProvider: Backend token already available. Checking subscription immediately.');
+      checkBackendSubscription();
+    }
   }
 
   Future<void> checkBackendSubscription() async {
+    debugPrint('SubscriptionProvider: checkBackendSubscription started');
     try {
       final status = await _apiService.getSubscriptionStatus();
+      debugPrint(
+          'SubscriptionProvider: Got status from backend: Plan=${status.plan}, Expiry=${status.expiryDate}');
       await updateFromStatus(status);
     } catch (e) {
-      debugPrint('Failed to check backend subscription: $e');
+      debugPrint(
+          'SubscriptionProvider: Failed to check backend subscription: $e');
     }
   }
 
@@ -129,15 +140,22 @@ class SubscriptionProvider extends ChangeNotifier {
       }
 
       if (trustBackend) {
+        debugPrint(
+            'SubscriptionProvider: Trusting backend. Updating local state to Plan=$plan');
         _currentPlan = plan;
         _expiryDate = status.expiryDate;
         _isSubscribed = true;
         await _saveSubscription();
         notifyListeners();
-        debugPrint('Subscription updated from backend: $plan');
+        debugPrint(
+            'SubscriptionProvider: Subscription updated from backend: $plan');
+      } else {
+        debugPrint(
+            'SubscriptionProvider: NOT trusting backend. Keeping local state. Backend says: ${status.plan}, Local is: $_currentPlan');
       }
     } catch (e) {
-      debugPrint('Error updating subscription from backend: $e');
+      debugPrint(
+          'SubscriptionProvider: Error updating subscription from backend: $e');
     }
   }
 
@@ -397,7 +415,7 @@ class SubscriptionProvider extends ChangeNotifier {
     },
     SubscriptionPlan.monthly: {
       'name': 'Monthly',
-      'price': '\₹29.99',
+      'price': '₹29.99',
       'period': '/month',
       'features': [
         'Pro Wallpapers',
@@ -410,14 +428,14 @@ class SubscriptionProvider extends ChangeNotifier {
     },
     SubscriptionPlan.annual: {
       'name': 'Annual',
-      'price': '\₹79.99',
+      'price': '₹79.99',
       'period': '/year',
       'features': ['Pro Wallpapers', 'No ads', '4K quality', 'Exclusive packs'],
       'savings': '',
     },
     SubscriptionPlan.lifetime: {
       'name': 'Lifetime',
-      'price': '\₹299.99',
+      'price': '₹299.99',
       'period': 'one-time',
       'features': [
         'Pro Wallpapers',
@@ -455,3 +473,4 @@ class SubscriptionProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
