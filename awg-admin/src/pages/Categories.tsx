@@ -16,6 +16,7 @@ interface Category {
     description?: string;
     wallpaperCount: number;
     isActive: boolean;
+    sourceUrl?: string;
 }
 
 export default function Categories() {
@@ -28,6 +29,7 @@ export default function Categories() {
     const [showImportModal, setShowImportModal] = useState(false);
     const [importUrl, setImportUrl] = useState('');
     const [isImporting, setIsImporting] = useState(false);
+    const [refetchingId, setRefetchingId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchCategories();
@@ -80,6 +82,23 @@ export default function Categories() {
             toast.error(error.response?.data?.error || 'Failed to import Pinterest board');
         } finally {
             setIsImporting(false);
+        }
+    };
+
+    const handleRefetch = async (id: string) => {
+        setRefetchingId(id);
+        try {
+            const res = await categoriesApi.refetchPinterest(id);
+            if (res.data.importedCount > 0) {
+                toast.success(`Refetched ${res.data.importedCount} new wallpapers!`);
+                fetchCategories();
+            } else {
+                toast.success('No new wallpapers found on this board.');
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || 'Failed to refetch Pinterest board');
+        } finally {
+            setRefetchingId(null);
         }
     };
 
@@ -148,7 +167,21 @@ export default function Categories() {
                                     <p className="text-gray-400 text-sm">{cat.wallpaperCount} wallpapers</p>
                                 </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 items-center">
+                                {cat.sourceUrl && cat.sourceUrl.includes('pinterest.com') && (
+                                    <button
+                                        onClick={() => handleRefetch(cat.id)}
+                                        disabled={refetchingId === cat.id}
+                                        title="Refetch Pinterest Board"
+                                        className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-700 rounded-lg transition disabled:opacity-50"
+                                    >
+                                        {refetchingId === cat.id ? (
+                                            <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
+                                        ) : (
+                                            <span className="text-sm">🔄</span>
+                                        )}
+                                    </button>
+                                )}
                                 <button onClick={() => handleEdit(cat)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition">
                                     <PencilIcon className="w-4 h-4" />
                                 </button>

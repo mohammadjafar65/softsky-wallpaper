@@ -58,6 +58,7 @@ export const categoriesApi = {
     update: (id: string, data: any) => api.put(`/categories/${id}`, data),
     delete: (id: string) => api.delete(`/categories/${id}`),
     importPinterest: (boardUrl: string) => api.post('/categories/import-pinterest', { boardUrl }),
+    refetchPinterest: (id: string) => api.post(`/categories/${id}/refetch-pinterest`),
 };
 
 // Users API

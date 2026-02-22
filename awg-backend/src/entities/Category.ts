@@ -20,6 +20,9 @@ export class Category {
     @Column({ unique: true, length: 255 })
     slug!: string;
 
+    @Column({ name: "source_url", length: 1024, nullable: true })
+    sourceUrl?: string;
+
     @Column({
         length: 50,
         nullable: true,

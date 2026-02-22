@@ -25,6 +25,10 @@ export class Wallpaper {
     @Column({ name: "thumbnail_url", type: "text" })
     thumbnailUrl!: string;
 
+    @Column({ name: "source_url", length: 1024, nullable: true })
+    @Index()
+    sourceUrl?: string;
+
     @Column({ name: "category_id" })
     @Index()
     categoryId!: number;
