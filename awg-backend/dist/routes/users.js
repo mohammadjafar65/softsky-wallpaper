@@ -41,6 +41,7 @@ router.get("/", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
                 downloads: u.downloads,
                 isActive: u.isActive,
                 createdAt: u.createdAt,
+                hasFcmToken: !!u.fcmToken,
             })),
             pagination: {
                 page,

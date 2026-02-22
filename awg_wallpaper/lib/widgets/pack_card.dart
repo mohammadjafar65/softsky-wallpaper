@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../config/theme.dart';
 import '../models/wallpaper_pack.dart';
+import '../widgets/glass_container.dart';
 
 class PackCard extends StatelessWidget {
   final WallpaperPack pack;
@@ -105,49 +106,45 @@ class PackCard extends StatelessWidget {
 
             // 4. Content (Text & Count)
             Positioned(
-              left: 12,
-              right: 12,
-              bottom: 12,
+              left: 8,
+              right: 8,
+              bottom: 8,
               child: IgnorePointer(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      pack.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.3,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black45,
-                            offset: Offset(0, 1),
-                            blurRadius: 3,
-                          ),
-                        ],
+                child: GlassContainer(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  borderRadius: 14,
+                  blur: 10,
+                  opacity: 0.3,
+                  color: Colors.black,
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        pack.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${pack.wallpaperCount} Wallpapers',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black45,
-                            offset: Offset(0, 1),
-                            blurRadius: 3,
-                          ),
-                        ],
+                      const SizedBox(height: 2),
+                      Text(
+                        '${pack.wallpaperCount} Wallpapers',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -205,4 +202,3 @@ class PackCard extends StatelessWidget {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../models/category.dart';
+import '../widgets/glass_container.dart';
 
 class CategoryChip extends StatelessWidget {
   final Category category;
@@ -18,34 +19,19 @@ class CategoryChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppDurations.fast,
+      child: GlassContainer(
         margin: const EdgeInsets.only(right: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.primary],
-                )
-              : null,
-          color: isSelected ? null : AppTheme.darkSurfaceVariant,
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          border: isSelected
-              ? null
-              : Border.all(
-                  color: AppTheme.darkSurfaceVariant, // Fixed: was surfaceLight
-                  width: 1,
-                ),
-          // boxShadow: isSelected
-          //     ? [
-          //         BoxShadow(
-          //           color: AppTheme.primary.withValues(alpha: 0.4),
-          //           blurRadius: 12,
-          //           offset: const Offset(0, 4),
-          //         ),
-          //       ]
-          //     : null,
-        ),
+        borderRadius: 50,
+        blur: isSelected ? 0 : 10,
+        opacity: isSelected ? 1.0 : 0.1,
+        color: isSelected ? AppTheme.primary : AppTheme.darkSurfaceVariant,
+        border: isSelected
+            ? Border.all(color: Colors.transparent, width: 0)
+            : Border.all(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -68,4 +54,3 @@ class CategoryChip extends StatelessWidget {
     );
   }
 }
-

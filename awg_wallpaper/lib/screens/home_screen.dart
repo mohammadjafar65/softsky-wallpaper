@@ -131,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
           // Main Content
           Expanded(
             child: SafeArea(
-              top: false,
               bottom: false,
               child: Consumer<WallpaperProvider>(
                 builder: (context, provider, child) {

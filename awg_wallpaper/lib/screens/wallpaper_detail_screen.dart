@@ -886,7 +886,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildApplyOption(
                       icon: Icons.lock_rounded,
@@ -898,7 +898,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildApplyOption(
                       icon: Icons.smartphone_rounded,
@@ -929,7 +929,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
@@ -952,7 +952,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 height: 1.2,
               ),

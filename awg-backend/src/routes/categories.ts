@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
+import { Wallpaper } from "../entities/Wallpaper";
 import { authenticate, requireAdmin, AuthRequest } from "../middleware/auth";
+import { uploadToCloudinary } from "../middleware/upload";
+import Parser from "rss-parser";
+import axios from "axios";
 
 const router = Router();
 
@@ -183,6 +187,104 @@ router.delete("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) 
         res.json({ message: "Category deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: "Failed to delete category" });
+    }
+});
+
+// Import Pinterest Board (admin only)
+router.post("/import-pinterest", authenticate, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+        const { boardUrl } = req.body;
+        if (!boardUrl) {
+            return res.status(400).json({ error: "Pinterest board URL is required" });
+        }
+
+        // Example: https://www.pinterest.com/username/boardname/
+        const urlMatch = boardUrl.match(/pinterest\.com\/([^\/]+)\/([^\/]+)/);
+        if (!urlMatch) {
+            return res.status(400).json({ error: "Invalid Pinterest board URL" });
+        }
+
+        const username = urlMatch[1];
+        const boardname = urlMatch[2];
+        const rssUrl = `https://www.pinterest.com/${username}/${boardname}.rss`;
+
+        const parser = new Parser();
+        let feed;
+        try {
+            feed = await parser.parseURL(rssUrl);
+        } catch (error) {
+            console.error("Failed to fetch RSS feed:", error);
+            return res.status(400).json({ error: "Failed to fetch Pinterest board. Make sure it's public." });
+        }
+
+        const boardTitle = feed.title || `${username}'s ${boardname}`;
+        
+        // Find or create category
+        const categoryRepository = AppDataSource.getRepository(Category);
+        const slug = boardTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        
+        let categoryDoc = await categoryRepository.findOne({ where: { slug } });
+        if (!categoryDoc) {
+            categoryDoc = categoryRepository.create({
+                name: boardTitle.replace(/Pinterest$/, "").trim() || boardTitle,
+                slug,
+                icon: "📌",
+                description: feed.description || `Imported from Pinterest: ${boardUrl}`,
+                isActive: true,
+            });
+            await categoryRepository.save(categoryDoc);
+        }
+
+        let importedCount = 0;
+        const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
+        
+        // Take top 30 items to avoid timeout, can be adjusted
+        const itemsToProcess = feed.items.slice(0, 30);
+        
+        for (const item of itemsToProcess) {
+            try {
+                // Extract image URL from description/content HTML
+                const imgMatch = item.content?.match(/src="([^"]+)"/);
+                if (!imgMatch) continue;
+                
+                let imageUrl = imgMatch[1];
+                // Replace size part like 236x or 736x with originals to get high quality
+                imageUrl = imageUrl.replace(/\/\d+x\//, '/originals/');
+                
+                // Fetch image buffer
+                const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+                const buffer = Buffer.from(response.data);
+                
+                // Upload to cloudinary
+                const { url, thumbnailUrl } = await uploadToCloudinary(buffer, "wallpapers");
+                
+                // Save to db
+                const wallpaper = wallpaperRepository.create({
+                    title: item.title || "Pinterest Selection",
+                    imageUrl: url,
+                    thumbnailUrl,
+                    categoryId: categoryDoc.id,
+                    tags: ["pinterest", username, boardname],
+                    isWide: false,
+                    isPro: false,
+                });
+                await wallpaperRepository.save(wallpaper);
+                importedCount++;
+            } catch (itemError) {
+                console.error("Failed to import single Pinterest item:", itemError);
+                // Continue with next
+            }
+        }
+        
+        // Update category count
+        if (importedCount > 0) {
+            await categoryRepository.increment({ id: categoryDoc.id }, "wallpaperCount", importedCount);
+        }
+
+        res.json({ message: `Successfully imported ${importedCount} wallpapers from Pinterest`, importedCount });
+    } catch (error) {
+        console.error("Pinterest import error:", error);
+        res.status(500).json({ error: "Failed to import from Pinterest" });
     }
 });
 

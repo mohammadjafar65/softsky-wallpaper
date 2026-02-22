@@ -6,6 +6,7 @@ import '../providers/bookmark_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/rating_dialog.dart';
+import '../widgets/glass_container.dart';
 
 import 'subscription_screen.dart';
 import 'contact_us_screen.dart';
@@ -305,7 +306,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 32),
 
                           Text(
-                            'Version 3.0.13',
+                            'Version 3.0.15',
                             style: TextStyle(
                               color: AppTheme.textMuted.withValues(alpha: 0.4),
                               fontSize: 11,
@@ -566,18 +567,15 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildStatCard(String label, String value, IconData icon,
       List<Color> gradientColors, Color iconColor, bool isDark) {
-    return Container(
+    return GlassContainer(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: iconColor.withValues(alpha: 0.2),
-        ),
+      borderRadius: 20,
+      blur: 20,
+      opacity: 0.1,
+      color: iconColor,
+      border: Border.all(
+        color: iconColor.withValues(alpha: 0.3),
+        width: 1,
       ),
       child: Column(
         children: [
@@ -675,26 +673,30 @@ class ProfileScreen extends StatelessWidget {
         ),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: AppTheme.darkSurface.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(20),
+          child: GlassContainer(
+            padding: EdgeInsets.zero,
+            borderRadius: 20,
+            blur: 25,
+            opacity: isDark ? 0.05 : 0.4,
+            color: isDark ? AppTheme.darkSurface : Colors.white,
             border: Border.all(
-              color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.5),
+              color: (isDark ? AppTheme.darkSurfaceVariant : Colors.white)
+                  .withValues(alpha: 0.3),
             ),
-          ),
-          child: Column(
-            children: [
-              for (int i = 0; i < children.length; i++) ...{
-                children[i],
-                if (i != children.length - 1)
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    indent: 68,
-                    color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.3),
-                  ),
-              },
-            ],
+            child: Column(
+              children: [
+                for (int i = 0; i < children.length; i++) ...{
+                  children[i],
+                  if (i != children.length - 1)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 68,
+                      color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.3),
+                    ),
+                },
+              ],
+            ),
           ),
         ),
       ],

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -64,147 +65,160 @@ class _WallpaperCardState extends State<WallpaperCard>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
-        },
-        child: Hero(
-          tag: 'wallpaper_${widget.wallpaper.id}',
-          child: Container(
-            height: widget.height,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Image with optimized caching
-                CachedNetworkImage(
-                  imageUrl: widget.wallpaper.thumbnailUrl,
-                  cacheManager: CachedImageConfig.cacheManager,
-                  fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 300),
-                  fadeOutDuration: const Duration(milliseconds: 100),
-                  memCacheWidth: 400, // Optimize memory usage for grid view
-                  placeholder: (context, url) => Container(
-                    color: AppTheme.surfaceVariant,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppTheme.primary,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: child,
+            );
+          },
+          child: Hero(
+            tag: 'wallpaper_${widget.wallpaper.id}',
+            child: Container(
+              height: widget.height,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Image with optimized caching
+                  CachedNetworkImage(
+                    imageUrl: widget.wallpaper.thumbnailUrl,
+                    cacheManager: CachedImageConfig.cacheManager,
+                    fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 300),
+                    fadeOutDuration: const Duration(milliseconds: 100),
+                    memCacheWidth: 400, // Optimize memory usage for grid view
+                    placeholder: (context, url) => Container(
+                      color: AppTheme.surfaceVariant,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.primary,
+                        ),
                       ),
                     ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: AppTheme.surfaceVariant,
-                    child: const Icon(Icons.error_outline,
-                        color: AppTheme.textMuted),
-                  ),
-                ),
-
-                // Subtle gradient for text visibility at bottom
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withValues(alpha: 0.4),
-                          Colors.transparent,
-                        ],
-                      ),
+                    errorWidget: (context, url, error) => Container(
+                      color: AppTheme.surfaceVariant,
+                      child: const Icon(Icons.error_outline,
+                          color: AppTheme.textMuted),
                     ),
                   ),
-                ),
 
-                // Pro Badge (Minimal)
-                if (widget.wallpaper.isPro)
+                  // Subtle gradient for text visibility at bottom
                   Positioned(
-                    top: 10,
-                    left: 10,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.gold,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(
-                            Icons.star_rounded,
-                            size: 10,
-                            color: Colors.black87,
-                          ),
-                          SizedBox(width: 3),
-                          Text(
-                            'PRO',
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.4),
+                            Colors.transparent,
+                          ],
+                        ),
                       ),
                     ),
                   ),
 
-                // Bookmark Icon
-                if (widget.showBookmark)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Consumer<BookmarkProvider>(
-                      builder: (context, provider, child) {
-                        final isBookmarked =
-                            provider.isBookmarked(widget.wallpaper.id);
-                        return GestureDetector(
-                          onTap: () =>
-                              provider.toggleBookmark(widget.wallpaper),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
+                  // Pro Badge (Minimal)
+                  if (widget.wallpaper.isPro)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.gold,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(
+                              Icons.star_rounded,
+                              size: 10,
+                              color: Colors.black87,
                             ),
-                            child: Icon(
-                              isBookmarked
-                                  ? Icons.favorite_rounded
-                                  : Icons.favorite_border_rounded,
-                              size: 18,
-                              color:
-                                  isBookmarked ? AppTheme.error : Colors.white,
+                            SizedBox(width: 3),
+                            Text(
+                              'PRO',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+
+                  // Bookmark Icon
+                  if (widget.showBookmark)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Consumer<BookmarkProvider>(
+                        builder: (context, provider, child) {
+                          final isBookmarked =
+                              provider.isBookmarked(widget.wallpaper.id);
+                          return GestureDetector(
+                            onTap: () =>
+                                provider.toggleBookmark(widget.wallpaper),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.2),
+                                        width: 0.5),
+                                  ),
+                                  child: Icon(
+                                    isBookmarked
+                                        ? Icons.favorite_rounded
+                                        : Icons.favorite_border_rounded,
+                                    size: 18,
+                                    color: isBookmarked
+                                        ? AppTheme.error
+                                        : Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -212,4 +226,3 @@ class _WallpaperCardState extends State<WallpaperCard>
     );
   }
 }
-

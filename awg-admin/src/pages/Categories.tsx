@@ -25,6 +25,9 @@ export default function Categories() {
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [formData, setFormData] = useState({ name: '', icon: '🎨', description: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importUrl, setImportUrl] = useState('');
+    const [isImporting, setIsImporting] = useState(false);
 
     useEffect(() => {
         fetchCategories();
@@ -63,6 +66,23 @@ export default function Categories() {
         }
     };
 
+    const handleImport = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!importUrl) return;
+        setIsImporting(true);
+        try {
+            const res = await categoriesApi.importPinterest(importUrl);
+            toast.success(`Imported ${res.data.importedCount} wallpapers from Pinterest!`);
+            setShowImportModal(false);
+            setImportUrl('');
+            fetchCategories();
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || 'Failed to import Pinterest board');
+        } finally {
+            setIsImporting(false);
+        }
+    };
+
     const handleEdit = (category: Category) => {
         setEditingCategory(category);
         setFormData({ name: category.name, icon: category.icon, description: category.description || '' });
@@ -93,13 +113,22 @@ export default function Categories() {
                     <h1 className="text-2xl md:text-3xl font-bold text-white">Categories</h1>
                     <p className="text-gray-400 mt-1">Organize your wallpapers</p>
                 </div>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium hover:from-blue-600 hover:to-purple-700 transition"
-                >
-                    <PlusIcon className="w-5 h-5" />
-                    Add Category
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowImportModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 text-white font-medium hover:bg-gray-700 transition border border-gray-700"
+                    >
+                        <span className="text-xl">📌</span>
+                        Import Pinterest
+                    </button>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium hover:from-blue-600 hover:to-purple-700 transition"
+                    >
+                        <PlusIcon className="w-5 h-5" />
+                        Add Category
+                    </button>
+                </div>
             </div>
 
             {isLoading ? (
@@ -179,6 +208,52 @@ export default function Categories() {
                                 className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold hover:from-blue-600 hover:to-purple-700 transition disabled:opacity-50"
                             >
                                 {isSubmitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Pinterest Modal */}
+            {showImportModal && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 rounded-2xl w-full max-w-md">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <span>📌</span> Import Pinterest Board
+                            </h2>
+                            <button onClick={() => { setShowImportModal(false); setImportUrl(''); }} className="text-gray-400 hover:text-white">
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleImport} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">Pinterest Board URL *</label>
+                                <input
+                                    type="url"
+                                    value={importUrl}
+                                    onChange={(e) => setImportUrl(e.target.value)}
+                                    placeholder="https://www.pinterest.com/username/boardname/"
+                                    className="w-full px-4 py-2 rounded-xl bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-500"
+                                    required
+                                />
+                                <p className="text-xs text-gray-400 mt-2">
+                                    This might take a minute as it downloads high-quality images.
+                                </p>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isImporting || !importUrl}
+                                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-700 text-white font-semibold hover:bg-gray-600 transition disabled:opacity-50"
+                            >
+                                {isImporting ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Importing...
+                                    </>
+                                ) : (
+                                    'Start Import'
+                                )}
                             </button>
                         </form>
                     </div>

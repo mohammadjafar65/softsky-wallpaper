@@ -180,31 +180,54 @@ router.get("/:id", async (req, res) => {
 // Create wallpaper (admin only)
 router.post("/", auth_1.authenticate, auth_1.requireAdmin, upload_1.upload.single("image"), async (req, res) => {
     try {
-        const { title, category, tags, isWide, isPro, packId } = req.body;
-        console.log("Create wallpaper request body:", { title, category, tags, isWide, isPro, packId });
+        const { title, category, categoryName, categoryEmoji, tags, isWide, isPro, packId } = req.body;
+        console.log("Create wallpaper request body:", { title, category, categoryName, categoryEmoji, tags, isWide, isPro, packId });
         if (!req.file) {
             return res.status(400).json({ error: "Image is required" });
         }
-        if (!title || !category) {
+        if (!title || (!category && !categoryName)) {
             return res
                 .status(400)
                 .json({ error: "Title and category are required" });
-        }
-        const categoryId = parseInt(category);
-        if (isNaN(categoryId)) {
-            return res.status(400).json({ error: "Invalid category ID" });
         }
         // Upload to Cloudinary
         const { url, thumbnailUrl } = await (0, upload_1.uploadToCloudinary)(req.file.buffer, isWide === "true" ? "wide" : "wallpapers");
         const categoryRepository = data_source_1.AppDataSource.getRepository(Category_1.Category);
         const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
         const packRepository = data_source_1.AppDataSource.getRepository(Pack_1.Pack);
-        // Verify category exists
-        const categoryDoc = await categoryRepository.findOne({
-            where: { id: categoryId },
-        });
-        if (!categoryDoc) {
-            return res.status(400).json({ error: "Invalid category" });
+        let categoryDoc;
+        let categoryId;
+        if (categoryName) {
+            // Find or Create Category
+            const slug = categoryName
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "");
+            categoryDoc = await categoryRepository.findOne({ where: { slug } });
+            if (!categoryDoc) {
+                categoryDoc = categoryRepository.create({
+                    name: categoryName,
+                    slug,
+                    icon: categoryEmoji || "🎨",
+                    description: `Wallpapers for ${categoryName}`,
+                    isActive: true,
+                });
+                await categoryRepository.save(categoryDoc);
+            }
+            categoryId = categoryDoc.id;
+        }
+        else {
+            categoryId = parseInt(category);
+            if (isNaN(categoryId)) {
+                return res.status(400).json({ error: "Invalid category ID" });
+            }
+            // Verify category exists
+            categoryDoc = await categoryRepository.findOne({
+                where: { id: categoryId },
+            });
+            if (!categoryDoc) {
+                return res.status(400).json({ error: "Invalid category" });
+            }
         }
         let parsedPackId = undefined;
         if (packId && packId !== "" && packId !== "null" && packId !== "undefined") {
@@ -330,7 +353,23 @@ router.delete("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res)
         if (wallpaper.packId) {
             await packRepository.decrement({ id: wallpaper.packId }, "wallpaperCount", 1);
         }
-        await wallpaperRepository.delete(req.params.id);
+        await wallpaperRepository.delete(parseInt(req.params.id));
+        // Delete from Cloudinary (extract public_id from the URL)
+        // Cloudinary URLs follow: .../upload/vXXXXX/folder/filename.ext
+        try {
+            const urlParts = wallpaper.imageUrl.split("/upload/");
+            if (urlParts.length === 2) {
+                // Remove version segment (vXXXXXX/) if present, then strip extension
+                const pathWithoutVersion = urlParts[1].replace(/^v\d+\//, "");
+                const publicId = pathWithoutVersion.replace(/\.[^.]+$/, "");
+                await (0, upload_1.deleteFromCloudinary)(publicId);
+                console.log(`Deleted Cloudinary image: ${publicId}`);
+            }
+        }
+        catch (cloudinaryError) {
+            // Log but don't fail the request if Cloudinary cleanup fails
+            console.error("Failed to delete Cloudinary image (non-fatal):", cloudinaryError);
+        }
         res.json({ message: "Wallpaper deleted successfully" });
     }
     catch (error) {
