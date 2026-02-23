@@ -3,6 +3,7 @@ export declare class Category {
     id: number;
     name: string;
     slug: string;
+    sourceUrl?: string;
     icon?: string;
     description?: string;
     wallpaperCount: number;

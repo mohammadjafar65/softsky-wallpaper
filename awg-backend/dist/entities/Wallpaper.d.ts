@@ -5,6 +5,7 @@ export declare class Wallpaper {
     title: string;
     imageUrl: string;
     thumbnailUrl: string;
+    sourceUrl?: string;
     categoryId: number;
     category: Category;
     tags: string[];

@@ -28,6 +28,10 @@ __decorate([
     __metadata("design:type", String)
 ], Category.prototype, "slug", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: "source_url", length: 1024, nullable: true }),
+    __metadata("design:type", String)
+], Category.prototype, "sourceUrl", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         length: 50,
         nullable: true,

@@ -33,6 +33,11 @@ __decorate([
     __metadata("design:type", String)
 ], Wallpaper.prototype, "thumbnailUrl", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ name: "source_url", length: 1024, nullable: true }),
+    (0, typeorm_1.Index)(),
+    __metadata("design:type", String)
+], Wallpaper.prototype, "sourceUrl", void 0);
+__decorate([
     (0, typeorm_1.Column)({ name: "category_id" }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", Number)
