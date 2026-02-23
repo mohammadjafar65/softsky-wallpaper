@@ -168,20 +168,7 @@ export default function Categories() {
                                 </div>
                             </div>
                             <div className="flex gap-2 items-center">
-                                {cat.sourceUrl && cat.sourceUrl.includes('pinterest.com') && (
-                                    <button
-                                        onClick={() => handleRefetch(cat.id)}
-                                        disabled={refetchingId === cat.id}
-                                        title="Refetch Pinterest Board"
-                                        className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-700 rounded-lg transition disabled:opacity-50"
-                                    >
-                                        {refetchingId === cat.id ? (
-                                            <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
-                                        ) : (
-                                            <span className="text-sm">🔄</span>
-                                        )}
-                                    </button>
-                                )}
+
                                 <button onClick={() => handleEdit(cat)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition">
                                     <PencilIcon className="w-4 h-4" />
                                 </button>
@@ -235,6 +222,35 @@ export default function Categories() {
                                     rows={3}
                                 />
                             </div>
+                            {editingCategory?.sourceUrl && editingCategory.sourceUrl.includes('pinterest.com') && (
+                                <div className="p-4 bg-gray-700/50 rounded-xl border border-gray-600">
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">Pinterest URL</label>
+                                    <div className="flex gap-2 items-center">
+                                        <input
+                                            type="text"
+                                            value={editingCategory.sourceUrl}
+                                            readOnly
+                                            className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 text-gray-400 truncate text-sm"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRefetch(editingCategory.id)}
+                                            disabled={refetchingId === editingCategory.id}
+                                            className="whitespace-nowrap flex flex-row items-center gap-2 px-4 py-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg transition disabled:opacity-50 text-sm font-medium"
+                                        >
+                                            {refetchingId === editingCategory.id ? (
+                                                <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
+                                            ) : (
+                                                <span>🔄</span>
+                                            )}
+                                            {refetchingId === editingCategory.id ? 'Refetching...' : 'Refetch'}
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Click refetch to download new pins from this board. Duplicate wallpapers will be skipped automatically.
+                                    </p>
+                                </div>
+                            )}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
