@@ -246,10 +246,28 @@ router.post("/import-pinterest", authenticate, requireAdmin, async (req: AuthReq
 
         for (const item of itemsToProcess) {
             try {
-                // Skip if this pin was already imported
+                // Skip if this pin was already imported by exact sourceUrl
                 const itemSourceUrl = item.link || item.guid || `${boardUrl}#${item.title || Math.random()}`;
                 const existingWallpaper = await wallpaperRepository.findOne({ where: { sourceUrl: itemSourceUrl } });
                 if (existingWallpaper) continue;
+
+                // Title-based duplicate detection (mostly for old wallpapers before sourceUrl was added)
+                const itemTitle = item.title || "Pinterest Selection";
+                if (itemTitle !== "Pinterest Selection") {
+                    const potentialDuplicate = await wallpaperRepository.findOne({
+                        where: { categoryId: categoryDoc.id, title: itemTitle }
+                    });
+
+                    if (potentialDuplicate) {
+                        // This title already exists in this category, strongly implying it's a duplicate.
+                        if (!potentialDuplicate.sourceUrl) {
+                            // Link it so it's definitively tracked next time.
+                            potentialDuplicate.sourceUrl = itemSourceUrl;
+                            await wallpaperRepository.save(potentialDuplicate);
+                        }
+                        continue;
+                    }
+                }
 
                 // Extract image URL from description/content HTML
                 const imgMatch = item.content?.match(/src="([^"]+)"/);
@@ -344,6 +362,24 @@ router.post("/:id/refetch-pinterest", authenticate, requireAdmin, async (req: Au
                 const itemSourceUrl = item.link || item.guid || `${boardUrl}#${item.title || Math.random()}`;
                 const existingWallpaper = await wallpaperRepository.findOne({ where: { sourceUrl: itemSourceUrl } });
                 if (existingWallpaper) continue;
+
+                // Title-based duplicate detection (mostly for old wallpapers before sourceUrl was added)
+                const itemTitle = item.title || "Pinterest Selection";
+                if (itemTitle !== "Pinterest Selection") {
+                    const potentialDuplicate = await wallpaperRepository.findOne({
+                        where: { categoryId: category.id, title: itemTitle }
+                    });
+
+                    if (potentialDuplicate) {
+                        // This title already exists in this category, strongly implying it's a duplicate.
+                        if (!potentialDuplicate.sourceUrl) {
+                            // Link it so it's definitively tracked next time.
+                            potentialDuplicate.sourceUrl = itemSourceUrl;
+                            await wallpaperRepository.save(potentialDuplicate);
+                        }
+                        continue;
+                    }
+                }
 
                 // Extract image URL from description/content HTML
                 const imgMatch = item.content?.match(/src="([^"]+)"/);
