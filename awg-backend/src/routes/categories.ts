@@ -241,8 +241,8 @@ router.post("/import-pinterest", authenticate, requireAdmin, async (req: AuthReq
         let importedCount = 0;
         const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
 
-        // Take top 30 items to avoid timeout, can be adjusted
-        const itemsToProcess = feed.items.slice(0, 30);
+        // Process all items in the feed
+        const itemsToProcess = feed.items;
 
         for (const item of itemsToProcess) {
             try {
@@ -335,8 +335,8 @@ router.post("/:id/refetch-pinterest", authenticate, requireAdmin, async (req: Au
         let importedCount = 0;
         const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
 
-        // Take top 30 items
-        const itemsToProcess = feed.items.slice(0, 30);
+        // Process all items in the feed
+        const itemsToProcess = feed.items;
 
         for (const item of itemsToProcess) {
             try {
