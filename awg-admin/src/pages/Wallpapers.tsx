@@ -367,6 +367,32 @@ export default function Wallpapers() {
         fetchWallpapers();
     }
 
+    const handleBulkSetPro = async (isPro: boolean) => {
+        if (selectedIds.size === 0) return;
+        if (!confirm(`Are you sure you want to mark ${selectedIds.size} wallpapers as ${isPro ? 'Pro' : 'Free'}?`)) return;
+
+        let updatedCount = 0;
+        for (const id of selectedIds) {
+            try {
+                // Optimistic update
+                setWallpapers(prev =>
+                    prev.map(w => w.id === id ? { ...w, isPro } : w)
+                );
+                await wallpapersApi.update(id, { isPro });
+                updatedCount++;
+            } catch (error) {
+                console.error(`Failed to update ${id}`, error);
+                // Revert on error
+                setWallpapers(prev =>
+                    prev.map(w => w.id === id ? { ...w, isPro: !isPro } : w)
+                );
+            }
+        }
+
+        toast.success(`Updated ${updatedCount} wallpapers to ${isPro ? 'Pro' : 'Free'}`);
+        setSelectedIds(new Set());
+    }
+
     const toggleSelection = (id: string, multiSelect: boolean) => {
         const newSet = new Set(multiSelect ? selectedIds : []);
         if (newSet.has(id)) {
@@ -459,12 +485,29 @@ export default function Wallpapers() {
                     {selectedIds.size > 0 && (
                         <>
                             <button
-                                onClick={handleBulkDelete}
-                                className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-medium transition-all"
+                                onClick={() => handleBulkSetPro(true)}
+                                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 font-medium transition-all"
+                                title="Set selected to Pro"
                             >
-                                <TrashIcon className="w-5 h-5" />
-                                <span className="hidden md:inline">Delete ({selectedIds.size})</span>
-                                <span className="md:hidden">({selectedIds.size})</span>
+                                <StarIcon className="w-5 h-5 flex-shrink-0" />
+                                <span className="hidden lg:inline text-sm whitespace-nowrap">Pro</span>
+                            </button>
+                            <button
+                                onClick={() => handleBulkSetPro(false)}
+                                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-xl bg-slate-500/10 hover:bg-slate-500/20 text-slate-300 border border-slate-500/20 font-medium transition-all"
+                                title="Set selected to Free"
+                            >
+                                <StarIcon className="w-5 h-5 opacity-50 flex-shrink-0" />
+                                <span className="hidden lg:inline text-sm whitespace-nowrap">Free</span>
+                            </button>
+                            <button
+                                onClick={handleBulkDelete}
+                                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-medium transition-all"
+                                title="Delete selected"
+                            >
+                                <TrashIcon className="w-5 h-5 flex-shrink-0" />
+                                <span className="hidden lg:inline text-sm whitespace-nowrap">Delete ({selectedIds.size})</span>
+                                <span className="lg:hidden text-sm">({selectedIds.size})</span>
                             </button>
                         </>
                     )}
