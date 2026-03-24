@@ -57,19 +57,32 @@ class BookmarksScreen extends StatelessWidget {
                               wallpaper: wallpaper,
                               height: height,
                               onTap: () {
-                                AdHelper.showInterstitialAd(
-                                  onAdClosed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => WallpaperDetailScreen(
-                                          wallpapers: bookmarks,
-                                          initialIndex: index,
+                                final isPro = context.read<SubscriptionProvider>().isPro;
+                                if (!isPro) {
+                                  AdHelper.showInterstitialAd(
+                                    onAdClosed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => WallpaperDetailScreen(
+                                            wallpapers: bookmarks,
+                                            initialIndex: index,
+                                          ),
                                         ),
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => WallpaperDetailScreen(
+                                        wallpapers: bookmarks,
+                                        initialIndex: index,
                                       ),
-                                    );
-                                  },
-                                );
+                                    ),
+                                  );
+                                }
                               },
                             );
                           },

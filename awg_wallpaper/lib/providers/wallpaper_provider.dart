@@ -359,6 +359,7 @@ class WallpaperProvider extends ChangeNotifier {
     }
 
     try {
+      debugPrint('[ProWallpapers] Loading for category: \'$_selectedProCategory\' (sent: \'${_selectedProCategory == 'all' ? null : _selectedProCategory}\')');
       final response = await _apiService.getWallpapers(
         page: _currentProPage,
         limit: 20,
@@ -366,7 +367,7 @@ class WallpaperProvider extends ChangeNotifier {
         isWide: false,
         category: _selectedProCategory == 'all' ? null : _selectedProCategory,
       );
-
+      debugPrint('[ProWallpapers] API returned count: \'${response.wallpapers.length}\'');
       if (refresh) {
         _proWallpapersList = response.wallpapers;
       } else {

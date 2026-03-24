@@ -18,9 +18,102 @@ import 'auto_wallpaper_settings_screen.dart';
 import '../services/auth_service.dart';
 import '../providers/auto_wallpaper_provider.dart';
 import 'auth/login_screen.dart';
+import 'auth/register_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _loginPopupShown = false;
+  @override
+  void initState() {
+    super.initState();
+    // Delay popup for 8 seconds after screen opens
+    Future.delayed(const Duration(seconds: 8), _maybeShowLoginPopup);
+  }
+
+  void _maybeShowLoginPopup() {
+    if (!mounted || _loginPopupShown) return;
+    final isLoggedIn = AuthService().isLoggedIn;
+    if (!isLoggedIn) {
+      _loginPopupShown = true;
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withOpacity(0.7),
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[900]!.withOpacity(0.96),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.person_outline_rounded, size: 38, color: Colors.white),
+                const SizedBox(height: 14),
+                Text('Sign in or Create Account',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 8),
+                Text('Sync favorites, access premium features, and more.',
+                    style: TextStyle(fontSize: 14, color: Colors.white70), textAlign: TextAlign.center),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                        },
+                        child: const Text('Login'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white24),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
+                        },
+                        child: const Text('Sign Up'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +135,7 @@ class ProfileScreen extends StatelessWidget {
 
                 return Stack(
                   children: [
-                    // Animated background gradient orbs
+                    // ...existing code...
                     Positioned(
                       top: -100,
                       right: -50,
@@ -306,7 +399,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 32),
 
                           Text(
-                            'Version 3.0.15',
+                            'Version 3.0.16',
                             style: TextStyle(
                               color: AppTheme.textMuted.withValues(alpha: 0.4),
                               fontSize: 11,
@@ -330,42 +423,37 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
+      padding: const EdgeInsets.only(top: 28, left: 20, right: 20, bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           if (Navigator.canPop(context))
-            Positioned(
-              left: 0,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.getSurface(isDark).withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                    border:
-                        Border.all(color: AppTheme.getSurfaceVariant(isDark)),
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_rounded,
-                    color: AppTheme.getTextPrimary(isDark),
-                    size: 20,
-                  ),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.getSurface(isDark).withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppTheme.getTextPrimary(isDark),
+                  size: 22,
                 ),
               ),
             ),
-          Center(
-            child: Text(
-              'PROFILE',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.getTextPrimary(isDark),
-                    letterSpacing: 2,
-                  ),
-            ),
+          const Spacer(),
+          Text(
+            'Profile',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.getTextPrimary(isDark),
+                  letterSpacing: 1.2,
+                  fontSize: 22,
+                ),
           ),
+          const Spacer(flex: 2),
         ],
       ),
     );
@@ -378,142 +466,49 @@ class ProfileScreen extends StatelessWidget {
 
     return Column(
       children: [
-        // Avatar with glow effect
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // Glow effect
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
-                        .withValues(alpha: 0.4),
-                    blurRadius: 30,
-                    spreadRadius: 10,
-                  ),
-                ],
+        // Minimal avatar with subtle shadow
+        Container(
+          width: 84,
+          height: 84,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: (provider.isPro ? AppTheme.gold : AppTheme.primary).withOpacity(0.18),
+                blurRadius: 18,
+                spreadRadius: 2,
               ),
+            ],
+          ),
+          child: CircleAvatar(
+            radius: 42,
+            backgroundColor: AppTheme.darkSurface,
+            child: Icon(
+              Icons.person_rounded,
+              size: 44,
+              color: AppTheme.getTextPrimary(isDark).withOpacity(0.7),
             ),
-            // Avatar
-            Container(
-              width: 110,
-              height: 110,
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: provider.isPro
-                      ? [AppTheme.gold, const Color(0xFFFFB700)]
-                      : [AppTheme.primary, AppTheme.accent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.darkSurface,
-                ),
-                child: isLoggedIn && user.photoURL != null
-                    ? ClipOval(
-                        child: Image.network(user.photoURL!, fit: BoxFit.cover))
-                    : Icon(
-                        provider.isPro
-                            ? Icons.workspace_premium_rounded
-                            : Icons.person_rounded,
-                        size: 55,
-                        color:
-                            provider.isPro ? AppTheme.gold : AppTheme.primary,
-                      ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Text(
-          isLoggedIn ? (user.displayName ?? 'User') : 'Guest User',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textWhite,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
+        // Name/email
+        Text(
+          isLoggedIn ? (user.displayName ?? 'User') : 'Guest',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.getTextPrimary(isDark),
+                fontSize: 17,
+              ),
+        ),
         if (isLoggedIn)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: provider.isPro
-                  ? const LinearGradient(
-                      colors: [AppTheme.gold, Color(0xFFFFB700)],
-                    )
-                  : null,
-              color: provider.isPro ? null : AppTheme.darkSurfaceVariant,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: provider.isPro
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.gold.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (provider.isPro)
-                  const Icon(
-                    Icons.star_rounded,
-                    color: Colors.black,
-                    size: 14,
+          Padding(
+            padding: const EdgeInsets.only(top: 2.0),
+            child: Text(
+              user.email ?? '',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
                   ),
-                if (provider.isPro) const SizedBox(width: 4),
-                Text(
-                  provider.isPro ? 'PREMIUM MEMBER' : 'FREE ACCOUNT',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        provider.isPro ? Colors.black : AppTheme.textSecondary,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          GestureDetector(
-            onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const LoginScreen())),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.accent],
-                ),
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Text(
-                'Sign In / Register',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
             ),
           ),
       ],

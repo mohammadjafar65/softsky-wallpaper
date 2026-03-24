@@ -798,32 +798,55 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   void _showDownloadSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor ??
-          Theme.of(context).cardColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 70),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                width: 36,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          decoration: BoxDecoration(
+            color: Colors.grey[900]!.withOpacity(0.92),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
                 height: 4,
+                margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            _sheetItem(Icons.hd_rounded, 'Original Quality', () {
-              Navigator.pop(ctx);
-              _download('original');
-            }),
-            _sheetItem(Icons.sd_rounded, 'Medium Quality', () {
-              Navigator.pop(ctx);
-              _download('medium');
-            }),
-          ],
+                  color: Colors.white.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Icon(Icons.download_rounded, size: 38, color: Colors.white),
+              const SizedBox(height: 14),
+              Text('Download Wallpaper',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 8),
+              Text('Select quality to download',
+                  style: TextStyle(fontSize: 14, color: Colors.white70)),
+              const SizedBox(height: 28),
+              _sheetItem(Icons.hd_rounded, 'Original Quality', () {
+                Navigator.pop(ctx);
+                _download('original');
+              }),
+              const SizedBox(height: 10),
+              _sheetItem(Icons.sd_rounded, 'Medium Quality', () {
+                Navigator.pop(ctx);
+                _download('medium');
+              }),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );
@@ -835,14 +858,19 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           decoration: BoxDecoration(
-            color: Colors.grey[900]!.withValues(alpha: 0.9),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+            color: Colors.grey[900]!.withOpacity(0.92),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -850,29 +878,20 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               Container(
                 width: 40,
                 height: 4,
+                margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.18),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                'Set Wallpaper',
-                style: GoogleFonts.outfit(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              Icon(Icons.wallpaper_rounded, size: 38, color: Colors.white),
+              const SizedBox(height: 14),
+              Text('Set Wallpaper',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 8),
-              Text(
-                'Choose where to apply this wallpaper',
-                style: GoogleFonts.outfit(
-                  fontSize: 14,
-                  color: Colors.white54,
-                ),
-              ),
-              const SizedBox(height: 32),
+              Text('Choose where to apply',
+                  style: TextStyle(fontSize: 14, color: Colors.white70)),
+              const SizedBox(height: 28),
               Row(
                 children: [
                   Expanded(
@@ -886,7 +905,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _buildApplyOption(
                       icon: Icons.lock_rounded,
@@ -898,7 +917,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _buildApplyOption(
                       icon: Icons.smartphone_rounded,
@@ -912,7 +931,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
             ],
           ),
         ),

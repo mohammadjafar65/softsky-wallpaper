@@ -5,7 +5,9 @@ import '../config/theme.dart';
 import '../providers/wallpaper_provider.dart';
 import '../providers/search_provider.dart';
 import '../widgets/wallpaper_card.dart';
+import '../providers/subscription_provider.dart';
 import 'wallpaper_detail_screen.dart';
+
 import '../utils/ad_helper.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -351,19 +353,32 @@ class _SearchScreenState extends State<SearchScreen> {
                 wallpaper: wallpaper,
                 height: height,
                 onTap: () {
-                  AdHelper.showInterstitialAd(
-                    onAdClosed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => WallpaperDetailScreen(
-                            wallpapers: results,
-                            initialIndex: index,
+                  final isPro = context.read<SubscriptionProvider>().isPro;
+                  if (!isPro) {
+                    AdHelper.showInterstitialAd(
+                      onAdClosed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WallpaperDetailScreen(
+                              wallpapers: results,
+                              initialIndex: index,
+                            ),
                           ),
+                        );
+                      },
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WallpaperDetailScreen(
+                          wallpapers: results,
+                          initialIndex: index,
                         ),
-                      );
-                    },
-                  );
+                      ),
+                    );
+                  }
                 },
               );
             },

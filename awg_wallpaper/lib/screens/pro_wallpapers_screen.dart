@@ -323,20 +323,34 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
             child: WallpaperCard(
               wallpaper: wallpaper,
               onTap: () {
-                AdHelper.showInterstitialAd(
-                  onAdClosed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => WallpaperDetailScreen(
-                          wallpapers: proWallpapers,
-                          initialIndex:
-                              wallpaperIndex != -1 ? wallpaperIndex : 0,
+                final isPro = context.read<SubscriptionProvider>().isPro;
+                if (!isPro) {
+                  AdHelper.showInterstitialAd(
+                    onAdClosed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WallpaperDetailScreen(
+                            wallpapers: proWallpapers,
+                            initialIndex:
+                                wallpaperIndex != -1 ? wallpaperIndex : 0,
+                          ),
                         ),
+                      );
+                    },
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WallpaperDetailScreen(
+                        wallpapers: proWallpapers,
+                        initialIndex:
+                            wallpaperIndex != -1 ? wallpaperIndex : 0,
                       ),
-                    );
-                  },
-                );
+                    ),
+                  );
+                }
               },
             ),
           );

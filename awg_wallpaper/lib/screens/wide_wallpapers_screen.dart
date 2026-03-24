@@ -8,6 +8,7 @@ import '../widgets/wide_wallpaper_card.dart';
 import 'wallpaper_detail_screen.dart';
 import '../utils/date_formatter.dart';
 import '../utils/ad_helper.dart';
+import '../providers/subscription_provider.dart';
 import 'profile_screen.dart';
 
 class WideWallpapersScreen extends StatelessWidget {
@@ -52,19 +53,32 @@ class WideWallpapersScreen extends StatelessWidget {
                           return WideWallpaperCard(
                             wallpaper: wallpaper,
                             onTap: () {
-                              AdHelper.showInterstitialAd(
-                                onAdClosed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => WallpaperDetailScreen(
-                                        wallpapers: wideWallpapers,
-                                        initialIndex: index,
+                              final isPro = context.read<SubscriptionProvider>().isPro;
+                              if (!isPro) {
+                                AdHelper.showInterstitialAd(
+                                  onAdClosed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => WallpaperDetailScreen(
+                                          wallpapers: wideWallpapers,
+                                          initialIndex: index,
+                                        ),
                                       ),
+                                    );
+                                  },
+                                );
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => WallpaperDetailScreen(
+                                      wallpapers: wideWallpapers,
+                                      initialIndex: index,
                                     ),
-                                  );
-                                },
-                              );
+                                  ),
+                                );
+                              }
                             },
                           );
                         },

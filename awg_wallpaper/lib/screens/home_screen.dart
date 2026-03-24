@@ -395,24 +395,35 @@ class _HomeScreenState extends State<HomeScreen> {
               child: WallpaperCard(
                 wallpaper: item,
                 onTap: () {
-                  // Find the index in the original wallpaper list for consistent browsing
+                  final isPro = context.read<SubscriptionProvider>().isPro;
                   final wallpaperIndex = wallpapers.indexOf(item);
-
-                  // Show Interstitial Ad before navigation
-                  AdHelper.showInterstitialAd(
-                    onAdClosed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => WallpaperDetailScreen(
-                            wallpapers: wallpapers,
-                            initialIndex:
-                                wallpaperIndex != -1 ? wallpaperIndex : 0,
+                  if (!isPro) {
+                    AdHelper.showInterstitialAd(
+                      onAdClosed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WallpaperDetailScreen(
+                              wallpapers: wallpapers,
+                              initialIndex:
+                                  wallpaperIndex != -1 ? wallpaperIndex : 0,
+                            ),
                           ),
+                        );
+                      },
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WallpaperDetailScreen(
+                          wallpapers: wallpapers,
+                          initialIndex:
+                              wallpaperIndex != -1 ? wallpaperIndex : 0,
                         ),
-                      );
-                    },
-                  );
+                      ),
+                    );
+                  }
                 },
               ),
             );
