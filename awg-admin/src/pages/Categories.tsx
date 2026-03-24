@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { wallpapersApi } from '../services/api';
 import { categoriesApi } from '../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -19,7 +20,6 @@ interface Category {
     sourceUrl?: string;
 }
 
-export default function Categories() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -30,6 +30,8 @@ export default function Categories() {
     const [importUrl, setImportUrl] = useState('');
     const [isImporting, setIsImporting] = useState(false);
     const [refetchingId, setRefetchingId] = useState<string | null>(null);
+    const [categoryWallpapers, setCategoryWallpapers] = useState<any[]>([]);
+    const [isWallpapersLoading, setIsWallpapersLoading] = useState(false);
 
     useEffect(() => {
         fetchCategories();
@@ -102,10 +104,19 @@ export default function Categories() {
         }
     };
 
-    const handleEdit = (category: Category) => {
+    const handleEdit = async (category: Category) => {
         setEditingCategory(category);
         setFormData({ name: category.name, icon: category.icon, description: category.description || '' });
         setShowModal(true);
+        setIsWallpapersLoading(true);
+        try {
+            const res = await wallpapersApi.getAll({ category: category.slug });
+            setCategoryWallpapers(res.data.wallpapers || []);
+        } catch (e) {
+            setCategoryWallpapers([]);
+        } finally {
+            setIsWallpapersLoading(false);
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -184,12 +195,12 @@ export default function Categories() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-gray-800 rounded-2xl w-full max-w-md">
+                    <div className="bg-gray-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-6 border-b border-gray-700">
                             <h2 className="text-xl font-bold text-white">
                                 {editingCategory ? 'Edit Category' : 'Add Category'}
                             </h2>
-                            <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-400 hover:text-white">
+                            <button onClick={() => { setShowModal(false); resetForm(); setCategoryWallpapers([]); }} className="text-gray-400 hover:text-white">
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -259,6 +270,26 @@ export default function Categories() {
                                 {isSubmitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}
                             </button>
                         </form>
+                        {/* Wallpapers of this category */}
+                        {editingCategory && (
+                            <div className="p-6 pt-0">
+                                <h3 className="text-lg font-semibold text-white mb-2">Wallpapers in this category</h3>
+                                {isWallpapersLoading ? (
+                                    <div className="text-gray-400">Loading wallpapers...</div>
+                                ) : categoryWallpapers.length === 0 ? (
+                                    <div className="text-gray-400">No wallpapers found in this category.</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                                        {categoryWallpapers.map((wp) => (
+                                            <div key={wp.id} className="bg-gray-700 rounded-lg p-2 flex flex-col items-center">
+                                                <img src={wp.thumbnailUrl || wp.imageUrl} alt={wp.title} className="w-full h-20 object-cover rounded mb-1" />
+                                                <div className="text-xs text-white truncate w-full text-center">{wp.title}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
