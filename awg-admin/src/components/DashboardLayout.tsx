@@ -11,11 +11,13 @@ import {
     Bars3CenterLeftIcon,
     XMarkIcon,
     BellIcon,
+    ArrowsRightLeftIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: HomeIcon },
     { name: 'Wallpapers', href: '/wallpapers', icon: PhotoIcon },
+    { name: 'Reassign', href: '/reassign-wallpapers', icon: ArrowsRightLeftIcon },
     { name: 'Categories', href: '/categories', icon: FolderIcon },
     { name: 'Packs', href: '/packs', icon: FolderIcon },
     { name: 'Users', href: '/users', icon: UsersIcon },

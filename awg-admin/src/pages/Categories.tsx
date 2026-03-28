@@ -20,6 +20,7 @@ interface Category {
     sourceUrl?: string;
 }
 
+export default function Categories() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);

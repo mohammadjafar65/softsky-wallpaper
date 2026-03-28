@@ -334,12 +334,92 @@ router.post(
     }
 );
 
+// Bulk reassign wallpapers to another category (admin only)
+router.put("/bulk-reassign", authenticate, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+        const wallpaperIds = Array.isArray(req.body.wallpaperIds)
+            ? req.body.wallpaperIds
+                .map((id: unknown) => parseInt(String(id), 10))
+                .filter((id: number) => !isNaN(id))
+            : [];
+        const targetCategoryId = parseInt(String(req.body.targetCategoryId), 10);
+
+        if (wallpaperIds.length === 0) {
+            return res.status(400).json({ error: "At least one wallpaper ID is required" });
+        }
+
+        if (isNaN(targetCategoryId)) {
+            return res.status(400).json({ error: "A valid target category is required" });
+        }
+
+        const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
+        const categoryRepository = AppDataSource.getRepository(Category);
+
+        const targetCategory = await categoryRepository.findOne({
+            where: { id: targetCategoryId },
+        });
+
+        if (!targetCategory) {
+            return res.status(404).json({ error: "Target category not found" });
+        }
+
+        const wallpapers = await wallpaperRepository.find({
+            where: wallpaperIds.map((id: number) => ({ id })),
+        });
+
+        if (wallpapers.length === 0) {
+            return res.status(404).json({ error: "Wallpapers not found" });
+        }
+
+        const moveCounts = new Map<number, number>();
+        let movedCount = 0;
+
+        for (const wallpaper of wallpapers) {
+            if (wallpaper.categoryId === targetCategoryId) {
+                continue;
+            }
+
+            moveCounts.set(wallpaper.categoryId, (moveCounts.get(wallpaper.categoryId) || 0) + 1);
+            wallpaper.categoryId = targetCategoryId;
+            movedCount++;
+        }
+
+        if (movedCount === 0) {
+            return res.json({
+                message: "Wallpapers are already in the selected category",
+                movedCount: 0,
+            });
+        }
+
+        await wallpaperRepository.save(wallpapers);
+
+        for (const [sourceCategoryId, count] of moveCounts.entries()) {
+            await categoryRepository.decrement({ id: sourceCategoryId }, "wallpaperCount", count);
+        }
+        await categoryRepository.increment({ id: targetCategoryId }, "wallpaperCount", movedCount);
+
+        res.json({
+            message: "Wallpapers reassigned successfully",
+            movedCount,
+            targetCategory: {
+                id: targetCategory.id,
+                name: targetCategory.name,
+                slug: targetCategory.slug,
+            },
+        });
+    } catch (error) {
+        console.error("Bulk reassign wallpapers error:", error);
+        res.status(500).json({ error: "Failed to reassign wallpapers" });
+    }
+});
+
 // Update wallpaper (admin only)
 router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
         const { title, category, tags, isWide, isPro, packId } = req.body;
 
         const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
+        const categoryRepository = AppDataSource.getRepository(Category);
         const packRepository = AppDataSource.getRepository(Pack);
 
         const wallpaper = await wallpaperRepository.findOne({
@@ -351,7 +431,34 @@ router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
         }
 
         if (title) wallpaper.title = title;
-        if (category) wallpaper.categoryId = parseInt(category);
+        if (category) {
+            const nextCategoryId = parseInt(category);
+            if (isNaN(nextCategoryId)) {
+                return res.status(400).json({ error: "Invalid category ID" });
+            }
+
+            if (wallpaper.categoryId !== nextCategoryId) {
+                const nextCategory = await categoryRepository.findOne({
+                    where: { id: nextCategoryId },
+                });
+
+                if (!nextCategory) {
+                    return res.status(404).json({ error: "Category not found" });
+                }
+
+                await categoryRepository.decrement(
+                    { id: wallpaper.categoryId },
+                    "wallpaperCount",
+                    1
+                );
+                await categoryRepository.increment(
+                    { id: nextCategoryId },
+                    "wallpaperCount",
+                    1
+                );
+                wallpaper.categoryId = nextCategoryId;
+            }
+        }
         if (tags) wallpaper.tags = tags.split(",").map((t: string) => t.trim());
         if (isWide !== undefined)
             wallpaper.isWide = isWide === true || isWide === "true";

@@ -5,6 +5,7 @@ import DashboardLayout from './components/DashboardLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Wallpapers from './pages/Wallpapers';
+import ReassignWallpapers from './pages/ReassignWallpapers';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
 import Packs from './pages/Packs';
@@ -49,6 +50,7 @@ function AppRoutes() {
       >
         <Route index element={<Dashboard />} />
         <Route path="wallpapers" element={<Wallpapers />} />
+        <Route path="reassign-wallpapers" element={<ReassignWallpapers />} />
         <Route path="categories" element={<Categories />} />
         <Route path="users" element={<Users />} />
         <Route path="packs" element={<Packs />} />

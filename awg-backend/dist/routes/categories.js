@@ -156,19 +156,24 @@ router.put("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
 router.delete("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
     try {
         const categoryRepository = data_source_1.AppDataSource.getRepository(Category_1.Category);
+        const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
+        const categoryId = parseInt(req.params.id);
         const category = await categoryRepository.findOne({
-            where: { id: parseInt(req.params.id) },
+            where: { id: categoryId },
         });
         if (!category) {
             return res.status(404).json({ error: "Category not found" });
         }
-        if (category.wallpaperCount > 0) {
+        const wallpaperCount = await wallpaperRepository.count({
+            where: { categoryId },
+        });
+        if (wallpaperCount > 0) {
             return res.status(400).json({
-                error: "Cannot delete category with wallpapers. Please reassign or delete wallpapers first.",
+                error: "This category still has wallpapers. Move them to another category before deleting it.",
             });
         }
-        await categoryRepository.delete(req.params.id);
-        res.json({ message: "Category deleted successfully" });
+        await categoryRepository.delete(categoryId);
+        res.json({ message: "Category deleted successfully." });
     }
     catch (error) {
         res.status(500).json({ error: "Failed to delete category" });

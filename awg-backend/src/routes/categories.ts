@@ -180,16 +180,19 @@ router.delete("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) 
             return res.status(404).json({ error: "Category not found" });
         }
 
-        // Set categoryId to null for all wallpapers in this category
-        await wallpaperRepository.createQueryBuilder()
-            .update()
-            .set({ categoryId: null })
-            .where("category_id = :categoryId", { categoryId })
-            .execute();
+        const wallpaperCount = await wallpaperRepository.count({
+            where: { categoryId },
+        });
+
+        if (wallpaperCount > 0) {
+            return res.status(400).json({
+                error: "This category still has wallpapers. Move them to another category before deleting it.",
+            });
+        }
 
         await categoryRepository.delete(categoryId);
 
-        res.json({ message: "Category deleted successfully. Wallpapers were not deleted and are now uncategorized." });
+        res.json({ message: "Category deleted successfully." });
     } catch (error) {
         res.status(500).json({ error: "Failed to delete category" });
     }

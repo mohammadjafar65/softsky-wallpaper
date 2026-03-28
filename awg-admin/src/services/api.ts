@@ -47,6 +47,8 @@ export const wallpapersApi = {
             },
         }),
     update: (id: string, data: any) => api.put(`/wallpapers/${id}`, data),
+    bulkReassign: (data: { wallpaperIds: Array<string | number>; targetCategoryId: string | number }) =>
+        api.put('/wallpapers/bulk-reassign', data),
     delete: (id: string) => api.delete(`/wallpapers/${id}`),
 };
 
