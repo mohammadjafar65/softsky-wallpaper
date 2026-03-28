@@ -223,116 +223,114 @@ export default function ReassignWallpapers() {
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-400">
                 <span className="text-slate-200">{filteredWallpapers.length}</span> wallpapers across{' '}
                 <span className="text-slate-200">{categories.length}</span> categories
-                {draggedWallpaperId ? ' • Drop on any column to move' : ''}
+                {draggedWallpaperId ? ' | Drop on any category to move' : ''}
             </div>
 
             {isLoading ? (
-                <div className="flex gap-4 overflow-hidden">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, index) => (
-                        <div key={index} className="h-[560px] w-[320px] flex-shrink-0 animate-pulse rounded-2xl bg-slate-900/60" />
+                        <div key={index} className="h-[560px] animate-pulse rounded-2xl bg-slate-900/60" />
                     ))}
                 </div>
             ) : (
-                <div className="overflow-x-auto pb-2">
-                    <div className="flex min-w-max gap-4">
-                        {categories.map((category) => {
-                            const categoryWallpapers = wallpapersByCategory.get(category.id) || [];
-                            const isDropTarget = dragOverCategoryId === category.id;
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {categories.map((category) => {
+                        const categoryWallpapers = wallpapersByCategory.get(category.id) || [];
+                        const isDropTarget = dragOverCategoryId === category.id;
 
-                            return (
-                                <section
-                                    key={category.id}
-                                    onDragOver={(event) => {
-                                        event.preventDefault();
-                                        setDragOverCategoryId(category.id);
-                                    }}
-                                    onDragLeave={() => {
-                                        setDragOverCategoryId((current) => current === category.id ? null : current);
-                                    }}
-                                    onDrop={(event) => {
-                                        event.preventDefault();
-                                        void handleDrop(category.id);
-                                    }}
-                                    className={`w-[320px] flex-shrink-0 rounded-2xl border transition-colors ${
-                                        isDropTarget
-                                            ? 'border-slate-400 bg-slate-800/80'
-                                            : 'border-slate-800 bg-slate-900/60'
-                                    }`}
-                                >
-                                    <div className="sticky top-0 z-10 rounded-t-2xl border-b border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="min-w-0 flex items-center gap-3">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-base">
-                                                    {category.icon || <PhotoIcon className="h-5 w-5 text-slate-400" />}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <h2 className="truncate text-sm font-medium text-white">{category.name}</h2>
-                                                    <p className="text-xs text-slate-500">{categoryWallpapers.length} wallpapers</p>
-                                                </div>
+                        return (
+                            <section
+                                key={category.id}
+                                onDragOver={(event) => {
+                                    event.preventDefault();
+                                    setDragOverCategoryId(category.id);
+                                }}
+                                onDragLeave={() => {
+                                    setDragOverCategoryId((current) => current === category.id ? null : current);
+                                }}
+                                onDrop={(event) => {
+                                    event.preventDefault();
+                                    void handleDrop(category.id);
+                                }}
+                                className={`rounded-2xl border transition-colors ${
+                                    isDropTarget
+                                        ? 'border-slate-400 bg-slate-800/80'
+                                        : 'border-slate-800 bg-slate-900/60'
+                                }`}
+                            >
+                                <div className="sticky top-0 z-10 rounded-t-2xl border-b border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="min-w-0 flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-base">
+                                                {category.icon || <PhotoIcon className="h-5 w-5 text-slate-400" />}
                                             </div>
-
-                                            {isDropTarget && (
-                                                <div className="rounded-full bg-slate-700 px-2 py-1 text-[11px] text-slate-200">
-                                                    Drop here
-                                                </div>
-                                            )}
+                                            <div className="min-w-0">
+                                                <h2 className="truncate text-sm font-medium text-white">{category.name}</h2>
+                                                <p className="text-xs text-slate-500">{categoryWallpapers.length} wallpapers</p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="max-h-[620px] space-y-3 overflow-y-auto p-4">
-                                        {categoryWallpapers.length === 0 ? (
-                                            <div className={`rounded-2xl border border-dashed px-4 py-10 text-center text-sm ${
-                                                isDropTarget
-                                                    ? 'border-slate-500 text-slate-200'
-                                                    : 'border-slate-700 text-slate-500'
-                                            }`}>
-                                                Drop wallpaper here
+                                        {isDropTarget && (
+                                            <div className="rounded-full bg-slate-700 px-2 py-1 text-[11px] text-slate-200">
+                                                Drop here
                                             </div>
-                                        ) : (
-                                            categoryWallpapers.map((wallpaper) => (
-                                                <article
-                                                    key={wallpaper.id}
-                                                    draggable={movingWallpaperId !== wallpaper.id}
-                                                    onDragStart={() => setDraggedWallpaperId(wallpaper.id)}
-                                                    onDragEnd={() => {
-                                                        setDraggedWallpaperId(null);
-                                                        setDragOverCategoryId(null);
-                                                    }}
-                                                    className={`rounded-2xl border p-3 transition ${
-                                                        draggedWallpaperId === wallpaper.id
-                                                            ? 'border-slate-500 bg-slate-800'
-                                                            : 'border-slate-800 bg-slate-950 hover:border-slate-700'
-                                                    } ${movingWallpaperId === wallpaper.id ? 'opacity-50' : ''}`}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <img
-                                                            src={wallpaper.thumbnailUrl || wallpaper.imageUrl}
-                                                            alt={wallpaper.title}
-                                                            className="h-20 w-14 rounded-xl object-cover"
-                                                        />
-
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <p className="truncate text-sm font-medium text-white">{wallpaper.title}</p>
-                                                                {wallpaper.isPro && (
-                                                                    <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300">
-                                                                        Pro
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="mt-1 text-xs text-slate-500">Drag to move</p>
-                                                        </div>
-
-                                                        <ArrowsRightLeftIcon className="h-4 w-4 flex-shrink-0 text-slate-500" />
-                                                    </div>
-                                                </article>
-                                            ))
                                         )}
                                     </div>
-                                </section>
-                            );
-                        })}
-                    </div>
+                                </div>
+
+                                <div className="max-h-[620px] space-y-3 overflow-y-auto p-4">
+                                    {categoryWallpapers.length === 0 ? (
+                                        <div className={`rounded-2xl border border-dashed px-4 py-10 text-center text-sm ${
+                                            isDropTarget
+                                                ? 'border-slate-500 text-slate-200'
+                                                : 'border-slate-700 text-slate-500'
+                                        }`}>
+                                            Drop wallpaper here
+                                        </div>
+                                    ) : (
+                                        categoryWallpapers.map((wallpaper) => (
+                                            <article
+                                                key={wallpaper.id}
+                                                draggable={movingWallpaperId !== wallpaper.id}
+                                                onDragStart={() => setDraggedWallpaperId(wallpaper.id)}
+                                                onDragEnd={() => {
+                                                    setDraggedWallpaperId(null);
+                                                    setDragOverCategoryId(null);
+                                                }}
+                                                className={`rounded-2xl border p-3 transition ${
+                                                    draggedWallpaperId === wallpaper.id
+                                                        ? 'border-slate-500 bg-slate-800'
+                                                        : 'border-slate-800 bg-slate-950 hover:border-slate-700'
+                                                } ${movingWallpaperId === wallpaper.id ? 'opacity-50' : ''}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <img
+                                                        src={wallpaper.thumbnailUrl || wallpaper.imageUrl}
+                                                        alt={wallpaper.title}
+                                                        className="h-20 w-14 rounded-xl object-cover"
+                                                    />
+
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="truncate text-sm font-medium text-white">{wallpaper.title}</p>
+                                                            {wallpaper.isPro && (
+                                                                <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300">
+                                                                    Pro
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="mt-1 text-xs text-slate-500">Drag to move</p>
+                                                    </div>
+
+                                                    <ArrowsRightLeftIcon className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                                                </div>
+                                            </article>
+                                        ))
+                                    )}
+                                </div>
+                            </section>
+                        );
+                    })}
                 </div>
             )}
         </div>
