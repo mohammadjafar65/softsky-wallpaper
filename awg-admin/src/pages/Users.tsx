@@ -1,292 +1,225 @@
 import { useEffect, useState } from 'react';
+import { Button, Pagination, Search, Select, SelectItem } from '@carbon/react';
+import { Download, Edit, TrashCan } from '@carbon/icons-react';
 import { usersApi } from '../services/api';
-import { MagnifyingGlassIcon, FunnelIcon, ArrowDownTrayIcon, TrashIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
-
-interface User {
-    id: string;
-    email: string;
-    displayName: string;
-    photoUrl?: string;
-    authProvider: string;
-    subscription: { plan: string; expiryDate?: string };
-    downloads: number;
-    isActive: boolean;
-    createdAt: string;
-    hasFcmToken: boolean;
-}
-
+import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
 import EditUserModal from '../components/EditUserModal';
 
-export default function Users() {
-    const [users, setUsers] = useState<User[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [planFilter, setPlanFilter] = useState('all');
-
-    // Edit Modal State
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-    useEffect(() => {
-        fetchUsers();
-    }, [page, planFilter]);
-
-    const fetchUsers = async () => {
-        setIsLoading(true);
-        try {
-            const params: any = { page, limit: 10 };
-            if (searchQuery) params.search = searchQuery;
-            if (planFilter !== 'all') params.plan = planFilter;
-
-            const response = await usersApi.getAll(params);
-            setUsers(response.data.users || []);
-            setTotalPages(response.data.pagination?.pages || 1);
-        } catch (error) {
-            console.error('Failed to fetch users:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setPage(1);
-        fetchUsers();
-    };
-
-    const handleEditUser = (user: User) => {
-        setSelectedUser(user);
-        setIsEditModalOpen(true);
-    };
-
-    const handleDeleteUser = async (userId: string, userName: string) => {
-        if (window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
-            try {
-                await usersApi.delete(userId);
-                // Refresh list
-                fetchUsers();
-            } catch (error: any) {
-                console.error('Failed to delete user:', error);
-                const errorMessage = error.response?.data?.error || 'Failed to delete user. Please try again.';
-                alert(errorMessage);
-            }
-        }
-    };
-
-    return (
-        <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Users Management</h1>
-                    <p className="text-slate-400 mt-2">View and manage detailed user information.</p>
-                </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition-colors border border-white/5">
-                    <ArrowDownTrayIcon className="w-5 h-5" />
-                    <span>Export CSV</span>
-                </button>
-            </div>
-
-            {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl">
-                <form onSubmit={handleSearch} className="relative flex-1 w-full">
-                    <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by name or email..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                    />
-                </form>
-
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative group">
-                        <FunnelIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-violet-400" />
-                        <select
-                            value={planFilter}
-                            onChange={(e) => setPlanFilter(e.target.value)}
-                            className="appearance-none pl-10 pr-8 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium min-w-[160px]"
-                        >
-                            <option value="all">All Plans</option>
-                            <option value="free">Free</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="annual">Annual</option>
-                            <option value="lifetime">Lifetime</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            {/* Table */}
-            <div className="bg-slate-900/40 backdrop-blur-md rounded-2xl border border-white/5 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/5 bg-white/5">
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Provider</th>
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Plan</th>
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Push Status</th>
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Downloads</th>
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Joined</th>
-                                <th className="px-6 py-5 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {isLoading ? (
-                                [...Array(5)].map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan={7} className="px-6 py-4">
-                                            <div className="h-10 bg-slate-800/50 rounded-xl" />
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : users.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center">
-                                                <MagnifyingGlassIcon className="w-6 h-6 text-slate-500" />
-                                            </div>
-                                            <p>No users found matching your criteria</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                users.map((user) => (
-                                    <tr key={user.id} className="group hover:bg-white/[0.02] transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-violet-500/20">
-                                                        {user.photoUrl ? (
-                                                            <img src={user.photoUrl} alt="" className="w-full h-full rounded-full object-cover" />
-                                                        ) : (
-                                                            user.displayName?.charAt(0) || 'U'
-                                                        )}
-                                                    </div>
-                                                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${user.isActive ? 'bg-emerald-500' : 'bg-slate-500'}`} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-white font-medium group-hover:text-violet-400 transition-colors">{user.displayName}</p>
-                                                    <p className="text-slate-500 text-xs">{user.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium capitalize">
-                                                <span className={`w-1.5 h-1.5 rounded-full ${user.authProvider === 'google' ? 'bg-blue-500' : 'bg-slate-400'}`} />
-                                                {user.authProvider}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium border capitalize w-fit ${user.subscription.plan === 'free' || (user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime')
-                                                    ? 'bg-slate-800/50 border-slate-700 text-slate-400'
-                                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                                                    }`}>
-                                                    {user.subscription.plan === 'free' || (user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime')
-                                                        ? (user.subscription.plan !== 'free' ? `${user.subscription.plan} (Expired)` : 'free')
-                                                        : user.subscription.plan}
-                                                </span>
-                                                {user.subscription.expiryDate && user.subscription.plan !== 'free' && user.subscription.plan !== 'lifetime' && (
-                                                    <span className="text-[10px] text-slate-500 mt-1">
-                                                        Expires: {new Date(user.subscription.expiryDate).toLocaleDateString()}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium ${user.hasFcmToken
-                                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                                                : 'bg-slate-800/50 border-slate-700 text-slate-500'
-                                                }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${user.hasFcmToken ? 'bg-emerald-500' : 'bg-slate-500'}`} />
-                                                {user.hasFcmToken ? 'Ready' : 'No Token'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-slate-300 font-medium font-mono">{user.downloads}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-400 text-sm">
-                                            {new Date(user.createdAt).toLocaleDateString(undefined, {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric'
-                                            })}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleEditUser(user)}
-                                                    className="p-2 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
-                                                    title="Edit user"
-                                                >
-                                                    <PencilSquareIcon className="w-5 h-5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteUser(user.id, user.displayName)}
-                                                    className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                                                    title="Delete user"
-                                                >
-                                                    <TrashIcon className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2">
-                    <button
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        className="px-4 py-2 rounded-xl bg-slate-900/50 border border-slate-700/50 text-slate-400 disabled:opacity-50 hover:bg-slate-800 transition-colors text-sm font-medium"
-                    >
-                        Previous
-                    </button>
-                    <div className="flex gap-1">
-                        {[...Array(totalPages)].map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setPage(i + 1)}
-                                className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${page === i + 1
-                                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
-                                    : 'bg-slate-900/50 text-slate-500 hover:bg-slate-800 border border-slate-700/50'
-                                    }`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                    </div>
-                    <button
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                        className="px-4 py-2 rounded-xl bg-slate-900/50 border border-slate-700/50 text-slate-400 disabled:opacity-50 hover:bg-slate-800 transition-colors text-sm font-medium"
-                    >
-                        Next
-                    </button>
-                </div>
-            )}
-
-            <EditUserModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                user={selectedUser}
-                onSuccess={() => {
-                    fetchUsers();
-                    setIsEditModalOpen(false);
-                }}
-            />
-        </div>
-    );
+interface User {
+  id: string;
+  email: string;
+  displayName: string;
+  photoUrl?: string;
+  authProvider: string;
+  subscription: { plan: string; expiryDate?: string };
+  downloads: number;
+  isActive: boolean;
+  createdAt: string;
+  hasFcmToken: boolean;
 }
 
+export default function Users() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [planFilter, setPlanFilter] = useState('all');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  useEffect(() => {
+    void fetchUsers();
+  }, [page, planFilter]);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const params: any = { page, limit: 10 };
+      if (searchQuery) params.search = searchQuery;
+      if (planFilter !== 'all') params.plan = planFilter;
+
+      const response = await usersApi.getAll(params);
+      setUsers(response.data.users || []);
+      setTotalPages(response.data.pagination?.pages || 1);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPage(1);
+    await fetchUsers();
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!window.confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await usersApi.delete(userId);
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Failed to delete user:', error);
+      alert(error.response?.data?.error || 'Failed to delete user. Please try again.');
+    }
+  };
+
+  const totalItems = Math.max(totalPages * 10, users.length || 0);
+
+  return (
+    <AdminPage
+      title="Users"
+      subtitle="Inspect account health, subscription status, messaging readiness, and high-value behaviors."
+      actions={
+        <Button kind="secondary" renderIcon={Download}>
+          Export CSV
+        </Button>
+      }
+    >
+      <AdminPanel title="Filters" description="Search across your customer base and narrow by subscription plan.">
+        <div className="admin-form-grid">
+          <form onSubmit={(event) => void handleSearch(event)}>
+            <Search
+              id="user-search"
+              labelText="Search users"
+              placeholder="Search by name or email"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </form>
+
+          <Select
+            id="plan-filter"
+            labelText="Plan"
+            value={planFilter}
+            onChange={(event) => setPlanFilter(event.target.value)}
+          >
+            <SelectItem value="all" text="All plans" />
+            <SelectItem value="free" text="Free" />
+            <SelectItem value="monthly" text="Monthly" />
+            <SelectItem value="annual" text="Annual" />
+            <SelectItem value="lifetime" text="Lifetime" />
+          </Select>
+        </div>
+      </AdminPanel>
+
+      <AdminPanel title="User directory" description="A Carbon-styled operational view of account and plan data.">
+        {isLoading ? (
+          <p>Loading users...</p>
+        ) : users.length === 0 ? (
+          <EmptyState
+            title="No users found"
+            message="Adjust the filters or search query to broaden the result set."
+          />
+        ) : (
+          <div className="admin-grid">
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Provider</th>
+                    <th>Plan</th>
+                    <th>Push</th>
+                    <th>Downloads</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => {
+                    const isExpired =
+                      user.subscription.expiryDate &&
+                      new Date(user.subscription.expiryDate) < new Date() &&
+                      user.subscription.plan !== 'lifetime';
+
+                    return (
+                      <tr key={user.id}>
+                        <td>
+                          <div>
+                            <strong>{user.displayName}</strong>
+                            <div className="admin-authors">{user.email}</div>
+                          </div>
+                        </td>
+                        <td style={{ textTransform: 'capitalize' }}>{user.authProvider}</td>
+                        <td>
+                          <StatusTag
+                            type={
+                              user.subscription.plan === 'free' || isExpired
+                                ? 'cool-gray'
+                                : 'green'
+                            }
+                          >
+                            {isExpired ? `${user.subscription.plan} expired` : user.subscription.plan}
+                          </StatusTag>
+                        </td>
+                        <td>
+                          <StatusTag type={user.hasFcmToken ? 'green' : 'cool-gray'}>
+                            {user.hasFcmToken ? 'Ready' : 'Missing token'}
+                          </StatusTag>
+                        </td>
+                        <td>{user.downloads}</td>
+                        <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <div className="admin-inline-actions">
+                            <Button
+                              kind="ghost"
+                              size="sm"
+                              renderIcon={Edit}
+                              iconDescription="Edit user"
+                              hasIconOnly
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsEditModalOpen(true);
+                              }}
+                            />
+                            <Button
+                              kind="ghost"
+                              size="sm"
+                              renderIcon={TrashCan}
+                              iconDescription="Delete user"
+                              hasIconOnly
+                              onClick={() => void handleDeleteUser(user.id, user.displayName)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 ? (
+              <Pagination
+                backwardText="Previous page"
+                forwardText="Next page"
+                itemsPerPageText="Rows per page"
+                page={page}
+                pageSize={10}
+                pageSizes={[10]}
+                totalItems={totalItems}
+                onChange={({ page }) => setPage(page)}
+              />
+            ) : null}
+          </div>
+        )}
+      </AdminPanel>
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={selectedUser}
+        onSuccess={() => {
+          void fetchUsers();
+          setIsEditModalOpen(false);
+        }}
+      />
+    </AdminPage>
+  );
+}

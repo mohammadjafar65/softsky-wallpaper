@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@carbon/icons-react": "^11.77.0",
+    "@carbon/react": "^1.104.0",
+    "@carbon/styles": "^1.103.0",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.4",
     "axios": "^1.13.2",
@@ -21,6 +24,7 @@
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.10.1",
+    "sass": "^1.98.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },

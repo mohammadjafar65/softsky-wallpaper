@@ -1,927 +1,715 @@
-import { useEffect, useState, useRef } from 'react';
-import { wallpapersApi, categoriesApi, packsApi } from '../services/api';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
-    PlusIcon,
-    MagnifyingGlassIcon,
-    TrashIcon,
-    XMarkIcon,
-    PhotoIcon,
-    CloudArrowUpIcon,
-    ArrowDownTrayIcon,
-    CheckCircleIcon,
-    PencilIcon,
-    StarIcon,
-} from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
+  Button,
+  Checkbox,
+  Modal,
+  ProgressBar,
+  Search,
+  Select,
+  SelectItem,
+  TextInput,
+} from '@carbon/react';
+import { Add, Edit, Star, TrashCan } from '@carbon/icons-react';
+import { categoriesApi, packsApi, wallpapersApi } from '../services/api';
+import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
+import { FilePicker } from '../components/admin/FilePicker';
 
 interface Wallpaper {
-    id: string;
-    title: string;
-    imageUrl: string;
-    thumbnailUrl: string;
-    category: { name: string; slug: string; id: string };
-    isPro: boolean;
-    downloads: number;
+  id: string;
+  title: string;
+  imageUrl: string;
+  thumbnailUrl: string;
+  category: { name: string; slug: string; id: string };
+  isPro: boolean;
+  downloads: number;
 }
 
 interface Category {
-    id: string;
-    name: string;
-    slug: string;
+  id: string;
+  name: string;
+  slug: string;
 }
 
 interface Pack {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
-const ADJECTIVES = ["Abstract", "Vibrant", "Dark", "Neon", "Minimal", "Colorful", "Dreamy", "Mystic", "Modern", "Retro", "Cosmic", "Epic", "Cinematic", "Elegant", "Wild", "Urban"];
-const NOUNS = ["Vibes", "Art", "Concept", "Design", "Vision", "Scene", "World", "Zone", "Style", "Mood", "Essence", "View", "Horizon", "Scape"];
+const ADJECTIVES = ['Abstract', 'Vibrant', 'Dark', 'Neon', 'Minimal', 'Colorful', 'Dreamy', 'Mystic', 'Modern', 'Retro', 'Cosmic', 'Epic', 'Cinematic', 'Elegant', 'Wild', 'Urban'];
+const NOUNS = ['Vibes', 'Art', 'Concept', 'Design', 'Vision', 'Scene', 'World', 'Zone', 'Style', 'Mood', 'Essence', 'View', 'Horizon', 'Scape'];
 
 const generateRandomTitle = (categoryName: string) => {
-    const randomSuffix = Math.floor(Math.random() * 1000) + 1;
-    // 50% chance to be Adjective + Category, 50% Category + Noun
-    if (Math.random() > 0.5) {
-        const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-        return `${adj} ${categoryName} ${randomSuffix}`;
-    } else {
-        const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
-        return `${categoryName} ${noun} ${randomSuffix}`;
-    }
+  const randomSuffix = Math.floor(Math.random() * 1000) + 1;
+  if (Math.random() > 0.5) {
+    const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+    return `${adjective} ${categoryName} ${randomSuffix}`;
+  }
+
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  return `${categoryName} ${noun} ${randomSuffix}`;
 };
 
 export default function Wallpapers() {
-    const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [packs, setPacks] = useState<Pack[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const observerTarget = useRef<HTMLDivElement>(null);
+  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [packs, setPacks] = useState<Pack[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    categories: [] as string[],
+    tags: '',
+    isPro: false,
+    isWide: false,
+    packId: '',
+    newCategoryName: '',
+    newCategoryEmoji: '',
+  });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-    // Edit Mode State
-    const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
-    const [showEditModal, setShowEditModal] = useState(false);
+  useEffect(() => {
+    void fetchCategories();
+    void fetchPacks();
+  }, []);
 
-    // Form state
-    const [formData, setFormData] = useState({
-        title: '',
-        categories: [] as string[],
-        tags: '',
-        isPro: false,
-        isWide: false,
-        packId: '',
-        newCategoryName: '',
-        newCategoryEmoji: '',
-    });
-    // Changed from selectedFile to selectedFiles
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    void fetchWallpapers(true);
+  }, [selectedCategory]);
 
-    useEffect(() => {
-        fetchCategories();
-        fetchPacks();
-    }, []);
-
-    useEffect(() => {
-        // Reset and fetch from page 1 when category changes
-        setPage(1);
-        setWallpapers([]);
-        setHasMore(true);
-        fetchWallpapers(true);
-    }, [selectedCategory]);
-
-    // Clean up object URLs to avoid memory leaks
-    useEffect(() => {
-        return () => {
-            previewUrls.forEach(url => URL.revokeObjectURL(url));
-        };
-    }, [previewUrls]);
-
-    // Infinite scroll observer
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoading) {
-                    fetchWallpapers(false);
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (observerTarget.current) {
-            observer.observe(observerTarget.current);
-        }
-
-        return () => {
-            if (observerTarget.current) {
-                observer.unobserve(observerTarget.current);
-            }
-        };
-    }, [hasMore, isLoadingMore, isLoading, page]);
-
-    const fetchCategories = async () => {
-        try {
-            const response = await categoriesApi.getAll();
-            setCategories(response.data.categories || []);
-        } catch (error) {
-            console.error('Failed to fetch categories:', error);
-        }
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
+  }, [previewUrls]);
 
-    const fetchPacks = async () => {
-        try {
-            const response = await packsApi.getAll();
-            setPacks(response.data.packs || []);
-        } catch (error) {
-            console.error('Failed to fetch packs:', error);
-        }
-    };
-
-    const fetchWallpapers = async (reset = false) => {
-        if (!hasMore && !reset) return;
-
-        const loading = reset ? setIsLoading : setIsLoadingMore;
-        loading(true);
-
-        try {
-            const params: any = { page: reset ? 1 : page, limit: 20 };
-            if (selectedCategory !== 'all') params.category = selectedCategory;
-
-            const response = await wallpapersApi.getAll(params);
-            const newWallpapers = response.data.wallpapers || [];
-
-            if (reset) {
-                setWallpapers(newWallpapers);
-                setPage(2);
-            } else {
-                setWallpapers(prev => [...prev, ...newWallpapers]);
-                setPage(prev => prev + 1);
-            }
-
-            // Check if there are more pages
-            const totalPages = response.data.pagination?.pages || 1;
-            const currentPage = reset ? 1 : page;
-            setHasMore(currentPage < totalPages);
-        } catch (error) {
-            console.error('Failed to fetch wallpapers:', error);
-        } finally {
-            loading(false);
-        }
-    };
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length > 0) {
-            setSelectedFiles(prev => [...prev, ...files]);
-            const newUrls = files.map(file => URL.createObjectURL(file));
-            setPreviewUrls(prev => [...prev, ...newUrls]);
-        }
-    };
-
-    const removeFile = (index: number) => {
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-        setPreviewUrls(prev => {
-            URL.revokeObjectURL(prev[index]);
-            return prev.filter((_, i) => i !== index);
-        });
-    };
-
-    const toggleCategorySelection = (catId: string) => {
-        setFormData(prev => {
-            if (prev.categories.includes(catId)) {
-                return { ...prev, categories: prev.categories.filter(id => id !== catId) };
-            } else {
-                return { ...prev, categories: [...prev.categories, catId] };
-            }
-        });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (selectedFiles.length === 0 || (formData.categories.length === 0 && !formData.newCategoryName)) {
-            toast.error('Please select files and at least one category');
-            return;
-        }
-
-        setIsSubmitting(true);
-        setUploadProgress(0);
-        let successCount = 0;
-        let failCount = 0;
-        const totalOperations = selectedFiles.length * (formData.categories.length + (formData.newCategoryName ? 1 : 0));
-        let completedOperations = 0;
-
-        try {
-            for (let i = 0; i < selectedFiles.length; i++) {
-                const file = selectedFiles[i];
-
-                // For each selected category, upload the wallpaper
-                for (const catId of formData.categories) {
-                    const data = new FormData();
-                    data.append('image', file);
-
-                    // Generate title
-                    let titleToUse = '';
-                    if (formData.title) {
-                        titleToUse = selectedFiles.length > 1 ? `${formData.title} ${i + 1}` : formData.title;
-                    } else {
-                        // Find category name
-                        const category = categories.find(c => c.id === catId);
-                        const categoryName = category ? category.name : 'Wallpaper';
-                        titleToUse = generateRandomTitle(categoryName);
-                    }
-
-                    data.append('title', titleToUse);
-                    data.append('category', catId); // Upload for this specific category
-                    data.append('tags', formData.tags);
-                    data.append('isPro', formData.isPro.toString());
-                    data.append('isWide', formData.isWide.toString());
-                    if (formData.packId) data.append('packId', formData.packId);
-
-                    try {
-                        await wallpapersApi.create(data);
-                        successCount++;
-                    } catch (error: any) {
-                        console.error(`Failed to upload ${file.name} to category ${catId}`, error.response?.data || error);
-                        failCount++;
-                    }
-
-                    completedOperations++;
-                    setUploadProgress(Math.round((completedOperations / totalOperations) * 100));
-                }
-
-                // If new category is specified
-                if (formData.newCategoryName) {
-                    try {
-                        let newCategoryId = "";
-
-                        // Check if category already exists in local list to avoid duplicates/errors
-                        const existingCat = categories.find(c => c.name.toLowerCase() === formData.newCategoryName.toLowerCase());
-                        if (existingCat) {
-                            newCategoryId = existingCat.id;
-                        } else {
-                            // Create the category first
-                            const catResponse = await categoriesApi.create({
-                                name: formData.newCategoryName,
-                                icon: formData.newCategoryEmoji || "🎨"
-                            });
-                            newCategoryId = catResponse.data.category.id;
-                            // Refresh categories list
-                            fetchCategories();
-                        }
-
-                        if (newCategoryId) {
-                            const data = new FormData();
-                            data.append('image', file);
-
-                            // Generate title
-                            let titleToUse = '';
-                            if (formData.title) {
-                                titleToUse = selectedFiles.length > 1 ? `${formData.title} ${i + 1}` : formData.title;
-                            } else {
-                                titleToUse = generateRandomTitle(formData.newCategoryName);
-                            }
-
-                            data.append('title', titleToUse);
-                            data.append('category', newCategoryId); // Use the new ID
-                            data.append('tags', formData.tags);
-                            data.append('isPro', formData.isPro.toString());
-                            data.append('isWide', formData.isWide.toString());
-                            if (formData.packId) data.append('packId', formData.packId);
-
-                            await wallpapersApi.create(data);
-                            successCount++;
-                        }
-                    } catch (error: any) {
-                        console.error(`Failed to upload ${file.name} to new category ${formData.newCategoryName}`, error.response?.data || error);
-                        failCount++;
-                    }
-
-                    completedOperations++;
-                    setUploadProgress(Math.round((completedOperations / totalOperations) * 100));
-                }
-            }
-
-            if (successCount > 0) {
-                toast.success(`Successfully uploaded ${successCount} wallpaper${successCount !== 1 ? 's' : ''}!`);
-                if (failCount > 0) {
-                    toast.error(`Failed to upload ${failCount} wallpapers.`);
-                }
-                setShowModal(false);
-                resetForm();
-                fetchWallpapers();
-            } else {
-                toast.error('Failed to upload wallpapers');
-            }
-        } catch (error: any) {
-            toast.error('An unexpected error occurred');
-        } finally {
-            setIsSubmitting(false);
-            setUploadProgress(0);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this wallpaper?')) return;
-
-        try {
-            await wallpapersApi.delete(id);
-            toast.success('Wallpaper deleted successfully!');
-            fetchWallpapers();
-            // Remove from selection if present
-            if (selectedIds.has(id)) {
-                const newSet = new Set(selectedIds);
-                newSet.delete(id);
-                setSelectedIds(newSet);
-            }
-        } catch (error) {
-            toast.error('Failed to delete wallpaper');
-        }
-    };
-
-    const handleBulkDelete = async () => {
-        if (selectedIds.size === 0) return;
-        if (!confirm(`Are you sure you want to delete ${selectedIds.size} wallpapers?`)) return;
-
-        let deletedCount = 0;
-        for (const id of selectedIds) {
-            try {
-                await wallpapersApi.delete(id);
-                deletedCount++;
-            } catch (error) {
-                console.error(`Failed to delete ${id}`, error);
-            }
-        }
-
-        toast.success(`Deleted ${deletedCount} wallpapers`);
-        setSelectedIds(new Set());
-        fetchWallpapers();
+  const filteredWallpapers = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return wallpapers;
     }
 
-    const handleBulkSetPro = async (isPro: boolean) => {
-        if (selectedIds.size === 0) return;
-        if (!confirm(`Are you sure you want to mark ${selectedIds.size} wallpapers as ${isPro ? 'Pro' : 'Free'}?`)) return;
-
-        let updatedCount = 0;
-        for (const id of selectedIds) {
-            try {
-                // Optimistic update
-                setWallpapers(prev =>
-                    prev.map(w => w.id === id ? { ...w, isPro } : w)
-                );
-                await wallpapersApi.update(id, { isPro });
-                updatedCount++;
-            } catch (error) {
-                console.error(`Failed to update ${id}`, error);
-                // Revert on error
-                setWallpapers(prev =>
-                    prev.map(w => w.id === id ? { ...w, isPro: !isPro } : w)
-                );
-            }
-        }
-
-        toast.success(`Updated ${updatedCount} wallpapers to ${isPro ? 'Pro' : 'Free'}`);
-        setSelectedIds(new Set());
-    }
-
-    const toggleSelection = (id: string, multiSelect: boolean) => {
-        const newSet = new Set(multiSelect ? selectedIds : []);
-        if (newSet.has(id)) {
-            newSet.delete(id);
-        } else {
-            newSet.add(id);
-        }
-        setSelectedIds(newSet);
-    };
-
-    const handleSelectAllVisible = () => {
-        if (selectedIds.size === wallpapers.length) {
-            // Deselect all
-            setSelectedIds(new Set());
-        } else {
-            // Select all visible
-            setSelectedIds(new Set(wallpapers.map(w => w.id)));
-        }
-    };
-
-    const handleEditClick = (wallpaper: Wallpaper) => {
-        setEditingWallpaper(wallpaper);
-        setFormData({
-            title: wallpaper.title,
-            categories: [wallpaper.category.id], // Pre-select existing category
-            tags: '',
-            isPro: wallpaper.isPro,
-            isWide: false,
-            packId: '',
-            newCategoryName: '',
-            newCategoryEmoji: '',
-        });
-        setShowEditModal(true);
-    };
-
-    const handleEditSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingWallpaper) return;
-
-        try {
-            await wallpapersApi.update(editingWallpaper.id, {
-                title: formData.title,
-            });
-            toast.success("Wallpaper updated");
-            setShowEditModal(false);
-            setEditingWallpaper(null);
-            fetchWallpapers();
-        } catch (e) {
-            toast.error("Failed to update");
-        }
-    };
-
-    const handleTogglePro = async (wallpaper: Wallpaper) => {
-        const newProStatus = !wallpaper.isPro;
-
-        // Optimistic update
-        setWallpapers(prev =>
-            prev.map(w => w.id === wallpaper.id ? { ...w, isPro: newProStatus } : w)
-        );
-
-        try {
-            await wallpapersApi.update(wallpaper.id, {
-                isPro: newProStatus,
-            });
-            toast.success(`Wallpaper marked as ${newProStatus ? 'Pro' : 'Free'}`);
-        } catch (error) {
-            // Revert on error
-            setWallpapers(prev =>
-                prev.map(w => w.id === wallpaper.id ? { ...w, isPro: !newProStatus } : w)
-            );
-            toast.error('Failed to update wallpaper status');
-        }
-    };
-
-    const resetForm = () => {
-        setFormData({ title: '', categories: [], tags: '', isPro: false, isWide: false, packId: '', newCategoryName: '', newCategoryEmoji: '' });
-        setSelectedFiles([]);
-        setPreviewUrls([]);
-    };
-
-    return (
-        <div className="space-y-8 pb-20 md:pb-0">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Wallpapers</h1>
-                    <p className="text-slate-400 mt-2 text-sm md:text-base">Manage your wallpaper collection</p>
-                </div>
-                <div className="flex gap-2">
-                    {selectedIds.size > 0 && (
-                        <>
-                            <button
-                                onClick={() => handleBulkSetPro(true)}
-                                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 font-medium transition-all"
-                                title="Set selected to Pro"
-                            >
-                                <StarIcon className="w-5 h-5 flex-shrink-0" />
-                                <span className="hidden lg:inline text-sm whitespace-nowrap">Pro</span>
-                            </button>
-                            <button
-                                onClick={() => handleBulkSetPro(false)}
-                                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-xl bg-slate-500/10 hover:bg-slate-500/20 text-slate-300 border border-slate-500/20 font-medium transition-all"
-                                title="Set selected to Free"
-                            >
-                                <StarIcon className="w-5 h-5 opacity-50 flex-shrink-0" />
-                                <span className="hidden lg:inline text-sm whitespace-nowrap">Free</span>
-                            </button>
-                            <button
-                                onClick={handleBulkDelete}
-                                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 font-medium transition-all"
-                                title="Delete selected"
-                            >
-                                <TrashIcon className="w-5 h-5 flex-shrink-0" />
-                                <span className="hidden lg:inline text-sm whitespace-nowrap">Delete ({selectedIds.size})</span>
-                                <span className="lg:hidden text-sm">({selectedIds.size})</span>
-                            </button>
-                        </>
-                    )}
-                    {wallpapers.length > 0 && (
-                        <button
-                            onClick={handleSelectAllVisible}
-                            className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 font-medium transition-all"
-                        >
-                            <CheckCircleIcon className="w-5 h-5" />
-                            <span className="hidden md:inline">
-                                {selectedIds.size === wallpapers.length ? 'Deselect All' : `Select All (${wallpapers.length})`}
-                            </span>
-                            <span className="md:hidden">
-                                {selectedIds.size === wallpapers.length ? 'None' : 'All'}
-                            </span>
-                        </button>
-                    )}
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-lg shadow-violet-500/25 transition-all transform hover:scale-105"
-                    >
-                        <PlusIcon className="w-5 h-5" />
-                        <span className="hidden md:inline">Upload New</span>
-                        <span className="md:hidden">New</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 p-4 bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl">
-                <div className="relative flex-1 w-full">
-                    <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search wallpapers..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                    />
-                </div>
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium appearance-none min-w-[180px]"
-                >
-                    <option value="all">All Categories</option>
-                    {categories.map((cat) => (
-                        <option key={cat.id} value={cat.slug}>{cat.name}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Grid */}
-            {isLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="aspect-[9/16] bg-slate-800/50 rounded-2xl animate-pulse border border-white/5" />
-                    ))}
-                </div>
-            ) : wallpapers.length === 0 ? (
-                <div className="text-center py-20 bg-slate-900/30 rounded-3xl border border-white/5 border-dashed">
-                    <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <PhotoIcon className="w-10 h-10 text-slate-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">No wallpapers found</h3>
-                    <p className="text-slate-400">Upload your first wallpaper to get started</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                    {wallpapers.map((wallpaper) => (
-                        <div
-                            key={wallpaper.id}
-                            className={`group relative aspect-[9/16] rounded-2xl overflow-hidden bg-slate-800 shadow-2xl transition-all duration-300 hover:shadow-violet-500/10 ${selectedIds.has(wallpaper.id) ? 'ring-2 ring-violet-500' : ''}`}
-                        >
-                            {/* Selection Checkbox Area */}
-                            <div
-                                className="absolute top-2 left-2 z-20 cursor-pointer p-2 -ml-2 -mt-2"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleSelection(wallpaper.id, true);
-                                }}
-                            >
-                                {selectedIds.has(wallpaper.id) ? (
-                                    <CheckCircleIconSolid className="w-6 h-6 text-violet-500 bg-white rounded-full" />
-                                ) : (
-                                    <CheckCircleIcon className="w-6 h-6 text-white/70 hover:text-white drop-shadow-md" />
-                                )}
-                            </div>
-
-                            <img
-                                src={wallpaper.thumbnailUrl}
-                                alt={wallpaper.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                            {/* Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-5 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                    <h3 className="text-white font-bold truncate text-sm md:text-lg shadow-sm">{wallpaper.title}</h3>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className="text-slate-300 text-xs font-medium bg-black/30 px-2 py-0.5 rounded-lg backdrop-blur-sm">
-                                            {wallpaper.category?.name}
-                                        </span>
-                                        {wallpaper.isPro && (
-                                            <span className="px-2 py-0.5 text-[10px] uppercase font-bold bg-amber-500 text-black rounded-md shadow-lg shadow-amber-500/20">PRO</span>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-2 mt-3 text-slate-400 text-xs font-medium">
-                                        <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                                        <span>{wallpaper.downloads}</span>
-                                    </div>
-                                </div>
-                                <div className="absolute top-2 right-2 flex gap-2 transform -translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleTogglePro(wallpaper);
-                                        }}
-                                        className={`p-2 backdrop-blur-md rounded-xl text-white transition shadow-lg ${wallpaper.isPro
-                                            ? 'bg-amber-500/90 hover:bg-amber-600 shadow-amber-500/20'
-                                            : 'bg-slate-600/90 hover:bg-slate-700 shadow-slate-500/20'
-                                            }`}
-                                        title={wallpaper.isPro ? 'Mark as Free' : 'Mark as Pro'}
-                                    >
-                                        <StarIcon className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEditClick(wallpaper);
-                                        }}
-                                        className="p-2 bg-blue-500/90 backdrop-blur-md rounded-xl text-white hover:bg-blue-600 transition shadow-lg shadow-blue-500/20"
-                                    >
-                                        <PencilIcon className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(wallpaper.id);
-                                        }}
-                                        className="p-2 bg-red-500/90 backdrop-blur-md rounded-xl text-white hover:bg-red-600 transition shadow-lg shadow-red-500/20"
-                                    >
-                                        <TrashIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Infinite Scroll Loading Indicator */}
-            {!isLoading && wallpapers.length > 0 && (
-                <div ref={observerTarget} className="py-8">
-                    {isLoadingMore && (
-                        <div className="flex flex-col items-center justify-center gap-3">
-                            <div className="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin" />
-                            <p className="text-slate-400 text-sm font-medium">Loading more wallpapers...</p>
-                        </div>
-                    )}
-                    {!hasMore && (
-                        <div className="text-center">
-                            <p className="text-slate-500 text-sm font-medium">No more wallpapers to load</p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Upload Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-                    <div className="relative w-full max-w-2xl bg-slate-900 rounded-3xl border border-white/10 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-scale-up">
-                        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Upload Wallpaper</h2>
-                                <p className="text-slate-400 text-sm mt-1">Add new wallpapers to your collection</p>
-                            </div>
-                            <button onClick={() => { setShowModal(false); resetForm(); }} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                                <XMarkIcon className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <div className="overflow-y-auto p-8">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Image Upload */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-300 mb-3">Wallpaper Images</label>
-                                    <div className="space-y-4">
-                                        <div
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className={`group relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${previewUrls.length > 0 ? 'border-violet-500/30 bg-violet-500/5' : 'border-slate-700 hover:border-violet-500 hover:bg-slate-800/50'
-                                                }`}
-                                        >
-                                            <div className="py-2">
-                                                <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                                                    <CloudArrowUpIcon className="w-8 h-8 text-violet-400" />
-                                                </div>
-                                                <p className="text-slate-200 font-medium text-lg">Click to upload files</p>
-                                                <p className="text-slate-500 text-sm mt-1">Select one or multiple files (max. 10MB each)</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Previews Grid */}
-                                        {previewUrls.length > 0 && (
-                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-4">
-                                                {previewUrls.map((url, index) => (
-                                                    <div key={url} className="relative group aspect-[9/16] rounded-xl overflow-hidden bg-slate-800 border border-white/10">
-                                                        <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeFile(index)}
-                                                                className="p-1.5 bg-red-500 rounded-lg text-white hover:bg-red-600 transition"
-                                                            >
-                                                                <XMarkIcon className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                        <div className="absolute top-1 left-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-white font-medium">
-                                                            #{index + 1}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        multiple // Enable multiple file selection
-                                        onChange={handleFileSelect}
-                                        className="hidden"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Title {selectedFiles.length > 1 && '(Base Title)'}</label>
-                                        <input
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                            placeholder={selectedFiles.length > 1 ? "Leave empty to auto-generate based on category" : "e.g. Abstract Waves (or leave empty for auto-gen)"}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Categories</label>
-                                        <div className="w-full h-32 overflow-y-auto px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 scrollbar-thin scrollbar-thumb-slate-700">
-                                            <div className="space-y-2">
-                                                {categories.map((cat) => (
-                                                    <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
-                                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.categories.includes(cat.id) ? 'bg-violet-600 border-violet-600' : 'border-slate-600 group-hover:border-violet-500'}`}>
-                                                            {formData.categories.includes(cat.id) && <span className="text-white text-xs font-bold">✓</span>}
-                                                        </div>
-                                                        <input
-                                                            type="checkbox"
-                                                            className="hidden"
-                                                            checked={formData.categories.includes(cat.id)}
-                                                            onChange={() => toggleCategorySelection(cat.id)}
-                                                        />
-                                                        <span className={`text-sm ${formData.categories.includes(cat.id) ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>{cat.name}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <p className="text-xs text-slate-500 mt-1">Select multiple to upload copies to each</p>
-                                    </div>
-
-                                    {/* Create New Category */}
-                                    <div className="mt-4 pt-4 border-t border-slate-800">
-                                        <label className="block text-sm font-semibold text-violet-400 mb-2">Or Create New Category</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            <div className="col-span-2">
-                                                <input
-                                                    type="text"
-                                                    value={formData.newCategoryName}
-                                                    onChange={(e) => setFormData({ ...formData, newCategoryName: e.target.value })}
-                                                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm"
-                                                    placeholder="Category Name"
-                                                />
-                                            </div>
-                                            <div>
-                                                <input
-                                                    type="text"
-                                                    value={formData.newCategoryEmoji}
-                                                    onChange={(e) => setFormData({ ...formData, newCategoryEmoji: e.target.value })}
-                                                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm text-center"
-                                                    placeholder="Emoji"
-                                                    maxLength={2}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-300 mb-2">Tags</label>
-                                    <input
-                                        type="text"
-                                        value={formData.tags}
-                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                        placeholder="nature, landscape, sunset (comma separated)"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-300 mb-2">Assign to Pack (Optional)</label>
-                                    <select
-                                        value={formData.packId}
-                                        onChange={(e) => setFormData({ ...formData, packId: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium appearance-none"
-                                    >
-                                        <option value="">None</option>
-                                        {packs.map((pack) => (
-                                            <option key={pack.id} value={pack.id}>{pack.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="flex gap-6 pt-2">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${formData.isPro ? 'bg-violet-600 border-violet-600' : 'border-slate-600 group-hover:border-violet-500'}`}>
-                                            {formData.isPro && <span className="text-white text-sm font-bold">✓</span>}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isPro}
-                                            onChange={(e) => setFormData({ ...formData, isPro: e.target.checked })}
-                                            className="hidden"
-                                        />
-                                        <span className="text-slate-300 font-medium group-hover:text-white transition-colors">Pro Only</span>
-                                    </label>
-
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${formData.isWide ? 'bg-violet-600 border-violet-600' : 'border-slate-600 group-hover:border-violet-500'}`}>
-                                            {formData.isWide && <span className="text-white text-sm font-bold">✓</span>}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isWide}
-                                            onChange={(e) => setFormData({ ...formData, isWide: e.target.checked })}
-                                            className="hidden"
-                                        />
-                                        <span className="text-slate-300 font-medium group-hover:text-white transition-colors">Wide (Desktop)</span>
-                                    </label>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div className="p-6 border-t border-white/5 bg-slate-900/50 backdrop-blur-md">
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:shadow-violet-500/30 hover:scale-[1.02] transition-all disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden"
-                            >
-                                <span className="relative z-10">
-                                    {isSubmitting
-                                        ? `Uploading... ${uploadProgress}%`
-                                        : `Upload ${selectedFiles.length > 0 ? `${selectedFiles.length * (formData.categories.length || 1)} Wallpapers` : 'Wallpaper'}`
-                                    }
-                                </span>
-                                {isSubmitting && (
-                                    <div
-                                        className="absolute inset-0 bg-white/20 transition-all duration-300 ease-out"
-                                        style={{ width: `${uploadProgress}%` }}
-                                    />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div >
-            )
-            }
-
-            {/* Edit Modal */}
-            {
-                showEditModal && editingWallpaper && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
-                        <div className="relative w-full max-w-md bg-slate-900 rounded-3xl border border-white/10 shadow-2xl overflow-hidden animate-scale-up">
-                            <div className="flex items-center justify-between p-6 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
-                                <h2 className="text-xl font-bold text-white">Edit Wallpaper</h2>
-                                <button onClick={() => setShowEditModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition">
-                                    <XMarkIcon className="w-6 h-6" />
-                                </button>
-                            </div>
-                            <div className="p-8">
-                                <form onSubmit={handleEditSubmit} className="space-y-6">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
-                                        <input
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all font-medium"
-                                            required
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        className="w-full py-4 rounded-xl bg-violet-600 text-white font-bold text-lg shadow-xl shadow-violet-500/20 hover:bg-violet-700 transition-all"
-                                    >
-                                        Save Changes
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-        </div >
+    const query = searchQuery.toLowerCase();
+    return wallpapers.filter(
+      (wallpaper) =>
+        wallpaper.title.toLowerCase().includes(query) ||
+        wallpaper.category.name.toLowerCase().includes(query)
     );
-}
+  }, [searchQuery, wallpapers]);
 
+  const fetchCategories = async () => {
+    try {
+      const response = await categoriesApi.getAll();
+      setCategories(response.data.categories || []);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
+  const fetchPacks = async () => {
+    try {
+      const response = await packsApi.getAll();
+      setPacks(response.data.packs || []);
+    } catch (error) {
+      console.error('Failed to fetch packs:', error);
+    }
+  };
+
+  const fetchWallpapers = async (reset = false) => {
+    if (!reset && !hasMore) {
+      return;
+    }
+
+    if (reset) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    try {
+      const nextPage = reset ? 1 : page;
+      const params: any = { page: nextPage, limit: 20 };
+      if (selectedCategory !== 'all') {
+        params.category = selectedCategory;
+      }
+
+      const response = await wallpapersApi.getAll(params);
+      const nextWallpapers = response.data.wallpapers || [];
+      const totalPages = response.data.pagination?.pages || 1;
+
+      if (reset) {
+        setWallpapers(nextWallpapers);
+        setPage(2);
+      } else {
+        setWallpapers((current) => [...current, ...nextWallpapers]);
+        setPage((current) => current + 1);
+      }
+
+      setHasMore(nextPage < totalPages);
+      if (reset) {
+        setSelectedIds(new Set());
+      }
+    } catch (error) {
+      console.error('Failed to fetch wallpapers:', error);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) {
+      return;
+    }
+
+    setSelectedFiles((current) => [...current, ...files]);
+    const nextPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls((current) => [...current, ...nextPreviewUrls]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+    setPreviewUrls((current) => {
+      URL.revokeObjectURL(current[index]);
+      return current.filter((_, previewIndex) => previewIndex !== index);
+    });
+  };
+
+  const toggleCategorySelection = (categoryId: string, checked: boolean) => {
+    setFormData((current) => ({
+      ...current,
+      categories: checked
+        ? [...current.categories, categoryId]
+        : current.categories.filter((id) => id !== categoryId),
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      categories: [],
+      tags: '',
+      isPro: false,
+      isWide: false,
+      packId: '',
+      newCategoryName: '',
+      newCategoryEmoji: '',
+    });
+    setSelectedFiles([]);
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedFiles.length || (!formData.categories.length && !formData.newCategoryName.trim())) {
+      toast.error('Select files and at least one category');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setUploadProgress(0);
+
+    let successCount = 0;
+    let failCount = 0;
+    const categoryOperations = formData.categories.length + (formData.newCategoryName.trim() ? 1 : 0);
+    const totalOperations = Math.max(1, selectedFiles.length * categoryOperations);
+    let completedOperations = 0;
+
+    try {
+      for (let index = 0; index < selectedFiles.length; index += 1) {
+        const file = selectedFiles[index];
+
+        for (const categoryId of formData.categories) {
+          const data = new FormData();
+          data.append('image', file);
+          data.append('title', formData.title
+            ? selectedFiles.length > 1 ? `${formData.title} ${index + 1}` : formData.title
+            : generateRandomTitle(categories.find((category) => category.id === categoryId)?.name || 'Wallpaper'));
+          data.append('category', categoryId);
+          data.append('tags', formData.tags);
+          data.append('isPro', String(formData.isPro));
+          data.append('isWide', String(formData.isWide));
+          if (formData.packId) {
+            data.append('packId', formData.packId);
+          }
+
+          try {
+            await wallpapersApi.create(data);
+            successCount += 1;
+          } catch (error) {
+            console.error('Failed to upload wallpaper:', error);
+            failCount += 1;
+          }
+
+          completedOperations += 1;
+          setUploadProgress(Math.round((completedOperations / totalOperations) * 100));
+        }
+
+        if (formData.newCategoryName.trim()) {
+          try {
+            let categoryId =
+              categories.find((category) => category.name.toLowerCase() === formData.newCategoryName.toLowerCase())?.id || '';
+
+            if (!categoryId) {
+              const response = await categoriesApi.create({
+                name: formData.newCategoryName.trim(),
+                icon: formData.newCategoryEmoji || '🎨',
+              });
+              categoryId = response.data.category.id;
+              await fetchCategories();
+            }
+
+            const data = new FormData();
+            data.append('image', file);
+            data.append(
+              'title',
+              formData.title
+                ? selectedFiles.length > 1
+                  ? `${formData.title} ${index + 1}`
+                  : formData.title
+                : generateRandomTitle(formData.newCategoryName.trim())
+            );
+            data.append('category', categoryId);
+            data.append('tags', formData.tags);
+            data.append('isPro', String(formData.isPro));
+            data.append('isWide', String(formData.isWide));
+            if (formData.packId) {
+              data.append('packId', formData.packId);
+            }
+
+            await wallpapersApi.create(data);
+            successCount += 1;
+          } catch (error) {
+            console.error('Failed to upload wallpaper to new category:', error);
+            failCount += 1;
+          }
+
+          completedOperations += 1;
+          setUploadProgress(Math.round((completedOperations / totalOperations) * 100));
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Uploaded ${successCount} wallpaper${successCount !== 1 ? 's' : ''}`);
+        if (failCount > 0) {
+          toast.error(`${failCount} uploads failed`);
+        }
+        setShowModal(false);
+        resetForm();
+        await fetchWallpapers(true);
+      } else {
+        toast.error('Failed to upload wallpapers');
+      }
+    } finally {
+      setIsSubmitting(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this wallpaper?')) {
+      return;
+    }
+
+    try {
+      await wallpapersApi.delete(id);
+      toast.success('Wallpaper deleted');
+      await fetchWallpapers(true);
+      setSelectedIds((current) => {
+        const next = new Set(current);
+        next.delete(id);
+        return next;
+      });
+    } catch {
+      toast.error('Failed to delete wallpaper');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.size || !window.confirm(`Delete ${selectedIds.size} selected wallpapers?`)) {
+      return;
+    }
+
+    let deletedCount = 0;
+    for (const id of selectedIds) {
+      try {
+        await wallpapersApi.delete(id);
+        deletedCount += 1;
+      } catch (error) {
+        console.error(`Failed to delete ${id}`, error);
+      }
+    }
+
+    toast.success(`Deleted ${deletedCount} wallpapers`);
+    setSelectedIds(new Set());
+    await fetchWallpapers(true);
+  };
+
+  const handleBulkSetPro = async (isPro: boolean) => {
+    if (!selectedIds.size || !window.confirm(`Mark ${selectedIds.size} wallpapers as ${isPro ? 'Pro' : 'Free'}?`)) {
+      return;
+    }
+
+    let updatedCount = 0;
+    for (const id of selectedIds) {
+      try {
+        await wallpapersApi.update(id, { isPro });
+        updatedCount += 1;
+      } catch (error) {
+        console.error(`Failed to update ${id}`, error);
+      }
+    }
+
+    toast.success(`Updated ${updatedCount} wallpapers`);
+    setSelectedIds(new Set());
+    await fetchWallpapers(true);
+  };
+
+  const handleTogglePro = async (wallpaper: Wallpaper) => {
+    const nextValue = !wallpaper.isPro;
+
+    setWallpapers((current) =>
+      current.map((item) => (item.id === wallpaper.id ? { ...item, isPro: nextValue } : item))
+    );
+
+    try {
+      await wallpapersApi.update(wallpaper.id, { isPro: nextValue });
+      toast.success(`Wallpaper marked as ${nextValue ? 'Pro' : 'Free'}`);
+    } catch {
+      setWallpapers((current) =>
+        current.map((item) => (item.id === wallpaper.id ? { ...item, isPro: wallpaper.isPro } : item))
+      );
+      toast.error('Failed to update wallpaper status');
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingWallpaper) {
+      return;
+    }
+
+    try {
+      await wallpapersApi.update(editingWallpaper.id, { title: formData.title });
+      toast.success('Wallpaper updated');
+      setShowEditModal(false);
+      setEditingWallpaper(null);
+      await fetchWallpapers(true);
+    } catch {
+      toast.error('Failed to update wallpaper');
+    }
+  };
+
+  const visibleSelected = filteredWallpapers.filter((wallpaper) => selectedIds.has(wallpaper.id)).length;
+
+  return (
+    <AdminPage
+      title="Wallpapers"
+      subtitle="Run the core content workflow: upload, classify, edit, promote, and clean up wallpaper inventory."
+      actions={
+        <>
+          {selectedIds.size > 0 ? (
+            <>
+              <Button kind="secondary" renderIcon={Star} onClick={() => void handleBulkSetPro(true)}>
+                Mark Pro
+              </Button>
+              <Button kind="secondary" renderIcon={Star} onClick={() => void handleBulkSetPro(false)}>
+                Mark Free
+              </Button>
+              <Button kind="danger--tertiary" renderIcon={TrashCan} onClick={() => void handleBulkDelete()}>
+                Delete selected
+              </Button>
+            </>
+          ) : null}
+          <Button renderIcon={Add} onClick={() => setShowModal(true)}>
+            Upload wallpapers
+          </Button>
+        </>
+      }
+    >
+      <AdminPanel title="Filters" description="Search the loaded inventory and narrow the feed by category.">
+        <div className="admin-form-grid">
+          <Search
+            id="wallpaper-search"
+            labelText="Search wallpapers"
+            placeholder="Search by title or category"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+          <Select
+            id="wallpaper-category-filter"
+            labelText="Category"
+            value={selectedCategory}
+            onChange={(event) => {
+              setSelectedCategory(event.target.value);
+              setPage(1);
+              setHasMore(true);
+            }}
+          >
+            <SelectItem value="all" text="All categories" />
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.slug} text={category.name} />
+            ))}
+          </Select>
+        </div>
+      </AdminPanel>
+
+      <AdminPanel
+        title="Wallpaper inventory"
+        description={`${filteredWallpapers.length} loaded wallpapers${selectedIds.size ? `, ${visibleSelected} selected` : ''}`}
+      >
+        {isLoading ? (
+          <p>Loading wallpapers...</p>
+        ) : filteredWallpapers.length === 0 ? (
+          <EmptyState
+            title="No wallpapers found"
+            message="Adjust the filters or upload new content to populate the library."
+            actionLabel="Upload wallpapers"
+            onAction={() => setShowModal(true)}
+          />
+        ) : (
+          <div className="admin-grid">
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Select</th>
+                    <th>Wallpaper</th>
+                    <th>Category</th>
+                    <th>Downloads</th>
+                    <th>Access</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredWallpapers.map((wallpaper) => (
+                    <tr key={wallpaper.id}>
+                      <td>
+                        <Checkbox
+                          id={`wallpaper-${wallpaper.id}`}
+                          labelText=""
+                          checked={selectedIds.has(wallpaper.id)}
+                          onChange={(_, { checked }) =>
+                            setSelectedIds((current) => {
+                              const next = new Set(current);
+                              if (checked) {
+                                next.add(wallpaper.id);
+                              } else {
+                                next.delete(wallpaper.id);
+                              }
+                              return next;
+                            })
+                          }
+                        />
+                      </td>
+                      <td>
+                        <div className="admin-media-object">
+                          <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
+                          <div>
+                            <strong>{wallpaper.title}</strong>
+                            <div className="admin-authors">{wallpaper.id}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{wallpaper.category.name}</td>
+                      <td>{wallpaper.downloads}</td>
+                      <td>
+                        <StatusTag type={wallpaper.isPro ? 'purple' : 'cool-gray'}>
+                          {wallpaper.isPro ? 'Pro' : 'Free'}
+                        </StatusTag>
+                      </td>
+                      <td>
+                        <div className="admin-inline-actions">
+                          <Button
+                            kind="ghost"
+                            size="sm"
+                            renderIcon={Edit}
+                            iconDescription="Edit wallpaper"
+                            hasIconOnly
+                            onClick={() => {
+                              setEditingWallpaper(wallpaper);
+                              setFormData((current) => ({ ...current, title: wallpaper.title }));
+                              setShowEditModal(true);
+                            }}
+                          />
+                          <Button
+                            kind="ghost"
+                            size="sm"
+                            renderIcon={Star}
+                            iconDescription="Toggle pro status"
+                            hasIconOnly
+                            onClick={() => void handleTogglePro(wallpaper)}
+                          />
+                          <Button
+                            kind="ghost"
+                            size="sm"
+                            renderIcon={TrashCan}
+                            iconDescription="Delete wallpaper"
+                            hasIconOnly
+                            onClick={() => void handleDelete(wallpaper.id)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {hasMore ? (
+              <Button kind="secondary" onClick={() => void fetchWallpapers(false)} disabled={isLoadingMore}>
+                {isLoadingMore ? 'Loading more...' : 'Load more'}
+              </Button>
+            ) : null}
+          </div>
+        )}
+      </AdminPanel>
+
+      <Modal
+        open={showModal}
+        modalHeading="Upload wallpapers"
+        primaryButtonText={isSubmitting ? 'Uploading...' : 'Start upload'}
+        secondaryButtonText="Cancel"
+        primaryButtonDisabled={isSubmitting}
+        onRequestClose={() => {
+          setShowModal(false);
+          resetForm();
+        }}
+        onRequestSubmit={() => void handleSubmit()}
+        size="lg"
+      >
+        <div className="admin-grid">
+          <FilePicker
+            label="Wallpaper images"
+            helperText="Choose one or more files. Uploads can target multiple categories at once."
+            accept="image/*"
+            multiple
+            onChange={handleFileSelect}
+          />
+
+          {previewUrls.length ? (
+            <div className="admin-preview-grid">
+              {previewUrls.map((url, index) => (
+                <div key={url} className="admin-preview-card">
+                  <img src={url} alt={`Preview ${index + 1}`} />
+                  <Button kind="ghost" size="sm" onClick={() => removeFile(index)}>
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {isSubmitting ? (
+            <ProgressBar label="Upload progress" value={uploadProgress} max={100} helperText={`${uploadProgress}%`} />
+          ) : null}
+
+          <div className="admin-form-grid">
+            <TextInput
+              id="wallpaper-title"
+              labelText={selectedFiles.length > 1 ? 'Base title' : 'Title'}
+              helperText="Leave empty to auto-generate titles from the category name."
+              value={formData.title}
+              onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
+            />
+
+            <TextInput
+              id="wallpaper-tags"
+              labelText="Tags"
+              helperText="Comma separated tags."
+              value={formData.tags}
+              onChange={(event) => setFormData((current) => ({ ...current, tags: event.target.value }))}
+            />
+
+            <Select
+              id="wallpaper-pack"
+              labelText="Assign to pack"
+              value={formData.packId}
+              onChange={(event) => setFormData((current) => ({ ...current, packId: event.target.value }))}
+            >
+              <SelectItem value="" text="No pack" />
+              {packs.map((pack) => (
+                <SelectItem key={pack.id} value={pack.id} text={pack.name} />
+              ))}
+            </Select>
+
+            <TextInput
+              id="new-category-name"
+              labelText="Create new category"
+              helperText="Optional. If set, uploads will also create/use this category."
+              value={formData.newCategoryName}
+              onChange={(event) => setFormData((current) => ({ ...current, newCategoryName: event.target.value }))}
+            />
+
+            <TextInput
+              id="new-category-icon"
+              labelText="New category emoji"
+              value={formData.newCategoryEmoji}
+              onChange={(event) => setFormData((current) => ({ ...current, newCategoryEmoji: event.target.value }))}
+            />
+          </div>
+
+          <div className="admin-grid">
+            <strong>Assign to existing categories</strong>
+            <div className="admin-grid admin-grid--cards">
+              {categories.map((category) => (
+                <div key={category.id} className="admin-panel">
+                  <Checkbox
+                    id={`category-select-${category.id}`}
+                    labelText={category.name}
+                    checked={formData.categories.includes(category.id)}
+                    onChange={(_, { checked }) => toggleCategorySelection(category.id, Boolean(checked))}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="admin-chip-row">
+            <Checkbox
+              id="wallpaper-pro"
+              labelText="Pro only"
+              checked={formData.isPro}
+              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isPro: Boolean(checked) }))}
+            />
+            <Checkbox
+              id="wallpaper-wide"
+              labelText="Wide desktop wallpaper"
+              checked={formData.isWide}
+              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isWide: Boolean(checked) }))}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showEditModal}
+        modalHeading="Edit wallpaper"
+        primaryButtonText="Save changes"
+        secondaryButtonText="Cancel"
+        onRequestClose={() => {
+          setShowEditModal(false);
+          setEditingWallpaper(null);
+        }}
+        onRequestSubmit={() => void handleEditSubmit()}
+      >
+        <TextInput
+          id="edit-wallpaper-title"
+          labelText="Title"
+          value={formData.title}
+          onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
+        />
+      </Modal>
+    </AdminPage>
+  );
+}

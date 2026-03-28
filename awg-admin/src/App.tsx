@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { Theme } from '@carbon/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './components/DashboardLayout';
 import Login from './pages/Login';
@@ -17,8 +18,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+      <div className="admin-login">
+        <div className="admin-panel">Loading session...</div>
       </div>
     );
   }
@@ -31,8 +32,8 @@ function AppRoutes() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+      <div className="admin-login">
+        <div className="admin-panel">Loading session...</div>
       </div>
     );
   }
@@ -63,20 +64,24 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: '#1f2937',
-              color: '#fff',
-              border: '1px solid #374151',
-            },
-          }}
-        />
-      </AuthProvider>
-    </BrowserRouter>
+    <Theme theme="g100">
+      <div className="app-frame">
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#262626',
+                  color: '#f4f4f4',
+                  border: '1px solid #525252',
+                },
+              }}
+            />
+          </AuthProvider>
+        </BrowserRouter>
+      </div>
+    </Theme>
   );
 }
