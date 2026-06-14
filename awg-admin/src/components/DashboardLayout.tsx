@@ -12,6 +12,7 @@ import {
   Menu,
   MoveHorizontal,
   Search,
+  Settings,
   Users,
   X,
 } from 'lucide-react';
@@ -47,48 +48,74 @@ export default function DashboardLayout() {
 
   return (
     <div className="admin-shell">
-      <header className="admin-topbar">
-        <NavLink to="/" className="admin-topbar__brand" onClick={() => setIsNavOpen(false)}>
-          <span className="admin-topbar__brand-mark">
-            <GalleryVerticalEnd size={18} />
+      <aside className={`admin-sidebar ${isNavOpen ? 'admin-sidebar--open' : ''}`}>
+        <NavLink to="/" className="admin-sidebar__brand" onClick={() => setIsNavOpen(false)}>
+          <span className="admin-sidebar__brand-mark">
+            <GalleryVerticalEnd size={16} />
           </span>
-          <span>SoftSky</span>
+          <strong>SoftSky</strong>
         </NavLink>
 
-        <nav className={`admin-topnav ${isNavOpen ? 'admin-topnav--open' : ''}`}>
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to);
+        <div className="admin-sidebar__section">
+          <p className="admin-sidebar__eyebrow">Overview</p>
+          <nav className="admin-sidebar__nav">
+            {navigation.slice(0, 5).map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to);
 
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setIsNavOpen(false)}
-                className={`admin-topnav__link ${isActive ? 'admin-topnav__link--active' : ''}`}
-              >
-                <Icon size={14} />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsNavOpen(false)}
+                  className={`admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`}
+                >
+                  <Icon size={16} />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
 
-        <div className="admin-topbar__actions">
-          <span className="admin-header__status">
-            <span className="admin-header__dot" />
-            {currentPage}
-          </span>
-          <button type="button" className="admin-round-button" aria-label="Search">
-            <Search size={16} />
+        <div className="admin-sidebar__section">
+          <p className="admin-sidebar__eyebrow">Business</p>
+          <nav className="admin-sidebar__nav">
+            {navigation.slice(5).map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname.startsWith(item.to);
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsNavOpen(false)}
+                  className={`admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`}
+                >
+                  <Icon size={16} />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="admin-sidebar__footer">
+          <p className="admin-sidebar__eyebrow">Settings</p>
+          <button type="button" className="admin-sidebar__link">
+            <Settings size={16} />
+            <span>Setting</span>
           </button>
-          <button type="button" className="admin-round-button" aria-label="Notifications">
-            <Bell size={16} />
-          </button>
-          <Button variant="ghost" onClick={handleLogout} size="icon" className="admin-round-button" title={user?.email || 'Sign out'}>
+          <button type="button" className="admin-sidebar__link admin-sidebar__logout" onClick={handleLogout}>
             <LogOut size={16} />
-          </Button>
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <section className="admin-main">
+        <header className="admin-topbar">
           <button
             type="button"
             className="admin-menu-toggle"
@@ -97,19 +124,32 @@ export default function DashboardLayout() {
           >
             {isNavOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
-        </div>
-      </header>
 
-      <main className="admin-content">
-        <div className="admin-content__inner">
-          <Outlet />
-        </div>
-      </main>
+          <div className="admin-search">
+            <Search size={15} />
+            <span>Search {currentPage.toLowerCase()}...</span>
+          </div>
 
-      <div className="admin-shell__footer">
-        <span>{user?.displayName || 'Admin'}</span>
-        <span>{user?.email || 'Signed in'}</span>
-      </div>
+          <div className="admin-topbar__actions">
+            <button type="button" className="admin-round-button" aria-label="Messages">
+              <GalleryVerticalEnd size={15} />
+            </button>
+            <button type="button" className="admin-round-button" aria-label="Notifications">
+              <Bell size={15} />
+            </button>
+            <Button variant="ghost" onClick={handleLogout} className="admin-profile-chip" title={user?.email || 'Sign out'}>
+              <span className="admin-profile-chip__avatar">{(user?.displayName || 'A').slice(0, 1)}</span>
+              <span>{user?.displayName || 'Admin'}</span>
+            </Button>
+          </div>
+        </header>
+
+        <main className="admin-content">
+          <div className="admin-content__inner">
+            <Outlet />
+          </div>
+        </main>
+      </section>
     </div>
   );
 }

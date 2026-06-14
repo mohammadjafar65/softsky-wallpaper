@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Activity, ArrowRight, FolderOpen, Images, RefreshCw, Sparkles, Users } from 'lucide-react';
+import { Activity, ArrowRight, FolderOpen, Images, Play, RefreshCw, Sparkles, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { categoriesApi, healthApi, usersApi, wallpapersApi } from '../services/api';
 import { AdminPage, AdminPanel, StatTile, StatusTag } from '../components/admin/AdminPage';
@@ -119,6 +119,24 @@ export default function Dashboard() {
         </Button>
       }
     >
+      <section className="admin-hero-panel">
+        <div>
+          <p>Admin CMS</p>
+          <h2>Sharpen your wallpaper business with a focused content dashboard</h2>
+          <button type="button" onClick={() => navigate('/wallpapers')}>
+            Manage library
+            <span>
+              <Play size={12} fill="currentColor" />
+            </span>
+          </button>
+        </div>
+        <div className="admin-hero-panel__metrics">
+          <span>{stats.totalWallpapers.toLocaleString()} wallpapers</span>
+          <span>{stats.totalUsers.toLocaleString()} users</span>
+          <span>{stats.proUsers.toLocaleString()} pro</span>
+        </div>
+      </section>
+
       <div className="admin-grid admin-grid--stats">
         <StatTile label="Total wallpapers" value={stats.totalWallpapers.toLocaleString()} helper="Published inventory" tone="blue" loading={isLoading} />
         <StatTile label="Categories" value={stats.totalCategories.toLocaleString()} helper="Active content groups" tone="purple" loading={isLoading} />
