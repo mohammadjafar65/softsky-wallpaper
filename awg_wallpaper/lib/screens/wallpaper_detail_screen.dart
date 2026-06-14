@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:ui';
 import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../config/theme.dart';
 import '../models/wallpaper.dart';
 import '../providers/bookmark_provider.dart';
@@ -317,30 +319,35 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     return InteractiveViewer(
       minScale: 0.8,
       maxScale: 4.0,
-      child: CachedNetworkImage(
-        imageUrl: wallpaper.imageUrl,
-        fit: wallpaper.isWide ? BoxFit.contain : BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: Colors
-              .black, // Keep black loading for detail screen to avoid flash
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: AppTheme.primary,
-              strokeWidth: 2,
+      child: wallpaper.imageUrl.startsWith('assets/')
+          ? Image.asset(
+              wallpaper.imageUrl,
+              fit: wallpaper.isWide ? BoxFit.contain : BoxFit.cover,
+            )
+          : CachedNetworkImage(
+              imageUrl: wallpaper.imageUrl,
+              fit: wallpaper.isWide ? BoxFit.contain : BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors
+                    .black, // Keep black loading for detail screen to avoid flash
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primary,
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: Colors.black,
+                child: const Center(
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: Colors.white54,
+                    size: 64,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: Colors.black,
-          child: const Center(
-            child: Icon(
-              Icons.broken_image_rounded,
-              color: Colors.white54,
-              size: 64,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -1160,11 +1167,22 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     try {
       // simulate quality selection (in real app, use different URLs)
       final url = _currentWallpaper.imageUrl;
-      final file = await DefaultCacheManager().getSingleFile(url);
+      String filePath;
+      
+      if (url.startsWith('assets/')) {
+        final byteData = await rootBundle.load(url);
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/temp_wallpaper_download.jpg');
+        await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+        filePath = file.path;
+      } else {
+        final file = await DefaultCacheManager().getSingleFile(url);
+        filePath = file.path;
+      }
 
       const platform = MethodChannel('com.awg.wallpaper/wallpaper');
       final result =
-          await platform.invokeMethod('saveToGallery', {'path': file.path});
+          await platform.invokeMethod('saveToGallery', {'path': filePath});
 
       if (mounted) {
         Navigator.pop(context); // Close progress dialog
@@ -1198,20 +1216,31 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     _showApplyProgress();
 
     try {
-      final file =
-          await DefaultCacheManager().getSingleFile(_currentWallpaper.imageUrl);
+      final url = _currentWallpaper.imageUrl;
+      String filePath;
+      
+      if (url.startsWith('assets/')) {
+        final byteData = await rootBundle.load(url);
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/temp_wallpaper_apply.jpg');
+        await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+        filePath = file.path;
+      } else {
+        final file = await DefaultCacheManager().getSingleFile(url);
+        filePath = file.path;
+      }
 
       // Call native channel
       const platform = MethodChannel('com.awg.wallpaper/wallpaper');
       final result = await platform.invokeMethod(
-          'setWallpaper', {'path': file.path, 'location': location});
+          'setWallpaper', {'path': filePath, 'location': location});
 
       if (mounted) {
         Navigator.pop(context);
         if (result == true) {
           _showSuccessMsg('Wallpaper applied successfully');
         } else {
-          _showManualSetDialog(file.path);
+          _showManualSetDialog(filePath);
         }
       }
     } catch (e) {

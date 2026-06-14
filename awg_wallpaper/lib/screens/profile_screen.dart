@@ -163,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              Colors.purple.withValues(alpha: 0.15),
+                              Colors.blueGrey.withValues(alpha: 0.18),
                               Colors.transparent,
                             ],
                           ),
@@ -180,12 +180,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           // Header
                           _buildHeader(context, isDark),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 16),
 
-                          // Avatar & Info
-                          _buildUserInfo(context, subscriptionProvider, isDark),
+                          // Profile hero
+                          _buildProfileHero(
+                            context,
+                            subscriptionProvider,
+                            isDark,
+                            isLoggedIn,
+                          ),
 
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 24),
 
                           // Stats Cards
                           _buildStatsCards(
@@ -201,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // PRO FEATURES section
                           _buildSettingsGroup(
-                            title: 'PRO FEATURES',
+                            title: 'Pro Features',
                             isDark: isDark,
                             children: [
                               _buildProFeatureTile(
@@ -212,10 +217,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ? 'Active • ${autoWallpaperProvider.getIntervalName(autoWallpaperProvider.interval)}'
                                         : 'Schedule automatic changes')
                                     : 'PRO Feature - Upgrade to unlock',
-                                iconColor: Colors.purple,
+                                iconColor: AppTheme.primary,
                                 gradientColors: [
-                                  Colors.purple.withValues(alpha: 0.2),
-                                  Colors.deepPurple.withValues(alpha: 0.1),
+                                  AppTheme.primary.withValues(alpha: 0.2),
+                                  AppTheme.primary.withValues(alpha: 0.08),
                                 ],
                                 isDark: isDark,
                                 showLock: !subscriptionProvider.isPro,
@@ -244,7 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 iconColor: Colors.orange,
                                 gradientColors: [
                                   Colors.orange.withValues(alpha: 0.2),
-                                  Colors.amber.withValues(alpha: 0.1),
+                                  Colors.amber.withValues(alpha: 0.08),
                                 ],
                                 isDark: isDark,
                                 showLock: !subscriptionProvider.isPro,
@@ -269,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // PREFERENCES section
                           _buildSettingsGroup(
-                            title: 'PREFERENCES',
+                            title: 'Preferences',
                             isDark: isDark,
                             children: [
                               if (subscriptionProvider.isPro)
@@ -352,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // SUPPORT section
                           _buildSettingsGroup(
-                            title: 'SUPPORT',
+                            title: 'Support',
                             isDark: isDark,
                             children: [
                               _buildSettingsTile(
@@ -399,7 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 32),
 
                           Text(
-                            'Version 3.0.16',
+                            'Version 3.0.22',
                             style: TextStyle(
                               color: AppTheme.textMuted.withValues(alpha: 0.4),
                               fontSize: 11,
@@ -423,7 +428,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeader(BuildContext context, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(top: 28, left: 20, right: 20, bottom: 8),
+      padding: const EdgeInsets.only(top: 24, left: 20, right: 20, bottom: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -431,26 +436,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppTheme.getSurface(isDark).withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.getSurface(isDark).withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.5),
+                  ),
                 ),
                 child: Icon(
                   Icons.arrow_back_rounded,
                   color: AppTheme.getTextPrimary(isDark),
-                  size: 22,
+                  size: 20,
                 ),
               ),
             ),
           const Spacer(),
           Text(
-            'Profile',
+            'Account',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.getTextPrimary(isDark),
-                  letterSpacing: 1.2,
-                  fontSize: 22,
+                  letterSpacing: 0.2,
+                  fontSize: 21,
                 ),
           ),
           const Spacer(flex: 2),
@@ -459,59 +467,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildUserInfo(
-      BuildContext context, SubscriptionProvider provider, bool isDark) {
+  Widget _buildProfileHero(BuildContext context, SubscriptionProvider provider,
+      bool isDark, bool isLoggedIn) {
     final user = AuthService().currentUser;
-    final isLoggedIn = user != null;
+    final displayName = isLoggedIn ? (user?.displayName ?? 'User') : 'Guest User';
+    final subtitle = isLoggedIn
+        ? (user?.email ?? 'Signed in account')
+        : 'Sign in to sync your likes and premium access';
 
-    return Column(
-      children: [
-        // Minimal avatar with subtle shadow
-        Container(
-          width: 84,
-          height: 84,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: (provider.isPro ? AppTheme.gold : AppTheme.primary).withOpacity(0.18),
-                blurRadius: 18,
-                spreadRadius: 2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(18),
+        borderRadius: 24,
+        blur: 20,
+        opacity: isDark ? 0.08 : 0.4,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        border: Border.all(
+          color: AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.45),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: provider.isPro
+                      ? [AppTheme.gold, const Color(0xFFFFE28A)]
+                      : [
+                          AppTheme.primary.withValues(alpha: 0.95),
+                          AppTheme.primary.withValues(alpha: 0.7),
+                        ],
+                ),
               ),
-            ],
-          ),
-          child: CircleAvatar(
-            radius: 42,
-            backgroundColor: AppTheme.darkSurface,
-            child: Icon(
-              Icons.person_rounded,
-              size: 44,
-              color: AppTheme.getTextPrimary(isDark).withOpacity(0.7),
+              child: Icon(
+                provider.isPro
+                    ? Icons.workspace_premium_rounded
+                    : Icons.person_rounded,
+                size: 34,
+                color: Colors.black.withValues(alpha: 0.8),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 14),
-        // Name/email
-        Text(
-          isLoggedIn ? (user.displayName ?? 'User') : 'Guest',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppTheme.getTextPrimary(isDark),
-                fontSize: 17,
-              ),
-        ),
-        if (isLoggedIn)
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: Text(
-              user.email ?? '',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textMuted,
-                    fontSize: 12,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.getTextPrimary(isDark),
+                        ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.getTextSecondary(isDark)
+                          .withValues(alpha: 0.9),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
+                          .withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      provider.isPro ? 'PRO MEMBER' : 'FREE PLAN',
+                      style: TextStyle(
+                        color: provider.isPro ? AppTheme.gold : AppTheme.primary,
+                        fontSize: 10,
+                        letterSpacing: 0.7,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
+            if (!isLoggedIn)
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.primary,
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                child: const Text('Sign in'),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -562,42 +623,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildStatCard(String label, String value, IconData icon,
       List<Color> gradientColors, Color iconColor, bool isDark) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(20),
-      borderRadius: 20,
-      blur: 20,
-      opacity: 0.1,
-      color: iconColor,
-      border: Border.all(
-        color: iconColor.withValues(alpha: 0.3),
-        width: 1,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 28,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.getTextPrimary(isDark),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(20),
+        borderRadius: 20,
+        blur: 16,
+        opacity: isDark ? 0.08 : 0.28,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        border: Border.all(
+          color: iconColor.withValues(alpha: 0.25),
+          width: 1,
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: iconColor,
+              size: 26,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.getTextSecondary(isDark),
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.getTextPrimary(isDark),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.getTextSecondary(isDark),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -616,12 +687,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
                 color: AppTheme.gold.withValues(alpha: 0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -632,12 +703,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Colors.black, size: 24),
               SizedBox(width: 12),
               Text(
-                'UPGRADE TO PRO',
+                'Upgrade to PRO',
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  letterSpacing: 1.2,
+                  fontSize: 15,
+                  letterSpacing: 0.4,
                 ),
               ),
             ],
@@ -655,14 +726,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 32, bottom: 12),
+          padding: const EdgeInsets.only(left: 24, bottom: 10),
           child: Text(
             title,
             style: TextStyle(
-              color: AppTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
+              color: AppTheme.getTextSecondary(isDark).withValues(alpha: 0.9),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
             ),
           ),
         ),
@@ -670,13 +741,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 20),
           child: GlassContainer(
             padding: EdgeInsets.zero,
-            borderRadius: 20,
-            blur: 25,
-            opacity: isDark ? 0.05 : 0.4,
+            borderRadius: 22,
+            blur: 22,
+            opacity: isDark ? 0.06 : 0.36,
             color: isDark ? AppTheme.darkSurface : Colors.white,
             border: Border.all(
               color: (isDark ? AppTheme.darkSurfaceVariant : Colors.white)
-                  .withValues(alpha: 0.3),
+                  .withValues(alpha: 0.55),
             ),
             child: Column(
               children: [
@@ -732,8 +803,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: AppTheme.textWhite,
+        style: TextStyle(
+          color: AppTheme.getTextPrimary(isDark),
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
@@ -819,10 +890,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: AppTheme.textWhite,
+        style: TextStyle(
+          color: AppTheme.getTextPrimary(isDark),
           fontSize: 15,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
       subtitle: subtitle != null

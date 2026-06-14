@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -35,6 +36,7 @@ class WallpaperProvider extends ChangeNotifier {
   // int _totalProPages = 1; // Unused
   bool _hasMorePro = true;
   bool _isProLoading = false;
+  int _proRequestId = 0;
 
   // Use API mode (set to false to use sample data)
   // bool _useApi = true;
@@ -121,7 +123,7 @@ class WallpaperProvider extends ChangeNotifier {
           return <Category>[];
         }),
         _apiService
-            .getWallpapers(page: 1, limit: 20, isWide: false)
+            .getWallpapers(page: 1, limit: 20, isPro: false, isWide: false)
             .catchError((e) {
           debugPrint('Error loading wallpapers: $e');
           return WallpapersResponse(
@@ -179,8 +181,8 @@ class WallpaperProvider extends ChangeNotifier {
       final proNonWideResponse = results[4] as WallpapersResponse;
       _totalProWallpapers = proNonWideResponse.total;
 
-      // Total Non-Wide minus Pro Non-Wide equals Free Non-Wide
-      _totalFreeWallpapers = wallpapersResponse.total - _totalProWallpapers;
+      // wallpapersResponse is already filtered to free (isPro: false)
+      _totalFreeWallpapers = wallpapersResponse.total;
 
       // Overall total (all categories)
       _totalWallpapers =
@@ -188,6 +190,9 @@ class WallpaperProvider extends ChangeNotifier {
 
       // Save to cache
       _saveToCache();
+
+      // Also pre-load the first page of pro wallpapers
+      unawaited(loadProWallpapers(refresh: true));
     } catch (e) {
       debugPrint('Failed to load data from API: $e');
       rethrow;
@@ -287,6 +292,7 @@ class WallpaperProvider extends ChangeNotifier {
       final response = await _apiService.getWallpapers(
         page: _currentPage + 1,
         limit: 20,
+        isPro: false,
         category: _selectedCategory == 'all' ? null : _selectedCategory,
         isWide: false, // Explicitly exclude wide wallpapers
       );
@@ -324,6 +330,7 @@ class WallpaperProvider extends ChangeNotifier {
       final response = await _apiService.getWallpapers(
         page: 1,
         limit: 30,
+        isPro: false,
         category: category,
         isWide: false, // Explicitly exclude wide wallpapers
       );
@@ -346,17 +353,21 @@ class WallpaperProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadProWallpapers({bool refresh = false}) async {
-    if (_isProLoading || (!refresh && !_hasMorePro)) return;
+  Future<void> loadProWallpapers({
+    bool refresh = false,
+    bool force = false,
+  }) async {
+    if (!refresh && !force && (_isProLoading || !_hasMorePro)) return;
 
-    _isProLoading = true;
-    notifyListeners();
-
-    if (refresh) {
+    if (refresh || force) {
       _currentProPage = 1;
       _proWallpapersList = [];
       _hasMorePro = true;
     }
+
+    _isProLoading = true;
+    final requestId = ++_proRequestId;
+    notifyListeners();
 
     try {
       debugPrint('[ProWallpapers] Loading for category: \'$_selectedProCategory\' (sent: \'${_selectedProCategory == 'all' ? null : _selectedProCategory}\')');
@@ -368,7 +379,11 @@ class WallpaperProvider extends ChangeNotifier {
         category: _selectedProCategory == 'all' ? null : _selectedProCategory,
       );
       debugPrint('[ProWallpapers] API returned count: \'${response.wallpapers.length}\'');
-      if (refresh) {
+      if (requestId != _proRequestId) {
+        return;
+      }
+
+      if (refresh || force) {
         _proWallpapersList = response.wallpapers;
       } else {
         _proWallpapersList.addAll(response.wallpapers);
@@ -381,18 +396,24 @@ class WallpaperProvider extends ChangeNotifier {
       debugPrint('Failed to load pro wallpapers: $e');
     }
 
-    _isProLoading = false;
-    notifyListeners();
+    if (requestId == _proRequestId) {
+      _isProLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loadMoreProWallpapers() async {
     await loadProWallpapers(refresh: false);
   }
 
-  void setSelectedProCategory(String category) {
-    if (_selectedProCategory == category) return;
+  void setSelectedProCategory(String category, {bool reload = false}) {
+    if (_selectedProCategory == category && !reload) return;
     _selectedProCategory = category;
     notifyListeners();
+
+    if (reload) {
+      loadProWallpapers(refresh: true, force: true);
+    }
   }
 
   Wallpaper? getWallpaperById(String id) {

@@ -15,9 +15,11 @@ cloudinary_1.v2.config({
 });
 // Multer configuration for memory storage
 const storage = multer_1.default.memoryStorage();
+const imageExtensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
 const fileFilter = (req, file, cb) => {
-    // Accept only image files
-    if (file.mimetype.startsWith('image/')) {
+    const extension = file.originalname.split('.').pop()?.toLowerCase() || '';
+    // Some mobile clients send picked images as application/octet-stream.
+    if (file.mimetype.startsWith('image/') || imageExtensions.has(extension)) {
         cb(null, true);
     }
     else {
@@ -28,11 +30,14 @@ exports.upload = (0, multer_1.default)({
     storage,
     fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB max file size
+        fileSize: 25 * 1024 * 1024, // 25MB max file size
     },
 });
 // Upload image to Cloudinary
 const uploadToCloudinary = async (buffer, folder = 'wallpapers') => {
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        throw new Error("Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.");
+    }
     return new Promise((resolve, reject) => {
         console.log(`Starting Cloudinary upload to folder: awg/${folder}`);
         const uploadStream = cloudinary_1.v2.uploader.upload_stream({

@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isOffline = false;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  int _filterIndex = 0; // 0 = Free, 1 = Pro
 
   @override
   void initState() {
@@ -82,8 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<WallpaperProvider>();
-      if (!provider.isLoading && provider.hasMore) {
-        provider.loadMoreWallpapers();
+      if (_filterIndex == 1) {
+        if (!provider.isProLoading && provider.hasMorePro) {
+          provider.loadMoreProWallpapers();
+        }
+      } else {
+        if (!provider.isLoading && provider.hasMore) {
+          provider.loadMoreWallpapers();
+        }
       }
     }
   }
@@ -92,7 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
-      body: Column(
+      body: Stack(
+        children: [
+          Column(
         children: [
           // Offline Banner
           AnimatedCrossFade(
@@ -147,16 +156,62 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
 
                         // Mixed Content Grid (Wallpapers + Collections)
-                        if (provider.isLoading &&
-                            provider.allWallpapers.isEmpty)
+                        if ((_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
+                            (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.allWallpapers.isEmpty))
                           const SliverToBoxAdapter(
                             child: ShimmerLoading(),
+                          )
+                        else if (!(_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
+                            (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.allWallpapers.isEmpty))
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.wifi_off_rounded,
+                                    color: AppTheme.textMuted,
+                                    size: 56,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    provider.error != null
+                                        ? 'Could not load wallpapers'
+                                        : 'No wallpapers found',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                            color: AppTheme.darkTextPrimary),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Pull down to refresh',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: AppTheme.textMuted),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton.icon(
+                                    onPressed: provider.refresh,
+                                    icon: const Icon(Icons.refresh_rounded),
+                                    label: const Text('Retry'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primary,
+                                      foregroundColor: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           )
                         else
                           _buildMixedContentGrid(context, provider),
 
                         // Bottom Loading Indicator
-                        if (provider.isLoading &&
+                        if ((_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
                             provider.allWallpapers.isNotEmpty)
                           const SliverToBoxAdapter(
                             child: Padding(
@@ -171,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         // Bottom padding for nav bar
                         const SliverToBoxAdapter(
-                          child: SizedBox(height: 100),
+                          child: SizedBox(height: 210),
                         ),
                       ],
                     ),
@@ -181,6 +236,68 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+          // Floating filter tab bar above bottom nav
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 142,
+            child: Center(
+              child: _buildFilterTabBar(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabBar() {
+    final labels = ['Free', 'Pro'];
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(50),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: 46,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(labels.length, (i) {
+              final isSelected = _filterIndex == i;
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _filterIndex = i);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 64,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (i == 1 ? AppTheme.gold : AppTheme.primary)
+                            .withValues(alpha: isSelected ? 1.0 : 0.0)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Text(
+                    labels[i],
+                    style: TextStyle(
+                      color: isSelected ? Colors.black : AppTheme.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }
@@ -223,7 +340,9 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 4),
               Text(
                 Provider.of<WallpaperProvider>(context).totalFreeWallpapers > 0
-                    ? '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalFreeWallpapers} Free Wallpapers'
+                    ? _filterIndex == 1
+                        ? '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Pro Wallpapers'
+                        : '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalFreeWallpapers} Free Wallpapers'
                     : _getFormattedDate(),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppTheme.textMuted,
@@ -346,8 +465,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildMixedContentGrid(
       BuildContext context, WallpaperProvider provider) {
-    // 1. Get all wallpapers (Free + Pro, but not wide)
-    final wallpapers = provider.allWallpapers.where((w) => !w.isWide).toList();
+    // 1. Get wallpapers for current tab
+    final wallpapers = _filterIndex == 1
+        ? provider.proWallpapersList
+        : provider.allWallpapers.where((w) => !w.isWide).toList();
 
     // 2. Get Pro Packs
     final packs = context.watch<PackProvider>().proPacks;

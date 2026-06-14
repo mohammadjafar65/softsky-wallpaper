@@ -96,29 +96,34 @@ class _WallpaperCardState extends State<WallpaperCard>
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Image with optimized caching
-                  CachedNetworkImage(
-                    imageUrl: widget.wallpaper.thumbnailUrl,
-                    cacheManager: CachedImageConfig.cacheManager,
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 300),
-                    fadeOutDuration: const Duration(milliseconds: 100),
-                    memCacheWidth: 400, // Optimize memory usage for grid view
-                    placeholder: (context, url) => Container(
-                      color: AppTheme.surfaceVariant,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppTheme.primary,
+                  // Image with optimized caching or local asset
+                  widget.wallpaper.thumbnailUrl.startsWith('assets/')
+                      ? Image.asset(
+                          widget.wallpaper.thumbnailUrl,
+                          fit: BoxFit.cover,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: widget.wallpaper.thumbnailUrl,
+                          cacheManager: CachedImageConfig.cacheManager,
+                          fit: BoxFit.cover,
+                          fadeInDuration: const Duration(milliseconds: 300),
+                          fadeOutDuration: const Duration(milliseconds: 100),
+                          memCacheWidth: 400, // Optimize memory usage for grid view
+                          placeholder: (context, url) => Container(
+                            color: AppTheme.surfaceVariant,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: AppTheme.surfaceVariant,
+                            child: const Icon(Icons.error_outline,
+                                color: AppTheme.textMuted),
+                          ),
                         ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppTheme.surfaceVariant,
-                      child: const Icon(Icons.error_outline,
-                          color: AppTheme.textMuted),
-                    ),
-                  ),
 
                   // Subtle gradient for text visibility at bottom
                   Positioned(

@@ -35,7 +35,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
       final provider = context.read<WallpaperProvider>();
       // Always try to load pro wallpapers if list is empty
       if (provider.proWallpapersList.isEmpty && !provider.isProLoading) {
-        provider.loadProWallpapers(refresh: true);
+        provider.loadProWallpapers(refresh: true, force: true);
       }
     });
   }
@@ -66,7 +66,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
           builder: (context, provider, child) {
             return RefreshIndicator(
               onRefresh: () async {
-                await provider.loadProWallpapers(refresh: true);
+                await provider.loadProWallpapers(refresh: true, force: true);
               },
               color: AppTheme.primary,
               backgroundColor: AppTheme.darkSurface,
@@ -248,8 +248,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
             category: category,
             isSelected: isSelected,
             onTap: () {
-              provider.setSelectedProCategory(slugKey);
-              provider.loadProWallpapers(refresh: true);
+              provider.setSelectedProCategory(slugKey, reload: true);
             },
           );
         },

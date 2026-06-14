@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button, Pagination, Search, Select, SelectItem } from '@carbon/react';
 import { Download, Edit, TrashCan } from '@carbon/icons-react';
+import toast from 'react-hot-toast';
+import axios from 'axios';
 import { usersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
 import EditUserModal from '../components/EditUserModal';
@@ -24,26 +26,29 @@ export default function Users() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [planFilter, setPlanFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    void fetchUsers();
+    void fetchUsers({ pageNumber: page });
   }, [page, planFilter]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async ({ pageNumber = page, search = searchQuery } = {}) => {
     setIsLoading(true);
     try {
-      const params: any = { page, limit: 10 };
-      if (searchQuery) params.search = searchQuery;
+      const params: { page: number; limit: number; search?: string; plan?: string } = { page: pageNumber, limit: 10 };
+      if (search.trim()) params.search = search.trim();
       if (planFilter !== 'all') params.plan = planFilter;
 
       const response = await usersApi.getAll(params);
       setUsers(response.data.users || []);
       setTotalPages(response.data.pagination?.pages || 1);
+      setTotalUsers(response.data.pagination?.total || response.data.total || response.data.users?.length || 0);
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      toast.error('Failed to load users');
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +57,45 @@ export default function Users() {
   const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setPage(1);
-    await fetchUsers();
+    await fetchUsers({ pageNumber: 1 });
+  };
+
+  const handleExportCsv = async () => {
+    try {
+      const response = await usersApi.getAll({
+        page: 1,
+        limit: Math.max(totalUsers, users.length, 1000),
+        search: searchQuery.trim() || undefined,
+        plan: planFilter !== 'all' ? planFilter : undefined,
+      });
+      const exportUsers: User[] = response.data.users || users;
+      const rows = [
+        ['Name', 'Email', 'Provider', 'Plan', 'Downloads', 'Push Ready', 'Joined'],
+        ...exportUsers.map((user) => [
+          user.displayName,
+          user.email,
+          user.authProvider,
+          user.subscription?.plan || 'free',
+          String(user.downloads ?? 0),
+          user.hasFcmToken ? 'yes' : 'no',
+          user.createdAt ? new Date(user.createdAt).toISOString() : '',
+        ]),
+      ];
+      const csv = rows
+        .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(','))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `softsky-users-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${exportUsers.length} users`);
+    } catch (error) {
+      console.error('Failed to export users:', error);
+      toast.error('Failed to export users');
+    }
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
@@ -63,20 +106,24 @@ export default function Users() {
     try {
       await usersApi.delete(userId);
       await fetchUsers();
-    } catch (error: any) {
+      toast.success('User deleted');
+    } catch (error: unknown) {
       console.error('Failed to delete user:', error);
-      alert(error.response?.data?.error || 'Failed to delete user. Please try again.');
+      const message = axios.isAxiosError<{ error?: string }>(error)
+        ? error.response?.data?.error
+        : undefined;
+      toast.error(message || 'Failed to delete user. Please try again.');
     }
   };
 
-  const totalItems = Math.max(totalPages * 10, users.length || 0);
+  const totalItems = Math.max(totalUsers, users.length || 0);
 
   return (
     <AdminPage
       title="Users"
       subtitle="Inspect account health, subscription status, messaging readiness, and high-value behaviors."
       actions={
-        <Button kind="secondary" renderIcon={Download}>
+        <Button kind="secondary" renderIcon={Download} onClick={() => void handleExportCsv()}>
           Export CSV
         </Button>
       }
@@ -108,7 +155,7 @@ export default function Users() {
         </div>
       </AdminPanel>
 
-      <AdminPanel title="User directory" description="A Carbon-styled operational view of account and plan data.">
+      <AdminPanel title="User directory" description="An operational view of account and plan data.">
         {isLoading ? (
           <p>Loading users...</p>
         ) : users.length === 0 ? (
@@ -216,7 +263,7 @@ export default function Users() {
         onClose={() => setIsEditModalOpen(false)}
         user={selectedUser}
         onSuccess={() => {
-          void fetchUsers();
+          void fetchUsers({ pageNumber: page });
           setIsEditModalOpen(false);
         }}
       />

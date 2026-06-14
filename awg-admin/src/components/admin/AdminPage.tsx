@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { Button, InlineLoading, Tag, Tile } from '@carbon/react';
+import { Loader2 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Card, CardContent, CardDescription, CardTitle } from '../ui/card';
 
 interface AdminPageProps {
   title: string;
@@ -35,18 +38,18 @@ interface AdminPanelProps {
 
 export function AdminPanel({ title, description, actions, children, className = '' }: AdminPanelProps) {
   return (
-    <Tile className={`admin-panel ${className}`.trim()}>
+    <Card className={`admin-panel ${className}`.trim()}>
       {(title || description || actions) && (
         <div className="admin-panel__header">
           <div>
-            {title ? <h2 className="admin-panel__title">{title}</h2> : null}
-            {description ? <p className="admin-panel__description">{description}</p> : null}
+            {title ? <CardTitle className="admin-panel__title">{title}</CardTitle> : null}
+            {description ? <CardDescription className="admin-panel__description">{description}</CardDescription> : null}
           </div>
           {actions ? <div className="admin-panel__actions">{actions}</div> : null}
         </div>
       )}
-      {children}
-    </Tile>
+      <CardContent className="admin-panel__content">{children}</CardContent>
+    </Card>
   );
 }
 
@@ -60,13 +63,13 @@ interface StatTileProps {
 
 export function StatTile({ label, value, helper, tone = 'blue', loading = false }: StatTileProps) {
   return (
-    <Tile className={`admin-stat admin-stat--${tone}`}>
+    <Card className={`admin-stat admin-stat--${tone}`}>
       <p className="admin-stat__label">{label}</p>
       <div className="admin-stat__value">
-        {loading ? <InlineLoading description="Loading" status="active" /> : value}
+        {loading ? <Loader2 className="admin-spinner" size={24} /> : value}
       </div>
       {helper ? <p className="admin-stat__helper">{helper}</p> : null}
-    </Tile>
+    </Card>
   );
 }
 
@@ -83,7 +86,7 @@ export function EmptyState({ title, message, actionLabel, onAction }: EmptyState
       <h3>{title}</h3>
       <p>{message}</p>
       {actionLabel && onAction ? (
-        <Button kind="secondary" onClick={onAction}>
+        <Button variant="secondary" onClick={onAction}>
           {actionLabel}
         </Button>
       ) : null}
@@ -98,9 +101,24 @@ export function StatusTag({
   children: ReactNode;
   type?: 'blue' | 'cool-gray' | 'cyan' | 'gray' | 'green' | 'high-contrast' | 'magenta' | 'outline' | 'purple' | 'red' | 'teal' | 'warm-gray';
 }) {
+  const variantByType = {
+    blue: 'info',
+    cyan: 'info',
+    teal: 'info',
+    green: 'success',
+    purple: 'secondary',
+    magenta: 'secondary',
+    red: 'danger',
+    'high-contrast': 'outline',
+    outline: 'outline',
+    'cool-gray': 'muted',
+    gray: 'muted',
+    'warm-gray': 'muted',
+  } as const;
+
   return (
-    <Tag type={type} className="admin-tag">
+    <Badge variant={variantByType[type]} className="admin-tag">
       {children}
-    </Tag>
+    </Badge>
   );
 }

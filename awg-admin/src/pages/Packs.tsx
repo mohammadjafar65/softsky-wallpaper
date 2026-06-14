@@ -44,6 +44,14 @@ export default function Packs() {
     void fetchPacks();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const fetchPacks = async () => {
     try {
       setIsLoading(true);
@@ -65,6 +73,9 @@ export default function Packs() {
       isPro: false,
       isActive: true,
     });
+    if (previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl('');
     setEditingPack(null);
   };
@@ -76,6 +87,9 @@ export default function Packs() {
     }
 
     setFormData((current) => ({ ...current, coverImage: file }));
+    if (previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl(URL.createObjectURL(file));
   };
 
@@ -132,7 +146,7 @@ export default function Packs() {
       await packsApi.delete(id);
       toast.success('Pack deleted');
       await fetchPacks();
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete pack');
     }
   };
@@ -167,7 +181,7 @@ export default function Packs() {
           />
       </AdminPanel>
 
-      <AdminPanel title="Pack library" description="A dark-mode Carbon gallery for published and draft bundles.">
+      <AdminPanel title="Pack library" description="A polished gallery for published and draft bundles.">
         {isLoading ? (
           <p>Loading packs...</p>
         ) : filteredPacks.length === 0 ? (
@@ -240,7 +254,7 @@ export default function Packs() {
                   </div>
                   <div className="admin-info-row">
                     <span>Wallpapers</span>
-                    <span>{pack.wallpaperCount ?? 'N/A'}</span>
+                    <span>{pack.wallpaperCount ?? 'Not tracked'}</span>
                   </div>
                 </div>
               </AdminPanel>

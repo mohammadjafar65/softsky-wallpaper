@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'home_screen.dart';
 import 'packs_screen.dart';
 import 'wide_wallpapers_screen.dart';
 import 'bookmarks_screen.dart';
 import 'pro_wallpapers_screen.dart';
+import '../providers/wallpaper_provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -38,6 +40,12 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {
             _currentIndex = index;
           });
+
+          if (index == 4) {
+            context
+                .read<WallpaperProvider>()
+                .loadProWallpapers(refresh: true, force: true);
+          }
         },
       ),
     );

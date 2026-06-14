@@ -1,50 +1,38 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Button,
-  Content,
-  Header,
-  HeaderGlobalBar,
-  HeaderGlobalAction,
-  HeaderMenuButton,
-  HeaderName,
-  SideNav,
-  SideNavItems,
-  SideNavLink,
-} from '@carbon/react';
-import {
-  Dashboard,
-  Image,
-  Category,
-  UserMultiple,
-  Catalog,
-  Currency,
-  Notification,
-  ArrowsHorizontal,
-  Logout,
-} from '@carbon/icons-react';
+  Bell,
+  Boxes,
+  CreditCard,
+  GalleryVerticalEnd,
+  Grid2X2,
+  Images,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  MoveHorizontal,
+  Users,
+  X,
+} from 'lucide-react';
+import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 
 const navigation = [
-  { label: 'Dashboard', to: '/', icon: Dashboard },
-  { label: 'Wallpapers', to: '/wallpapers', icon: Image },
-  { label: 'Reassign', to: '/reassign-wallpapers', icon: ArrowsHorizontal },
-  { label: 'Categories', to: '/categories', icon: Category },
-  { label: 'Packs', to: '/packs', icon: Catalog },
-  { label: 'Users', to: '/users', icon: UserMultiple },
-  { label: 'Subscriptions', to: '/subscriptions', icon: Currency },
-  { label: 'Notifications', to: '/notifications', icon: Notification },
+  { label: 'Dashboard', to: '/', icon: LayoutDashboard },
+  { label: 'Wallpapers', to: '/wallpapers', icon: Images },
+  { label: 'Reassign', to: '/reassign-wallpapers', icon: MoveHorizontal },
+  { label: 'Categories', to: '/categories', icon: Grid2X2 },
+  { label: 'Packs', to: '/packs', icon: Boxes },
+  { label: 'Users', to: '/users', icon: Users },
+  { label: 'Subscriptions', to: '/subscriptions', icon: CreditCard },
+  { label: 'Notifications', to: '/notifications', icon: Bell },
 ];
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSideNavExpanded, setIsSideNavExpanded] = useState(false);
-
-  useEffect(() => {
-    setIsSideNavExpanded(false);
-  }, [location.pathname]);
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   const currentPage = useMemo(
     () => navigation.find((item) => item.to === location.pathname)?.label ?? 'Dashboard',
@@ -58,66 +46,78 @@ export default function DashboardLayout() {
 
   return (
     <div className="admin-shell">
-      <Header aria-label="SoftSky Admin" className="admin-header">
-        <HeaderMenuButton
-          aria-label={isSideNavExpanded ? 'Close navigation menu' : 'Open navigation menu'}
-          isActive={isSideNavExpanded}
-          onClick={() => setIsSideNavExpanded((value) => !value)}
-        />
-        <HeaderName prefix="SoftSky">Admin</HeaderName>
-        <div className="cds--header__global">
-          <span className="admin-header__status">
-            <span className="admin-header__dot" />
-            {currentPage}
-          </span>
-        </div>
-        <HeaderGlobalBar>
-          <HeaderGlobalAction
-            aria-label="Sign out"
-            onClick={handleLogout}
-            tooltipAlignment="end"
-          >
-            <Logout size={20} />
-          </HeaderGlobalAction>
-        </HeaderGlobalBar>
-      </Header>
-
-      <SideNav
-        aria-label="Side navigation"
-        expanded={isSideNavExpanded}
-        isChildOfHeader={false}
-        onOverlayClick={() => setIsSideNavExpanded(false)}
-      >
-        <SideNavItems>
-          {navigation.map((item) => (
-            <SideNavLink
-              key={item.to}
-              as={NavLink}
-              to={item.to}
-              renderIcon={item.icon}
-              isActive={item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)}
-            >
-              {item.label}
-            </SideNavLink>
-          ))}
-        </SideNavItems>
-
-        <div style={{ marginTop: 'auto', padding: '1rem' }}>
-          <div className="admin-authors">{user?.displayName || 'Admin'}</div>
-          <div className="admin-authors" style={{ marginTop: '0.25rem', marginBottom: '1rem' }}>
-            {user?.email || 'Signed in'}
+      <aside className={`admin-sidebar ${isNavOpen ? 'admin-sidebar--open' : ''}`}>
+        <div className="admin-sidebar__brand">
+          <div className="admin-sidebar__brand-mark">
+            <GalleryVerticalEnd size={20} />
           </div>
-          <Button kind="ghost" onClick={handleLogout} size="sm" renderIcon={Logout}>
-            Sign out
+          <div>
+            <p className="admin-sidebar__eyebrow">SoftSky</p>
+            <h2>Admin App</h2>
+          </div>
+        </div>
+
+        <nav className="admin-sidebar__nav">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to);
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setIsNavOpen(false)}
+                className={`admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`}
+              >
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="admin-sidebar__footer">
+          <div className="admin-sidebar__user">
+            <strong>{user?.displayName || 'Admin'}</strong>
+            <span>{user?.email || 'Signed in'}</span>
+          </div>
+          <Button variant="ghost" onClick={handleLogout} size="sm" className="admin-sidebar__logout">
+            <LogOut size={16} />
+            <span>Sign out</span>
           </Button>
         </div>
-      </SideNav>
+      </aside>
 
-      <Content id="main-content" className="admin-content">
-        <div className="admin-content__inner">
-          <Outlet />
-        </div>
-      </Content>
+      <div className="admin-main">
+        <header className="admin-topbar">
+          <div>
+            <p className="admin-topbar__eyebrow">Connected workspace</p>
+            <h1>{currentPage}</h1>
+          </div>
+
+          <div className="admin-topbar__actions">
+            <button
+              type="button"
+              className="admin-menu-toggle"
+              aria-label={isNavOpen ? 'Close navigation' : 'Open navigation'}
+              onClick={() => setIsNavOpen((value) => !value)}
+            >
+              {isNavOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <span className="admin-header__status">
+              <span className="admin-header__dot" />
+              Admin API connected
+            </span>
+          </div>
+        </header>
+
+        <main className="admin-content">
+          <div className="admin-content__inner">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

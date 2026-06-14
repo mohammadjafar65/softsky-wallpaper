@@ -8,6 +8,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables immediately
 dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
+const multer_1 = __importDefault(require("multer"));
 const cors_1 = __importDefault(require("cors"));
 const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
@@ -157,13 +158,25 @@ app.use((req, res) => {
 });
 // ----------– Error Handler ----------------------------------
 app.use((err, req, res, next) => {
-    const status = err.status || 500;
+    let status = err.status || 500;
+    let message = err.message;
+    if (err instanceof multer_1.default.MulterError) {
+        status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+        message =
+            err.code === "LIMIT_FILE_SIZE"
+                ? "Image is too large. Upload an image smaller than 25MB."
+                : err.message;
+    }
+    else if (message === "Only image files are allowed!") {
+        status = 400;
+    }
     console.error(`[${new Date().toISOString()}] ${status} ${req.method} ${req.path} -`, err.message);
     if (process.env.NODE_ENV !== "production") {
         console.error(err.stack);
     }
     res.status(status).json({
-        error: status === 500 ? "Internal server error" : err.message,
+        error: status === 500 ? "Internal server error" : message,
+        details: process.env.NODE_ENV === "production" ? undefined : err.message,
     });
 });
 // ----------– Start Server -----------------------------------

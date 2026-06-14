@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 import {
   Button,
   Modal,
@@ -21,6 +22,16 @@ interface Category {
   sourceUrl?: string;
 }
 
+interface CategoryWallpaper {
+  id: string;
+  title: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+}
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  axios.isAxiosError<{ error?: string }>(error) ? error.response?.data?.error || fallback : fallback;
+
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +43,7 @@ export default function Categories() {
   const [importUrl, setImportUrl] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [refetchingId, setRefetchingId] = useState<string | null>(null);
-  const [categoryWallpapers, setCategoryWallpapers] = useState<any[]>([]);
+  const [categoryWallpapers, setCategoryWallpapers] = useState<CategoryWallpaper[]>([]);
   const [isWallpapersLoading, setIsWallpapersLoading] = useState(false);
 
   useEffect(() => {
@@ -69,8 +80,8 @@ export default function Categories() {
       setShowModal(false);
       resetForm();
       await fetchCategories();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to save category');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to save category'));
     } finally {
       setIsSubmitting(false);
     }
@@ -88,8 +99,8 @@ export default function Categories() {
       setShowImportModal(false);
       setImportUrl('');
       await fetchCategories();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to import Pinterest board');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to import Pinterest board'));
     } finally {
       setIsImporting(false);
     }
@@ -105,8 +116,8 @@ export default function Categories() {
           : 'No new wallpapers found'
       );
       await fetchCategories();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to refetch Pinterest board');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to refetch Pinterest board'));
     } finally {
       setRefetchingId(null);
     }
@@ -137,8 +148,8 @@ export default function Categories() {
       await categoriesApi.delete(id);
       toast.success('Category deleted');
       await fetchCategories();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to delete category');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to delete category'));
     }
   };
 

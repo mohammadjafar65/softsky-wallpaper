@@ -9,6 +9,15 @@ const api = axios.create({
     },
 });
 
+type ApiPayload = Record<string, unknown>;
+type PackListParams = {
+    page?: number;
+    limit?: number;
+    search?: string;
+    isPro?: boolean;
+    isActive?: boolean;
+};
+
 // Add auth token to requests
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
@@ -46,7 +55,7 @@ export const wallpapersApi = {
                 'Content-Type': 'multipart/form-data',
             },
         }),
-    update: (id: string, data: any) => api.put(`/wallpapers/${id}`, data),
+    update: (id: string, data: ApiPayload) => api.put(`/wallpapers/${id}`, data),
     bulkReassign: (data: { wallpaperIds: Array<string | number>; targetCategoryId: string | number }) =>
         api.put('/wallpapers/bulk-reassign', data),
     delete: (id: string) => api.delete(`/wallpapers/${id}`),
@@ -57,7 +66,7 @@ export const categoriesApi = {
     getAll: () => api.get('/categories'),
     create: (data: { name: string; icon?: string; description?: string }) =>
         api.post('/categories', data),
-    update: (id: string, data: any) => api.put(`/categories/${id}`, data),
+    update: (id: string, data: ApiPayload) => api.put(`/categories/${id}`, data),
     delete: (id: string) => api.delete(`/categories/${id}`),
     importPinterest: (boardUrl: string) => api.post('/categories/import-pinterest', { boardUrl }),
     refetchPinterest: (id: string) => api.post(`/categories/${id}/refetch-pinterest`),
@@ -68,21 +77,21 @@ export const usersApi = {
     getAll: (params?: { page?: number; limit?: number; search?: string; plan?: string }) =>
         api.get('/users', { params }),
     getById: (id: string) => api.get(`/users/${id}`),
-    update: (id: string, data: any) => api.put(`/users/${id}`, data),
+    update: (id: string, data: ApiPayload) => api.put(`/users/${id}`, data),
     delete: (id: string) => api.delete(`/users/${id}`),
     getStats: () => api.get('/users/stats/overview'),
 };
 
 // Packs API
 export const packsApi = {
-    getAll: (params?: any) => api.get('/packs', { params }),
+    getAll: (params?: PackListParams) => api.get('/packs', { params }),
     getById: (id: string) => api.get(`/packs/${id}`),
     create: (data: FormData) => api.post('/packs', data, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
     }),
-    update: (id: string, data: any) => api.put(`/packs/${id}`, data),
+    update: (id: string, data: ApiPayload) => api.put(`/packs/${id}`, data),
     delete: (id: string) => api.delete(`/packs/${id}`),
 };
 
@@ -99,6 +108,10 @@ export const notificationsApi = {
 // Subscriptions API
 export const subscriptionsApi = {
     getStats: () => usersApi.getStats(),
+};
+
+export const healthApi = {
+    get: () => api.get('/health'),
 };
 
 export default api;

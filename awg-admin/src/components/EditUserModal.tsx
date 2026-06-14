@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Checkbox, DatePicker, DatePickerInput, Modal, Select, SelectItem, TextInput } from '@carbon/react';
+import toast from 'react-hot-toast';
 import { usersApi } from '../services/api';
+
+interface EditableUser {
+  id: string;
+  displayName?: string;
+  isActive: boolean;
+  subscription?: {
+    plan?: string;
+    expiryDate?: string;
+  };
+}
 
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
+  user: EditableUser | null;
   onSuccess: () => void;
 }
 
@@ -47,11 +58,12 @@ export default function EditUserModal({ isOpen, onClose, user, onSuccess }: Edit
           expiryDate: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
         },
       });
+      toast.success('User updated');
       onSuccess();
       onClose();
     } catch (error) {
       console.error('Failed to update user:', error);
-      alert('Failed to update user');
+      toast.error('Failed to update user');
     } finally {
       setIsLoading(false);
     }

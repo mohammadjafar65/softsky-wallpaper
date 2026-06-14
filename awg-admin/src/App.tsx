@@ -64,7 +64,7 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <Theme theme="g100">
+    <Theme theme="g10">
       <div className="app-frame">
         <BrowserRouter>
           <AuthProvider>
@@ -73,9 +73,10 @@ export default function App() {
               position="top-right"
               toastOptions={{
                 style: {
-                  background: '#262626',
-                  color: '#f4f4f4',
-                  border: '1px solid #525252',
+                  background: '#ffffff',
+                  color: '#111827',
+                  border: '1px solid #d9e0eb',
+                  boxShadow: '0 18px 40px rgba(15, 23, 42, 0.08)',
                 },
               }}
             />

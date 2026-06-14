@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import multer from "multer";
 import cors from "cors";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
@@ -185,13 +186,26 @@ app.use(
         res: express.Response,
         next: express.NextFunction
     ) => {
-        const status = err.status || 500;
+        let status = err.status || 500;
+        let message = err.message;
+
+        if (err instanceof multer.MulterError) {
+            status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+            message =
+                err.code === "LIMIT_FILE_SIZE"
+                    ? "Image is too large. Upload an image smaller than 25MB."
+                    : err.message;
+        } else if (message === "Only image files are allowed!") {
+            status = 400;
+        }
+
         console.error(`[${new Date().toISOString()}] ${status} ${req.method} ${req.path} -`, err.message);
         if (process.env.NODE_ENV !== "production") {
             console.error(err.stack);
         }
         res.status(status).json({
-            error: status === 500 ? "Internal server error" : err.message,
+            error: status === 500 ? "Internal server error" : message,
+            details: process.env.NODE_ENV === "production" ? undefined : err.message,
         });
     }
 );

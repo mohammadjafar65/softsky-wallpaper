@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Button,
   RadioButton,
@@ -85,10 +86,13 @@ export default function Notifications() {
       setMessage('');
       setImageUrl('');
       setSelectedUserId('');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const messageText = axios.isAxiosError<{ error?: string }>(error)
+        ? error.response?.data?.error
+        : undefined;
       setResult({
         type: 'error',
-        message: error.response?.data?.error || 'Failed to send notification',
+        message: messageText || 'Failed to send notification',
       });
     } finally {
       setIsLoading(false);
@@ -101,7 +105,7 @@ export default function Notifications() {
       subtitle="Broadcast release notes, campaigns, and targeted prompts to your app audience."
     >
       <div className="admin-grid admin-grid--cards">
-        <AdminPanel title="Compose notification" description="Carbon-style messaging controls for broadcast and one-to-one sends.">
+        <AdminPanel title="Compose notification" description="Messaging controls for broadcast and one-to-one sends.">
           <div className="admin-grid">
             <RadioButtonGroup
               legendText="Target audience"

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, PasswordInput, TextInput, Tile } from '@carbon/react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -19,8 +20,11 @@ export default function Login() {
       await login(email, password);
       toast.success('Welcome back');
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Login failed. Please check your credentials.');
+    } catch (error: unknown) {
+      const message = axios.isAxiosError<{ error?: string }>(error)
+        ? error.response?.data?.error
+        : undefined;
+      toast.error(message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -30,25 +34,25 @@ export default function Login() {
     <div className="admin-login">
       <div className="admin-login__panel">
         <section className="admin-login__hero">
-          <p className="admin-page__eyebrow">Carbon Dark Mode</p>
-          <h1>Operate SoftSky from a cleaner, system-first admin workspace.</h1>
+          <p className="admin-page__eyebrow">SoftSky Admin App</p>
+          <h1>Manage wallpapers from a calmer, app-like workspace.</h1>
           <p className="admin-login__helper">
-            Review content velocity, manage premium inventory, and coordinate user operations from a
-            Carbon-driven control room built for dense admin workflows.
+            Upload new collections, update premium flags, remove old content, and keep the wallpaper
+            library in sync with your live server from one minimal control surface.
           </p>
 
           <div className="admin-login__hero-metrics">
             <div>
-              <strong>8</strong>
-              <span>Core admin modules</span>
+              <strong>Upload</strong>
+              <span>Add wallpapers in batches</span>
             </div>
             <div>
-              <strong>1</strong>
-              <span>Unified dark theme</span>
+              <strong>Manage</strong>
+              <span>Edit, classify, and delete fast</span>
             </div>
             <div>
-              <strong>24/7</strong>
-              <span>Operational visibility</span>
+              <strong>Sync</strong>
+              <span>Connected directly to backend APIs</span>
             </div>
           </div>
         </section>

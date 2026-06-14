@@ -1,4 +1,5 @@
-import { Button } from '@carbon/react';
+import { Upload } from 'lucide-react';
+import { buttonVariants } from '../ui/button-variants';
 
 interface FilePickerProps {
   label: string;
@@ -13,9 +14,10 @@ export function FilePicker({ label, helperText, multiple = false, accept, onChan
     <label className="admin-file-picker">
       <span className="admin-file-picker__label">{label}</span>
       {helperText ? <span className="admin-file-picker__helper">{helperText}</span> : null}
-      <Button kind="secondary" size="md" as="span">
+      <span className={buttonVariants({ variant: 'secondary' })}>
+        <Upload size={16} />
         Choose file{multiple ? 's' : ''}
-      </Button>
+      </span>
       <input type="file" hidden multiple={multiple} accept={accept} onChange={onChange} />
     </label>
   );

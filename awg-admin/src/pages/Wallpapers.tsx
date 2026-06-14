@@ -22,6 +22,8 @@ interface Wallpaper {
   thumbnailUrl: string;
   category: { name: string; slug: string; id: string };
   isPro: boolean;
+  isWide?: boolean;
+  tags?: string[];
   downloads: number;
 }
 
@@ -103,9 +105,18 @@ export default function Wallpapers() {
     return wallpapers.filter(
       (wallpaper) =>
         wallpaper.title.toLowerCase().includes(query) ||
-        wallpaper.category.name.toLowerCase().includes(query)
+        wallpaper.category?.name?.toLowerCase().includes(query)
     );
   }, [searchQuery, wallpapers]);
+
+  const wallpaperStats = useMemo(() => {
+    const total = filteredWallpapers.length;
+    const pro = filteredWallpapers.filter((wallpaper) => wallpaper.isPro).length;
+    const wide = filteredWallpapers.filter((wallpaper) => wallpaper.isWide).length;
+    const downloads = filteredWallpapers.reduce((sum, wallpaper) => sum + wallpaper.downloads, 0);
+
+    return { total, pro, wide, downloads };
+  }, [filteredWallpapers]);
 
   const fetchCategories = async () => {
     try {
@@ -138,7 +149,7 @@ export default function Wallpapers() {
 
     try {
       const nextPage = reset ? 1 : page;
-      const params: any = { page: nextPage, limit: 20 };
+      const params: { page: number; limit: number; category?: string } = { page: nextPage, limit: 20 };
       if (selectedCategory !== 'all') {
         params.category = selectedCategory;
       }
@@ -400,7 +411,14 @@ export default function Wallpapers() {
     }
 
     try {
-      await wallpapersApi.update(editingWallpaper.id, { title: formData.title });
+      await wallpapersApi.update(editingWallpaper.id, {
+        title: formData.title,
+        category: formData.categories[0] || editingWallpaper.category.id,
+        tags: formData.tags,
+        isPro: formData.isPro,
+        isWide: formData.isWide,
+        packId: formData.packId,
+      });
       toast.success('Wallpaper updated');
       setShowEditModal(false);
       setEditingWallpaper(null);
@@ -437,6 +455,21 @@ export default function Wallpapers() {
         </>
       }
     >
+      <div className="admin-grid admin-grid--stats">
+        <AdminPanel title="Loaded" description="Currently visible wallpapers after filters.">
+          <div className="admin-stat__value">{wallpaperStats.total}</div>
+        </AdminPanel>
+        <AdminPanel title="Pro items" description="Premium wallpapers in the current result set.">
+          <div className="admin-stat__value">{wallpaperStats.pro}</div>
+        </AdminPanel>
+        <AdminPanel title="Wide items" description="Desktop or wide-format wallpapers loaded here.">
+          <div className="admin-stat__value">{wallpaperStats.wide}</div>
+        </AdminPanel>
+        <AdminPanel title="Downloads" description="Combined downloads for the loaded result set.">
+          <div className="admin-stat__value">{wallpaperStats.downloads}</div>
+        </AdminPanel>
+      </div>
+
       <AdminPanel title="Filters" description="Search the loaded inventory and narrow the feed by category.">
         <div className="admin-form-grid">
           <Search
@@ -458,7 +491,7 @@ export default function Wallpapers() {
           >
             <SelectItem value="all" text="All categories" />
             {categories.map((category) => (
-              <SelectItem key={category.id} value={category.slug} text={category.name} />
+              <SelectItem key={category.id} value={category.slug || category.id} text={category.name} />
             ))}
           </Select>
         </div>
@@ -521,7 +554,7 @@ export default function Wallpapers() {
                           </div>
                         </div>
                       </td>
-                      <td>{wallpaper.category.name}</td>
+                      <td>{wallpaper.category?.name || 'Unassigned'}</td>
                       <td>{wallpaper.downloads}</td>
                       <td>
                         <StatusTag type={wallpaper.isPro ? 'purple' : 'cool-gray'}>
@@ -538,7 +571,15 @@ export default function Wallpapers() {
                             hasIconOnly
                             onClick={() => {
                               setEditingWallpaper(wallpaper);
-                              setFormData((current) => ({ ...current, title: wallpaper.title }));
+                              setFormData((current) => ({
+                                ...current,
+                                title: wallpaper.title,
+                                categories: wallpaper.category?.id ? [wallpaper.category.id] : [],
+                                tags: wallpaper.tags?.join(', ') || '',
+                                isPro: wallpaper.isPro,
+                                isWide: Boolean(wallpaper.isWide),
+                                packId: '',
+                              }));
                               setShowEditModal(true);
                             }}
                           />
@@ -703,12 +744,63 @@ export default function Wallpapers() {
         }}
         onRequestSubmit={() => void handleEditSubmit()}
       >
-        <TextInput
-          id="edit-wallpaper-title"
-          labelText="Title"
-          value={formData.title}
-          onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
-        />
+        <div className="admin-grid">
+          <TextInput
+            id="edit-wallpaper-title"
+            labelText="Title"
+            value={formData.title}
+            onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
+          />
+
+          <TextInput
+            id="edit-wallpaper-tags"
+            labelText="Tags"
+            helperText="Comma separated tags."
+            value={formData.tags}
+            onChange={(event) => setFormData((current) => ({ ...current, tags: event.target.value }))}
+          />
+
+          <Select
+            id="edit-wallpaper-category"
+            labelText="Category"
+            value={formData.categories[0] || ''}
+            onChange={(event) =>
+              setFormData((current) => ({ ...current, categories: event.target.value ? [event.target.value] : [] }))
+            }
+          >
+            <SelectItem value="" text="Select category" />
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id} text={category.name} />
+            ))}
+          </Select>
+
+          <Select
+            id="edit-wallpaper-pack"
+            labelText="Pack"
+            value={formData.packId}
+            onChange={(event) => setFormData((current) => ({ ...current, packId: event.target.value }))}
+          >
+            <SelectItem value="" text="No pack" />
+            {packs.map((pack) => (
+              <SelectItem key={pack.id} value={pack.id} text={pack.name} />
+            ))}
+          </Select>
+
+          <div className="admin-chip-row">
+            <Checkbox
+              id="edit-wallpaper-pro"
+              labelText="Pro only"
+              checked={formData.isPro}
+              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isPro: Boolean(checked) }))}
+            />
+            <Checkbox
+              id="edit-wallpaper-wide"
+              labelText="Wide desktop wallpaper"
+              checked={formData.isWide}
+              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isWide: Boolean(checked) }))}
+            />
+          </div>
+        </div>
       </Modal>
     </AdminPage>
   );
