@@ -110,8 +110,8 @@ export default function Dashboard() {
 
   return (
     <AdminPage
-      title="Wallpaper command center"
-      subtitle="A focused control surface for content inventory, subscribers, downloads, and backend readiness."
+      title="Welcome in, SoftSky"
+      subtitle="A composed CMS workspace for wallpaper inventory, subscribers, downloads, and backend readiness."
       actions={
         <Button variant="secondary" onClick={() => void fetchStats(true)} disabled={isRefreshing}>
           <RefreshCw className={isRefreshing ? 'admin-icon-spin' : ''} size={16} />

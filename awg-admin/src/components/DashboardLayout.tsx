@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   MoveHorizontal,
+  Search,
   Users,
   X,
 } from 'lucide-react';
@@ -46,18 +47,15 @@ export default function DashboardLayout() {
 
   return (
     <div className="admin-shell">
-      <aside className={`admin-sidebar ${isNavOpen ? 'admin-sidebar--open' : ''}`}>
-        <div className="admin-sidebar__brand">
-          <div className="admin-sidebar__brand-mark">
-            <GalleryVerticalEnd size={20} />
-          </div>
-          <div>
-            <p className="admin-sidebar__eyebrow">SoftSky</p>
-            <h2>Admin App</h2>
-          </div>
-        </div>
+      <header className="admin-topbar">
+        <NavLink to="/" className="admin-topbar__brand" onClick={() => setIsNavOpen(false)}>
+          <span className="admin-topbar__brand-mark">
+            <GalleryVerticalEnd size={18} />
+          </span>
+          <span>SoftSky</span>
+        </NavLink>
 
-        <nav className="admin-sidebar__nav">
+        <nav className={`admin-topnav ${isNavOpen ? 'admin-topnav--open' : ''}`}>
           {navigation.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -68,55 +66,49 @@ export default function DashboardLayout() {
                 key={item.to}
                 to={item.to}
                 onClick={() => setIsNavOpen(false)}
-                className={`admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`}
+                className={`admin-topnav__link ${isActive ? 'admin-topnav__link--active' : ''}`}
               >
-                <Icon size={18} />
+                <Icon size={14} />
                 <span>{item.label}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        <div className="admin-sidebar__footer">
-          <div className="admin-sidebar__user">
-            <strong>{user?.displayName || 'Admin'}</strong>
-            <span>{user?.email || 'Signed in'}</span>
-          </div>
-          <Button variant="ghost" onClick={handleLogout} size="sm" className="admin-sidebar__logout">
+        <div className="admin-topbar__actions">
+          <span className="admin-header__status">
+            <span className="admin-header__dot" />
+            {currentPage}
+          </span>
+          <button type="button" className="admin-round-button" aria-label="Search">
+            <Search size={16} />
+          </button>
+          <button type="button" className="admin-round-button" aria-label="Notifications">
+            <Bell size={16} />
+          </button>
+          <Button variant="ghost" onClick={handleLogout} size="icon" className="admin-round-button" title={user?.email || 'Sign out'}>
             <LogOut size={16} />
-            <span>Sign out</span>
           </Button>
+          <button
+            type="button"
+            className="admin-menu-toggle"
+            aria-label={isNavOpen ? 'Close navigation' : 'Open navigation'}
+            onClick={() => setIsNavOpen((value) => !value)}
+          >
+            {isNavOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
-      </aside>
+      </header>
 
-      <div className="admin-main">
-        <header className="admin-topbar">
-          <div>
-            <p className="admin-topbar__eyebrow">Connected workspace</p>
-            <h1>{currentPage}</h1>
-          </div>
+      <main className="admin-content">
+        <div className="admin-content__inner">
+          <Outlet />
+        </div>
+      </main>
 
-          <div className="admin-topbar__actions">
-            <button
-              type="button"
-              className="admin-menu-toggle"
-              aria-label={isNavOpen ? 'Close navigation' : 'Open navigation'}
-              onClick={() => setIsNavOpen((value) => !value)}
-            >
-              {isNavOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-            <span className="admin-header__status">
-              <span className="admin-header__dot" />
-              Admin API connected
-            </span>
-          </div>
-        </header>
-
-        <main className="admin-content">
-          <div className="admin-content__inner">
-            <Outlet />
-          </div>
-        </main>
+      <div className="admin-shell__footer">
+        <span>{user?.displayName || 'Admin'}</span>
+        <span>{user?.email || 'Signed in'}</span>
       </div>
     </div>
   );
