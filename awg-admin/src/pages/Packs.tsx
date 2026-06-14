@@ -183,13 +183,17 @@ export default function Packs() {
             onAction={() => setIsModalOpen(true)}
           />
         ) : (
-          <div className="admin-grid admin-grid--cards">
+          <div className="pack-card-grid">
             {filteredPacks.map((pack) => (
-              <AdminPanel
+              <article
                 key={pack.id}
-                title={pack.name}
-                description={pack.description || 'No description provided.'}
-                actions={
+                className="pack-card"
+              >
+                <div className="pack-card__header">
+                  <div className="pack-card__copy">
+                    <h3 className="pack-card__title">{pack.name}</h3>
+                    <p className="pack-card__description">{pack.description || 'No description provided.'}</p>
+                  </div>
                   <div className="admin-inline-actions">
                     <button
                       className="admin-round-button"
@@ -207,18 +211,24 @@ export default function Packs() {
                       <Trash2 size={13} />
                     </button>
                   </div>
-                }
-              >
+                </div>
+
                 {pack.coverImage ? (
-                  <img src={pack.coverImage} alt={pack.name} style={{ width: '100%', height: '10rem', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />
-                ) : null}
+                  <div className="pack-card__cover">
+                    <img src={pack.coverImage} alt={pack.name} />
+                  </div>
+                ) : (
+                  <div className="pack-card__cover pack-card__cover--empty">
+                    <span>No cover</span>
+                  </div>
+                )}
 
                 <div className="admin-chip-row">
                   <StatusTag type={pack.isPro ? 'purple' : 'cool-gray'}>{pack.isPro ? 'Pro pack' : 'Free pack'}</StatusTag>
                   <StatusTag type={pack.isActive ? 'green' : 'red'}>{pack.isActive ? 'Active' : 'Inactive'}</StatusTag>
                 </div>
 
-                <div className="admin-info-list" style={{ marginTop: 12 }}>
+                <div className="admin-info-list">
                   <div className="admin-info-row">
                     <span>Created</span>
                     <span>{format(new Date(pack.createdAt), 'MMM d, yyyy')}</span>
@@ -228,7 +238,7 @@ export default function Packs() {
                     <span>{pack.wallpaperCount ?? '—'}</span>
                   </div>
                 </div>
-              </AdminPanel>
+              </article>
             ))}
           </div>
         )}

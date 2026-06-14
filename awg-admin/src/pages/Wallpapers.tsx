@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Edit, Search, Star, Trash2, Upload } from 'lucide-react';
+import { Edit, Grid2X2, List, Search, Star, Trash2, Upload } from 'lucide-react';
 import { categoriesApi, packsApi, wallpapersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
 import { AdminModal } from '../components/admin/AdminModal';
@@ -51,6 +51,7 @@ export default function Wallpapers() {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -419,9 +420,24 @@ export default function Wallpapers() {
     }
   };
 
+  const startEditWallpaper = (wallpaper: Wallpaper) => {
+    setEditingWallpaper(wallpaper);
+    setFormData((current) => ({
+      ...current,
+      title: wallpaper.title,
+      categories: wallpaper.category?.id ? [wallpaper.category.id] : [],
+      tags: wallpaper.tags?.join(', ') || '',
+      isPro: wallpaper.isPro,
+      isWide: Boolean(wallpaper.isWide),
+      packId: '',
+    }));
+    setShowEditModal(true);
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const visibleSelected = filteredWallpapers.filter((wallpaper) => selectedIds.has(wallpaper.id)).length;
+  const allVisibleSelected = filteredWallpapers.length > 0 && visibleSelected === filteredWallpapers.length;
 
   return (
     <AdminPage
@@ -495,6 +511,28 @@ export default function Wallpapers() {
       <AdminPanel
         title="Wallpaper inventory"
         description={`${filteredWallpapers.length} loaded wallpapers${selectedIds.size ? `, ${visibleSelected} selected` : ''}`}
+        actions={
+          <div className="admin-view-toggle" aria-label="Wallpaper inventory view">
+            <button
+              type="button"
+              className={`admin-view-toggle__button ${viewMode === 'list' ? 'admin-view-toggle__button--active' : ''}`}
+              title="List view"
+              aria-pressed={viewMode === 'list'}
+              onClick={() => setViewMode('list')}
+            >
+              <List size={14} />
+            </button>
+            <button
+              type="button"
+              className={`admin-view-toggle__button ${viewMode === 'grid' ? 'admin-view-toggle__button--active' : ''}`}
+              title="Grid view"
+              aria-pressed={viewMode === 'grid'}
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid2X2 size={14} />
+            </button>
+          </div>
+        }
       >
         {isLoading ? (
           <p style={{ color: 'var(--admin-text-muted)', padding: '16px 0' }}>Loading wallpapers…</p>
@@ -507,25 +545,105 @@ export default function Wallpapers() {
           />
         ) : (
           <div className="admin-grid">
-            <div style={{ overflowX: 'auto' }}>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th><input type="checkbox" onChange={(e) => {
+            {viewMode === 'list' ? (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th><input type="checkbox" checked={allVisibleSelected} onChange={(e) => {
+                        if (e.target.checked) setSelectedIds(new Set(filteredWallpapers.map((w) => w.id)));
+                        else setSelectedIds(new Set());
+                      }} /></th>
+                      <th>Wallpaper</th>
+                      <th>Category</th>
+                      <th>Downloads</th>
+                      <th>Access</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredWallpapers.map((wallpaper) => (
+                      <tr key={wallpaper.id}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(wallpaper.id)}
+                            onChange={(e) => setSelectedIds((cur) => {
+                              const next = new Set(cur);
+                              if (e.target.checked) next.add(wallpaper.id);
+                              else next.delete(wallpaper.id);
+                              return next;
+                            })}
+                          />
+                        </td>
+                        <td>
+                          <div className="admin-media-object">
+                            <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
+                            <div>
+                              <strong style={{ fontSize: 13 }}>{wallpaper.title}</strong>
+                              <div style={{ fontSize: 11, color: 'var(--admin-text-sub)', marginTop: 2 }}>{wallpaper.id}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{wallpaper.category?.name || 'Unassigned'}</td>
+                        <td>{wallpaper.downloads}</td>
+                        <td>
+                          <StatusTag type={wallpaper.isPro ? 'purple' : 'cool-gray'}>
+                            {wallpaper.isPro ? 'Pro' : 'Free'}
+                          </StatusTag>
+                        </td>
+                        <td>
+                          <div className="admin-inline-actions">
+                            <button
+                              className="admin-round-button"
+                              title="Edit wallpaper"
+                              onClick={() => startEditWallpaper(wallpaper)}
+                            >
+                              <Edit size={13} />
+                            </button>
+                            <button
+                              className="admin-round-button"
+                              title="Toggle pro"
+                              onClick={() => void handleTogglePro(wallpaper)}
+                            >
+                              <Star size={13} />
+                            </button>
+                            <button
+                              className="admin-round-button"
+                              title="Delete"
+                              style={{ color: 'var(--admin-red)' }}
+                              onClick={() => void handleDelete(wallpaper.id)}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="wallpaper-grid-view">
+                <label className="wallpaper-grid-select-all">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={(e) => {
                       if (e.target.checked) setSelectedIds(new Set(filteredWallpapers.map((w) => w.id)));
                       else setSelectedIds(new Set());
-                    }} /></th>
-                    <th>Wallpaper</th>
-                    <th>Category</th>
-                    <th>Downloads</th>
-                    <th>Access</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+                    }}
+                  />
+                  <span>Select visible</span>
+                </label>
+
+                <div className="wallpaper-card-grid">
                   {filteredWallpapers.map((wallpaper) => (
-                    <tr key={wallpaper.id}>
-                      <td>
+                    <article
+                      key={wallpaper.id}
+                      className={`wallpaper-card ${selectedIds.has(wallpaper.id) ? 'wallpaper-card--selected' : ''}`}
+                    >
+                      <label className="wallpaper-card__check" title="Select wallpaper">
                         <input
                           type="checkbox"
                           checked={selectedIds.has(wallpaper.id)}
@@ -536,58 +654,41 @@ export default function Wallpapers() {
                             return next;
                           })}
                         />
-                      </td>
-                      <td>
-                        <div className="admin-media-object">
-                          <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
-                          <div>
-                            <strong style={{ fontSize: 13 }}>{wallpaper.title}</strong>
-                            <div style={{ fontSize: 11, color: 'var(--admin-text-sub)', marginTop: 2 }}>{wallpaper.id}</div>
+                      </label>
+                      <div className="wallpaper-card__image">
+                        <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
+                      </div>
+                      <div className="wallpaper-card__body">
+                        <div className="wallpaper-card__meta">
+                          <h3>{wallpaper.title}</h3>
+                          <span>{wallpaper.id}</span>
+                        </div>
+                        <div className="wallpaper-card__facts">
+                          <span>{wallpaper.category?.name || 'Unassigned'}</span>
+                          <span>{wallpaper.downloads} downloads</span>
+                        </div>
+                        <div className="wallpaper-card__footer">
+                          <StatusTag type={wallpaper.isPro ? 'purple' : 'cool-gray'}>
+                            {wallpaper.isPro ? 'Pro' : 'Free'}
+                          </StatusTag>
+                          <div className="admin-inline-actions">
+                            <button className="admin-round-button" title="Edit wallpaper" onClick={() => startEditWallpaper(wallpaper)}>
+                              <Edit size={13} />
+                            </button>
+                            <button className="admin-round-button" title="Toggle pro" onClick={() => void handleTogglePro(wallpaper)}>
+                              <Star size={13} />
+                            </button>
+                            <button className="admin-round-button" title="Delete" style={{ color: 'var(--admin-red)' }} onClick={() => void handleDelete(wallpaper.id)}>
+                              <Trash2 size={13} />
+                            </button>
                           </div>
                         </div>
-                      </td>
-                      <td>{wallpaper.category?.name || 'Unassigned'}</td>
-                      <td>{wallpaper.downloads}</td>
-                      <td>
-                        <StatusTag type={wallpaper.isPro ? 'purple' : 'cool-gray'}>
-                          {wallpaper.isPro ? 'Pro' : 'Free'}
-                        </StatusTag>
-                      </td>
-                      <td>
-                        <div className="admin-inline-actions">
-                          <button
-                            className="admin-round-button"
-                            title="Edit wallpaper"
-                            onClick={() => {
-                              setEditingWallpaper(wallpaper);
-                              setFormData((c) => ({ ...c, title: wallpaper.title, categories: wallpaper.category?.id ? [wallpaper.category.id] : [], tags: wallpaper.tags?.join(', ') || '', isPro: wallpaper.isPro, isWide: Boolean(wallpaper.isWide), packId: '' }));
-                              setShowEditModal(true);
-                            }}
-                          >
-                            <Edit size={13} />
-                          </button>
-                          <button
-                            className="admin-round-button"
-                            title="Toggle pro"
-                            onClick={() => void handleTogglePro(wallpaper)}
-                          >
-                            <Star size={13} />
-                          </button>
-                          <button
-                            className="admin-round-button"
-                            title="Delete"
-                            style={{ color: 'var(--admin-red)' }}
-                            onClick={() => void handleDelete(wallpaper.id)}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </article>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </div>
+            )}
 
             {hasMore ? (
               <Button variant="secondary" size="sm" onClick={() => void fetchWallpapers(false)} disabled={isLoadingMore}>
