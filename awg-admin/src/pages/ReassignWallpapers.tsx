@@ -183,36 +183,40 @@ export default function ReassignWallpapers() {
         ) : categories.length === 0 ? (
           <EmptyState title="No categories found" message="Create categories before using bulk reassignment." />
         ) : (
-          <div className="admin-grid admin-grid--cards">
+          <div className="reassign-board-grid">
             {categories.map((category) => {
               const categoryWallpapers = wallpapersByCategory.get(category.id) || [];
               const isDropTarget = dragOverCategoryId === category.id;
 
               return (
-                <AdminPanel
+                <article
                   key={category.id}
-                  title={`${category.icon || '🖼️'} ${category.name}`}
-                  description={`${categoryWallpapers.length} wallpapers`}
-                  className={`admin-drop-column ${isDropTarget ? 'admin-drop-zone--active' : ''}`}
+                  className={`reassign-column ${isDropTarget ? 'reassign-column--active' : ''}`}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragOverCategoryId(category.id);
+                  }}
+                  onDragLeave={() => {
+                    setDragOverCategoryId((current) => (current === category.id ? null : current));
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    void handleDrop(category.id);
+                  }}
                 >
-                  <div
-                    className={`admin-drop-zone ${isDropTarget ? 'admin-drop-zone--active' : ''}`}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      setDragOverCategoryId(category.id);
-                    }}
-                    onDragLeave={() => {
-                      setDragOverCategoryId((current) => (current === category.id ? null : current));
-                    }}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      void handleDrop(category.id);
-                    }}
-                  >
+                  <div className="reassign-column__header">
+                    <div className="reassign-column__title">
+                      <h3>{category.icon || '🖼️'} {category.name}</h3>
+                      <span>{categoryWallpapers.length} wallpapers</span>
+                    </div>
+                    <span className="reassign-column__count">{category.wallpaperCount}</span>
+                  </div>
+
+                  <div className="reassign-drop-area">
                     {categoryWallpapers.length === 0 ? (
-                      <p className="admin-authors">Drop wallpapers here.</p>
+                      <div className="reassign-empty-drop">Drop wallpapers here</div>
                     ) : (
-                      <div className="admin-grid">
+                      <div className="reassign-wallpaper-list">
                         {categoryWallpapers.map((wallpaper) => (
                           <div
                             key={wallpaper.id}
@@ -222,16 +226,16 @@ export default function ReassignWallpapers() {
                               setDraggedWallpaperId(null);
                               setDragOverCategoryId(null);
                             }}
-                            className="admin-drop-card"
+                            className={`reassign-wallpaper-card ${movingWallpaperId === wallpaper.id ? 'reassign-wallpaper-card--moving' : ''}`}
                           >
-                            <div className="admin-media-object">
+                            <div className="reassign-wallpaper-card__image">
                               <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
-                              <div>
-                                <strong>{wallpaper.title}</strong>
-                                <div className="admin-chip-row" style={{ marginTop: '0.5rem' }}>
-                                  {wallpaper.isPro ? <StatusTag type="purple">Pro</StatusTag> : null}
-                                  <StatusTag type="cool-gray">Drag to move</StatusTag>
-                                </div>
+                            </div>
+                            <div className="reassign-wallpaper-card__body">
+                              <strong title={wallpaper.title}>{wallpaper.title}</strong>
+                              <div className="admin-chip-row">
+                                {wallpaper.isPro ? <StatusTag type="purple">Pro</StatusTag> : null}
+                                <StatusTag type="cool-gray">Drag</StatusTag>
                               </div>
                             </div>
                           </div>
@@ -239,7 +243,7 @@ export default function ReassignWallpapers() {
                       </div>
                     )}
                   </div>
-                </AdminPanel>
+                </article>
               );
             })}
           </div>
