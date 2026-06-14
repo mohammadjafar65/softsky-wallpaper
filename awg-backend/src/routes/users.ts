@@ -115,8 +115,17 @@ router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
             user.isActive = isActive === true || isActive === "true";
         if (subscription) {
             if (subscription.plan) user.subscriptionPlan = subscription.plan;
-            if (subscription.expiryDate)
+
+            if (subscription.plan === "free") {
+                user.subscriptionExpiryDate = undefined;
+                user.subscriptionPurchaseToken = undefined;
+            } else if (subscription.plan === "lifetime") {
+                user.subscriptionExpiryDate = new Date("2100-01-01");
+            } else if (subscription.expiryDate === null || subscription.expiryDate === "") {
+                user.subscriptionExpiryDate = undefined;
+            } else if (subscription.expiryDate !== undefined) {
                 user.subscriptionExpiryDate = new Date(subscription.expiryDate);
+            }
         }
 
         await userRepository.save(user);

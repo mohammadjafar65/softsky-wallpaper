@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button, Pagination, Search, Select, SelectItem } from '@carbon/react';
 import { Download, Edit, TrashCan } from '@carbon/icons-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { usersApi } from '../services/api';
-import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
+import { AdminPage, AdminPanel, EmptyState, StatTile, StatusTag } from '../components/admin/AdminPage';
 import EditUserModal from '../components/EditUserModal';
 
 interface User {
@@ -34,6 +34,15 @@ export default function Users() {
   useEffect(() => {
     void fetchUsers({ pageNumber: page });
   }, [page, planFilter]);
+
+  const visibleStats = useMemo(() => {
+    const active = users.filter((user) => user.isActive).length;
+    const paid = users.filter((user) => user.subscription?.plan && user.subscription.plan !== 'free').length;
+    const pushReady = users.filter((user) => user.hasFcmToken).length;
+    const downloads = users.reduce((sum, user) => sum + (user.downloads || 0), 0);
+
+    return { active, paid, pushReady, downloads };
+  }, [users]);
 
   const fetchUsers = async ({ pageNumber = page, search = searchQuery } = {}) => {
     setIsLoading(true);
@@ -128,6 +137,14 @@ export default function Users() {
         </Button>
       }
     >
+      <div className="admin-grid admin-grid--stats">
+        <StatTile label="Total users" value={totalUsers.toLocaleString()} helper="All matching accounts" tone="blue" loading={isLoading} />
+        <StatTile label="Visible active" value={visibleStats.active.toLocaleString()} helper="Active on this page" tone="green" loading={isLoading} />
+        <StatTile label="Paid visible" value={visibleStats.paid.toLocaleString()} helper="Non-free plans here" tone="orange" loading={isLoading} />
+        <StatTile label="Push ready" value={visibleStats.pushReady.toLocaleString()} helper="Can receive campaigns" tone="purple" loading={isLoading} />
+        <StatTile label="Downloads" value={visibleStats.downloads.toLocaleString()} helper="Visible user total" tone="red" loading={isLoading} />
+      </div>
+
       <AdminPanel title="Filters" description="Search across your customer base and narrow by subscription plan.">
         <div className="admin-form-grid">
           <form onSubmit={(event) => void handleSearch(event)}>
@@ -144,7 +161,10 @@ export default function Users() {
             id="plan-filter"
             labelText="Plan"
             value={planFilter}
-            onChange={(event) => setPlanFilter(event.target.value)}
+            onChange={(event) => {
+              setPlanFilter(event.target.value);
+              setPage(1);
+            }}
           >
             <SelectItem value="all" text="All plans" />
             <SelectItem value="free" text="Free" />
@@ -210,7 +230,7 @@ export default function Users() {
                             {user.hasFcmToken ? 'Ready' : 'Missing token'}
                           </StatusTag>
                         </td>
-                        <td>{user.downloads}</td>
+                        <td>{(user.downloads || 0).toLocaleString()}</td>
                         <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                         <td>
                           <div className="admin-inline-actions">

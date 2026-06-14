@@ -12,12 +12,12 @@ interface AdminPageProps {
   eyebrow?: string;
 }
 
-export function AdminPage({ title, subtitle, actions, children, eyebrow = 'Admin' }: AdminPageProps) {
+export function AdminPage({ title, subtitle, actions, children, eyebrow }: AdminPageProps) {
   return (
     <div className="admin-page">
       <div className="admin-page__header">
         <div>
-          <p className="admin-page__eyebrow">{eyebrow}</p>
+          {eyebrow ? <p className="admin-page__eyebrow">{eyebrow}</p> : null}
           <h1 className="admin-page__title">{title}</h1>
           {subtitle ? <p className="admin-page__subtitle">{subtitle}</p> : null}
         </div>
