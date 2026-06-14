@@ -1,17 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import {
-  Button,
-  RadioButton,
-  RadioButtonGroup,
-  Select,
-  SelectItem,
-  TextArea,
-  TextInput,
-} from '@carbon/react';
-import { Send, Renew } from '@carbon/icons-react';
+import { RefreshCw, Send } from 'lucide-react';
 import { notificationsApi, usersApi } from '../services/api';
 import { AdminPage, AdminPanel, StatusTag, StatTile } from '../components/admin/AdminPage';
+import { Button } from '../components/ui/button';
 
 interface User {
   id: string;
@@ -151,8 +143,9 @@ export default function Notifications() {
       title="Push notifications"
       subtitle="Send broadcast, targeted, and test push campaigns with clear delivery readiness."
       actions={
-        <Button kind="secondary" renderIcon={Renew} disabled={loadingUsers} onClick={() => void fetchUsers()}>
-          {loadingUsers ? 'Refreshing...' : 'Refresh users'}
+        <Button variant="secondary" size="sm" disabled={loadingUsers} onClick={() => void fetchUsers()}>
+          <RefreshCw size={13} className={loadingUsers ? 'admin-icon-spin' : ''} />
+          {loadingUsers ? 'Refreshing…' : 'Refresh users'}
         </Button>
       }
     >
@@ -164,117 +157,97 @@ export default function Notifications() {
 
       <div className="admin-grid admin-grid--cards">
         <AdminPanel title="Compose notification" description="Choose an audience, write the message, then send through the backend FCM service.">
-          <div className="admin-grid">
-            <RadioButtonGroup
-              legendText="Target audience"
-              name="targetType"
-              valueSelected={targetType}
-              onChange={(value) => {
-                setTargetType(value as TargetType);
-                setResult(null);
-              }}
-            >
-              <RadioButton id="target-all" labelText="All push-ready users" value="all" />
-              <RadioButton id="target-user" labelText="Specific user" value="user" />
-              <RadioButton id="target-test" labelText="Test token" value="test" />
-            </RadioButtonGroup>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="afield">
+              <label className="afield__label">Target audience</label>
+              <div className="afield__radio-group">
+                {(['all', 'user', 'test'] as const).map((v) => (
+                  <label key={v} className="afield__radio-row">
+                    <input type="radio" name="targetType" value={v} checked={targetType === v} onChange={() => { setTargetType(v); setResult(null); }} />
+                    <span>{{ all: 'All push-ready users', user: 'Specific user', test: 'Test token' }[v]}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
             {targetType === 'user' ? (
-              <Select
-                id="target-user-select"
-                labelText="Select user"
-                value={selectedUserId}
-                onChange={(event) => setSelectedUserId(event.target.value)}
-                disabled={loadingUsers}
-              >
-                <SelectItem value="" text={loadingUsers ? 'Loading users...' : 'Choose a user'} />
-                {users.map((user) => (
-                  <SelectItem
-                    key={user.id}
-                    value={user.id}
-                    text={`${user.displayName || user.email} (${user.hasFcmToken ? 'push ready' : 'no token'})`}
-                  />
-                ))}
-              </Select>
+              <div className="afield">
+                <label className="afield__label">Select user</label>
+                <select className="afield__select" value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)} disabled={loadingUsers}>
+                  <option value="">{loadingUsers ? 'Loading users…' : 'Choose a user'}</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.displayName || u.email} ({u.hasFcmToken ? 'push ready' : 'no token'})
+                    </option>
+                  ))}
+                </select>
+              </div>
             ) : null}
 
             {targetType === 'test' ? (
-              <TextArea
-                id="notification-test-token"
-                labelText="FCM device token"
-                value={testToken}
-                onChange={(event) => setTestToken(event.target.value)}
-                helperText="Use this to verify Firebase credentials and device delivery before a campaign."
-              />
+              <div className="afield">
+                <label className="afield__label">FCM device token</label>
+                <textarea className="afield__textarea" value={testToken} onChange={(e) => setTestToken(e.target.value)} placeholder="Paste device FCM token here" />
+                <span className="afield__helper">Use this to verify Firebase credentials and device delivery before a campaign.</span>
+              </div>
             ) : null}
 
-            <TextInput
-              id="notification-title"
-              labelText="Title"
-              maxLength={50}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              helperText={`${title.length}/50 characters`}
-            />
+            <div className="afield">
+              <label className="afield__label">Title</label>
+              <input className="afield__input" maxLength={50} value={title} onChange={(e) => setTitle(e.target.value)} />
+              <span className="afield__helper">{title.length}/50 characters</span>
+            </div>
 
-            <TextArea
-              id="notification-message"
-              labelText="Message"
-              maxLength={200}
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              helperText={`${message.length}/200 characters`}
-            />
+            <div className="afield">
+              <label className="afield__label">Message</label>
+              <textarea className="afield__textarea" maxLength={200} value={message} onChange={(e) => setMessage(e.target.value)} />
+              <span className="afield__helper">{message.length}/200 characters</span>
+            </div>
 
-            <TextInput
-              id="notification-image"
-              labelText="Thumbnail image URL"
-              value={imageUrl}
-              onChange={(event) => setImageUrl(event.target.value)}
-              helperText="Optional image URL for rich notifications."
-            />
+            <div className="afield">
+              <label className="afield__label">Thumbnail image URL</label>
+              <input className="afield__input" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://…" />
+              <span className="afield__helper">Optional image URL for rich notifications.</span>
+            </div>
 
             {result ? (
-              <StatusTag type={result.type === 'success' ? 'green' : result.type === 'warning' ? 'warm-gray' : 'red'}>
+              <div style={{ padding: '10px 14px', borderRadius: 8, fontSize: 13, background: result.type === 'success' ? 'var(--admin-green-soft)' : result.type === 'warning' ? 'var(--admin-yellow-soft)' : 'var(--admin-red-soft)', color: result.type === 'success' ? 'var(--admin-green)' : result.type === 'warning' ? 'var(--admin-yellow)' : 'var(--admin-red)', border: `1px solid ${result.type === 'success' ? 'rgba(22,163,74,0.2)' : result.type === 'warning' ? 'rgba(217,119,6,0.2)' : 'rgba(220,38,38,0.2)'}` }}>
                 {result.message}
-              </StatusTag>
+              </div>
             ) : null}
 
-            <Button renderIcon={Send} onClick={() => void handleSend()} disabled={isLoading || !canSend}>
-              {isLoading ? 'Sending...' : 'Send notification'}
+            <Button size="sm" onClick={() => void handleSend()} disabled={isLoading || !canSend}>
+              <Send size={13} /> {isLoading ? 'Sending…' : 'Send notification'}
             </Button>
           </div>
         </AdminPanel>
 
         <AdminPanel title="Campaign preview" description="Review the push copy before sending.">
-          <div className="admin-grid">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div className="admin-preview-phone">
               <div className="admin-preview-notification">
                 <strong>{title.trim() || 'Notification title'}</strong>
-                <span>{message.trim() || 'Your notification message will preview here.'}</span>
-                {imageUrl.trim() ? <span className="admin-authors">{imageUrl.trim()}</span> : null}
+                <span style={{ fontSize: 12, marginTop: 2 }}>{message.trim() || 'Your notification message will preview here.'}</span>
               </div>
             </div>
 
             <div className="admin-callout">
-              <strong>Delivery readiness</strong>
-              <p className="admin-authors">
+              <strong style={{ fontSize: 12 }}>Delivery readiness</strong>
+              <p style={{ fontSize: 12, color: 'var(--admin-text-muted)', margin: 0 }}>
                 Broadcasts only reach users with a stored FCM token. If Firebase Admin credentials are missing on the backend, sends will return failures.
               </p>
             </div>
 
             <div className="admin-callout">
-              <strong>Selected target</strong>
-              <p className="admin-authors">
+              <strong style={{ fontSize: 12 }}>Selected target</strong>
+              <p style={{ fontSize: 12, color: 'var(--admin-text-muted)', margin: 0 }}>
                 {targetType === 'all'
                   ? `${reachableUsers.toLocaleString()} push-ready users`
                   : targetType === 'user'
                     ? selectedUser
                       ? `${selectedUser.displayName || selectedUser.email} ${selectedUser.hasFcmToken ? 'is push ready' : 'has no FCM token'}`
                       : 'No user selected'
-                    : testToken.trim()
-                      ? 'Test token ready'
-                      : 'Waiting for test token'}
+                    : testToken.trim() ? 'Test token ready' : 'Waiting for test token'}
               </p>
             </div>
           </div>

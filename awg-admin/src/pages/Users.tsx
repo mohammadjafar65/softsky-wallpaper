@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Pagination, Search, Select, SelectItem } from '@carbon/react';
-import { Download, Edit, TrashCan } from '@carbon/icons-react';
+import { Download, Edit, Search, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { usersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatTile, StatusTag } from '../components/admin/AdminPage';
 import EditUserModal from '../components/EditUserModal';
+import { Button } from '../components/ui/button';
 
 interface User {
   id: string;
@@ -125,18 +125,127 @@ export default function Users() {
     }
   };
 
-  const totalItems = Math.max(totalUsers, users.length || 0);
-
   return (
     <AdminPage
       title="Users"
       subtitle="Inspect account health, subscription status, messaging readiness, and high-value behaviors."
       actions={
-        <Button kind="secondary" renderIcon={Download} onClick={() => void handleExportCsv()}>
-          Export CSV
+        <Button variant="secondary" size="sm" onClick={() => void handleExportCsv()}>
+          <Download size={14} /> Export CSV
         </Button>
       }
     >
+      <div className="admin-grid admin-grid--stats">
+        <StatTile label="Total users" value={totalUsers.toLocaleString()} helper="All matching accounts" tone="blue" loading={isLoading} />
+        <StatTile label="Visible active" value={visibleStats.active.toLocaleString()} helper="Active on this page" tone="green" loading={isLoading} />
+        <StatTile label="Paid visible" value={visibleStats.paid.toLocaleString()} helper="Non-free plans here" tone="orange" loading={isLoading} />
+        <StatTile label="Push ready" value={visibleStats.pushReady.toLocaleString()} helper="Can receive campaigns" tone="purple" loading={isLoading} />
+        <StatTile label="Downloads" value={visibleStats.downloads.toLocaleString()} helper="Visible user total" tone="red" loading={isLoading} />
+      </div>
+
+      <AdminPanel title="Filters" description="Search across your customer base and narrow by subscription plan.">
+        <div className="admin-form-grid">
+          <form onSubmit={(e) => void handleSearch(e)}>
+            <div className="afield">
+              <label className="afield__label">Search users</label>
+              <div style={{ position: 'relative' }}>
+                <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-sub)' }} />
+                <input className="afield__input" style={{ paddingLeft: 32 }} placeholder="Search by name or email" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              </div>
+            </div>
+          </form>
+          <div className="afield">
+            <label className="afield__label">Plan</label>
+            <select className="afield__select" value={planFilter} onChange={(e) => { setPlanFilter(e.target.value); setPage(1); }}>
+              <option value="all">All plans</option>
+              <option value="free">Free</option>
+              <option value="monthly">Monthly</option>
+              <option value="annual">Annual</option>
+              <option value="lifetime">Lifetime</option>
+            </select>
+          </div>
+        </div>
+      </AdminPanel>
+
+      <AdminPanel title="User directory" description="An operational view of account and plan data.">
+        {isLoading ? (
+          <p style={{ color: 'var(--admin-text-muted)', padding: '16px 0' }}>Loading users…</p>
+        ) : users.length === 0 ? (
+          <EmptyState title="No users found" message="Adjust the filters or search query to broaden the result set." />
+        ) : (
+          <div className="admin-grid">
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Provider</th>
+                    <th>Plan</th>
+                    <th>Push</th>
+                    <th>Downloads</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => {
+                    const isExpired = user.subscription.expiryDate && new Date(user.subscription.expiryDate) < new Date() && user.subscription.plan !== 'lifetime';
+                    return (
+                      <tr key={user.id}>
+                        <td>
+                          <strong style={{ display: 'block', fontSize: 13 }}>{user.displayName}</strong>
+                          <div style={{ fontSize: 11, color: 'var(--admin-text-sub)', marginTop: 2 }}>{user.email}</div>
+                        </td>
+                        <td style={{ textTransform: 'capitalize' }}>{user.authProvider}</td>
+                        <td>
+                          <StatusTag type={user.subscription.plan === 'free' || isExpired ? 'cool-gray' : 'green'}>
+                            {isExpired ? `${user.subscription.plan} expired` : user.subscription.plan}
+                          </StatusTag>
+                        </td>
+                        <td>
+                          <StatusTag type={user.hasFcmToken ? 'green' : 'cool-gray'}>
+                            {user.hasFcmToken ? 'Ready' : 'Missing token'}
+                          </StatusTag>
+                        </td>
+                        <td>{(user.downloads || 0).toLocaleString()}</td>
+                        <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <div className="admin-inline-actions">
+                            <button className="admin-round-button" title="Edit user" onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}>
+                              <Edit size={13} />
+                            </button>
+                            <button className="admin-round-button" title="Delete user" style={{ color: 'var(--admin-red)' }} onClick={() => void handleDeleteUser(user.id, user.displayName)}>
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 13 }}>
+                <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Previous</Button>
+                <span style={{ color: 'var(--admin-text-muted)' }}>Page {page} of {totalPages}</span>
+                <Button variant="secondary" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next →</Button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </AdminPanel>
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={selectedUser}
+        onSuccess={() => { void fetchUsers({ pageNumber: page }); setIsEditModalOpen(false); }}
+      />
+    </AdminPage>
+  );
+}
       <div className="admin-grid admin-grid--stats">
         <StatTile label="Total users" value={totalUsers.toLocaleString()} helper="All matching accounts" tone="blue" loading={isLoading} />
         <StatTile label="Visible active" value={visibleStats.active.toLocaleString()} helper="Active on this page" tone="green" loading={isLoading} />

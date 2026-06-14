@@ -1,18 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import {
-  Button,
-  Checkbox,
-  Modal,
-  Search,
-  TextArea,
-  TextInput,
-} from '@carbon/react';
-import { Add, Edit, TrashCan } from '@carbon/icons-react';
+import { Edit, Plus, Search, Trash2, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import { packsApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
-import { FilePicker } from '../components/admin/FilePicker';
+import { AdminModal } from '../components/admin/AdminModal';
+import { Button } from '../components/ui/button';
 
 interface Pack {
   id: string;
@@ -39,6 +32,7 @@ export default function Packs() {
     isActive: true,
   });
   const [previewUrl, setPreviewUrl] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void fetchPacks();
@@ -160,30 +154,27 @@ export default function Packs() {
       title="Wallpaper packs"
       subtitle="Maintain curated collections, premium bundles, and release-ready cover art."
       actions={
-        <Button
-          renderIcon={Add}
-          onClick={() => {
-            resetForm();
-            setIsModalOpen(true);
-          }}
-        >
-          Create pack
+        <Button size="sm" onClick={() => { resetForm(); setIsModalOpen(true); }}>
+          <Plus size={14} /> Create pack
         </Button>
       }
     >
       <AdminPanel title="Pack filters" description="Search across your curated collection library.">
-          <Search
-            id="pack-search"
-            labelText="Search packs"
+        <div style={{ position: 'relative', maxWidth: 360 }}>
+          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-sub)' }} />
+          <input
+            className="afield__input"
+            style={{ paddingLeft: 32 }}
             placeholder="Search packs"
             value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </div>
       </AdminPanel>
 
       <AdminPanel title="Pack library" description="A polished gallery for published and draft bundles.">
         {isLoading ? (
-          <p>Loading packs...</p>
+          <p style={{ color: 'var(--admin-text-muted)', padding: '16px 0' }}>Loading packs…</p>
         ) : filteredPacks.length === 0 ? (
           <EmptyState
             title="No packs found"
@@ -200,61 +191,41 @@ export default function Packs() {
                 description={pack.description || 'No description provided.'}
                 actions={
                   <div className="admin-inline-actions">
-                    <Button
-                      kind="ghost"
-                      size="sm"
-                      renderIcon={Edit}
-                      iconDescription="Edit pack"
-                      hasIconOnly
+                    <button
+                      className="admin-round-button"
+                      title="Edit pack"
                       onClick={() => {
                         setEditingPack(pack);
-                        setFormData({
-                          name: pack.name,
-                          description: pack.description,
-                          coverImage: null,
-                          isPro: pack.isPro,
-                          isActive: pack.isActive,
-                        });
+                        setFormData({ name: pack.name, description: pack.description, coverImage: null, isPro: pack.isPro, isActive: pack.isActive });
                         setPreviewUrl(pack.coverImage);
                         setIsModalOpen(true);
                       }}
-                    />
-                    <Button
-                      kind="ghost"
-                      size="sm"
-                      renderIcon={TrashCan}
-                      iconDescription="Delete pack"
-                      hasIconOnly
-                      onClick={() => void handleDelete(pack.id)}
-                    />
+                    >
+                      <Edit size={13} />
+                    </button>
+                    <button className="admin-round-button" title="Delete pack" style={{ color: 'var(--admin-red)' }} onClick={() => void handleDelete(pack.id)}>
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 }
               >
                 {pack.coverImage ? (
-                  <img
-                    src={pack.coverImage}
-                    alt={pack.name}
-                    style={{ width: '100%', height: '14rem', objectFit: 'cover', marginBottom: '1rem' }}
-                  />
+                  <img src={pack.coverImage} alt={pack.name} style={{ width: '100%', height: '10rem', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />
                 ) : null}
 
                 <div className="admin-chip-row">
-                  <StatusTag type={pack.isPro ? 'purple' : 'cool-gray'}>
-                    {pack.isPro ? 'Pro pack' : 'Free pack'}
-                  </StatusTag>
-                  <StatusTag type={pack.isActive ? 'green' : 'red'}>
-                    {pack.isActive ? 'Active' : 'Inactive'}
-                  </StatusTag>
+                  <StatusTag type={pack.isPro ? 'purple' : 'cool-gray'}>{pack.isPro ? 'Pro pack' : 'Free pack'}</StatusTag>
+                  <StatusTag type={pack.isActive ? 'green' : 'red'}>{pack.isActive ? 'Active' : 'Inactive'}</StatusTag>
                 </div>
 
-                <div className="admin-info-list" style={{ marginTop: '1rem' }}>
+                <div className="admin-info-list" style={{ marginTop: 12 }}>
                   <div className="admin-info-row">
                     <span>Created</span>
                     <span>{format(new Date(pack.createdAt), 'MMM d, yyyy')}</span>
                   </div>
                   <div className="admin-info-row">
                     <span>Wallpapers</span>
-                    <span>{pack.wallpaperCount ?? 'Not tracked'}</span>
+                    <span>{pack.wallpaperCount ?? '—'}</span>
                   </div>
                 </div>
               </AdminPanel>
@@ -263,62 +234,48 @@ export default function Packs() {
         )}
       </AdminPanel>
 
-      <Modal
+      {/* ── Create / Edit pack modal ─────────────────────── */}
+      <AdminModal
         open={isModalOpen}
-        modalHeading={editingPack ? 'Edit pack' : 'Create pack'}
-        primaryButtonText={editingPack ? 'Save changes' : 'Create pack'}
-        secondaryButtonText="Cancel"
-        onRequestClose={() => {
-          setIsModalOpen(false);
-          resetForm();
-        }}
-        onRequestSubmit={() => void handleSubmit()}
+        title={editingPack ? 'Edit pack' : 'Create pack'}
+        primaryLabel={editingPack ? 'Save changes' : 'Create pack'}
+        onConfirm={() => void handleSubmit()}
+        onClose={() => { setIsModalOpen(false); resetForm(); }}
       >
-        <div className="admin-grid">
-          <FilePicker
-            label="Cover image"
-            helperText="Recommended: wide cover image for collection cards."
-            accept="image/*"
-            onChange={handleFileSelect}
-          />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="afield">
+            <label className="afield__label">Cover image</label>
+            <p className="afield__helper">Recommended: wide cover image for collection cards.</p>
+            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileSelect} />
+            <button className="aupload-zone" type="button" onClick={() => fileInputRef.current?.click()}>
+              <Upload size={14} /> Choose file
+            </button>
+          </div>
 
           {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Pack preview"
-              style={{ width: '100%', height: '12rem', objectFit: 'cover' }}
-            />
+            <img src={previewUrl} alt="Pack preview" style={{ width: '100%', height: '9rem', objectFit: 'cover', borderRadius: 8 }} />
           ) : null}
 
-          <TextInput
-            id="pack-name"
-            labelText="Pack name"
-            value={formData.name}
-            onChange={(event) => setFormData((current) => ({ ...current, name: event.target.value }))}
-          />
-
-          <TextArea
-            id="pack-description"
-            labelText="Description"
-            value={formData.description}
-            onChange={(event) => setFormData((current) => ({ ...current, description: event.target.value }))}
-          />
-
-          <Checkbox
-            id="pack-pro"
-            labelText="Pro pack"
-            checked={formData.isPro}
-            onChange={(_, { checked }) => setFormData((current) => ({ ...current, isPro: Boolean(checked) }))}
-          />
-
-          <Checkbox
-            id="pack-active"
-            labelText="Pack is active"
-            checked={formData.isActive}
-            onChange={(_, { checked }) => setFormData((current) => ({ ...current, isActive: Boolean(checked) }))}
-          />
+          <div className="afield">
+            <label className="afield__label">Pack name</label>
+            <input className="afield__input" value={formData.name} onChange={(e) => setFormData((c) => ({ ...c, name: e.target.value }))} />
+          </div>
+          <div className="afield">
+            <label className="afield__label">Description</label>
+            <textarea className="afield__textarea" value={formData.description} onChange={(e) => setFormData((c) => ({ ...c, description: e.target.value }))} />
+          </div>
+          <div style={{ display: 'flex', gap: 20 }}>
+            <label className="afield__checkbox-row">
+              <input type="checkbox" checked={formData.isPro} onChange={(e) => setFormData((c) => ({ ...c, isPro: e.target.checked }))} />
+              <span>Pro pack</span>
+            </label>
+            <label className="afield__checkbox-row">
+              <input type="checkbox" checked={formData.isActive} onChange={(e) => setFormData((c) => ({ ...c, isActive: e.target.checked }))} />
+              <span>Pack is active</span>
+            </label>
+          </div>
         </div>
-      </Modal>
+      </AdminModal>
     </AdminPage>
   );
 }

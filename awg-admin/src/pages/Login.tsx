@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, PasswordInput, TextInput, Tile } from '@carbon/react';
+
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -64,31 +64,23 @@ export default function Login() {
             <p className="admin-login__helper">Use your admin credentials to enter the panel.</p>
           </div>
 
-          <Tile className="admin-panel">
-            <form onSubmit={handleSubmit} className="admin-grid">
-              <TextInput
-                id="email"
-                labelText="Email address"
-                placeholder="name@company.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
+          <div className="admin-panel">
+            <form onSubmit={(e) => void handleSubmit(e)} className="admin-grid">
+              <div className="afield">
+                <label className="afield__label" htmlFor="email">Email address</label>
+                <input id="email" type="email" className="afield__input" placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
 
-              <PasswordInput
-                id="password"
-                labelText="Password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
+              <div className="afield">
+                <label className="afield__label" htmlFor="password">Password</label>
+                <input id="password" type="password" className="afield__input" placeholder="Enter password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
 
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </Button>
+              <button type="submit" className="amodal-btn--primary" style={{ height: 42, marginTop: 4 }} disabled={isLoading}>
+                {isLoading ? 'Signing in…' : 'Sign in'}
+              </button>
             </form>
-          </Tile>
+          </div>
         </section>
       </div>
     </div>

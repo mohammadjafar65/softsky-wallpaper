@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import {
-  Button,
-  Modal,
-  TextArea,
-  TextInput,
-} from '@carbon/react';
-import { Add, Edit, LogoPinterest, Renew, TrashCan } from '@carbon/icons-react';
+import { Edit, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { categoriesApi, wallpapersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
+import { AdminModal } from '../components/admin/AdminModal';
+import { Button } from '../components/ui/button';
 
 interface Category {
   id: string;
@@ -159,18 +155,18 @@ export default function Categories() {
       subtitle="Organize content taxonomy, manage Pinterest imports, and inspect category health."
       actions={
         <>
-          <Button kind="secondary" renderIcon={LogoPinterest} onClick={() => setShowImportModal(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setShowImportModal(true)}>
             Import Pinterest board
           </Button>
-          <Button renderIcon={Add} onClick={() => setShowModal(true)}>
-            Add category
+          <Button size="sm" onClick={() => setShowModal(true)}>
+            <Plus size={14} /> Add category
           </Button>
         </>
       }
     >
       <AdminPanel title="Category library" description="Each category tracks its own inventory footprint and source state.">
         {isLoading ? (
-          <p>Loading categories...</p>
+          <p style={{ color: 'var(--admin-text-muted)', padding: '16px 0' }}>Loading categories…</p>
         ) : categories.length === 0 ? (
           <EmptyState
             title="No categories yet"
@@ -187,22 +183,12 @@ export default function Categories() {
                 description={category.description || 'No description provided.'}
                 actions={
                   <div className="admin-inline-actions">
-                    <Button
-                      kind="ghost"
-                      size="sm"
-                      renderIcon={Edit}
-                      iconDescription="Edit category"
-                      hasIconOnly
-                      onClick={() => void handleEdit(category)}
-                    />
-                    <Button
-                      kind="ghost"
-                      size="sm"
-                      renderIcon={TrashCan}
-                      iconDescription="Delete category"
-                      hasIconOnly
-                      onClick={() => void handleDelete(category.id)}
-                    />
+                    <button className="admin-round-button" title="Edit" onClick={() => void handleEdit(category)}>
+                      <Edit size={13} />
+                    </button>
+                    <button className="admin-round-button" title="Delete" style={{ color: 'var(--admin-red)' }} onClick={() => void handleDelete(category.id)}>
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 }
               >
@@ -223,99 +209,70 @@ export default function Categories() {
                   </div>
                 </div>
 
-                {editingCategory?.id === category.id && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <h3 style={{ marginBottom: '0.75rem' }}>Recent wallpapers in this category</h3>
-                    {isWallpapersLoading ? (
-                      <p>Loading wallpapers...</p>
-                    ) : categoryWallpapers.length === 0 ? (
-                      <p className="admin-authors">No wallpapers found in this category.</p>
-                    ) : (
-                      <div className="admin-preview-grid">
-                        {categoryWallpapers.slice(0, 6).map((wallpaper) => (
-                          <div key={wallpaper.id} className="admin-preview-card">
-                            <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
-                            <span className="admin-authors">{wallpaper.title}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {category.sourceUrl?.includes('pinterest.com') ? (
-                  <div style={{ marginTop: '1rem' }}>
-                    <Button
-                      kind="ghost"
-                      size="sm"
-                      renderIcon={Renew}
+                {category.sourceUrl?.includes('pinterest.com') && (
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      className="admin-sidebar__link"
+                      style={{ width: 'auto', gap: 6, fontSize: 12, padding: '6px 10px', border: '1px solid var(--admin-border)', borderRadius: 8, background: 'var(--admin-panel)', color: 'var(--admin-text-muted)' }}
                       disabled={refetchingId === category.id}
                       onClick={() => void handleRefetch(category.id)}
                     >
-                      {refetchingId === category.id ? 'Refetching...' : 'Refetch board'}
-                    </Button>
+                      <RefreshCw size={12} className={refetchingId === category.id ? 'admin-icon-spin' : ''} />
+                      {refetchingId === category.id ? 'Refetching…' : 'Refetch board'}
+                    </button>
                   </div>
-                ) : null}
+                )}
               </AdminPanel>
             ))}
           </div>
         )}
       </AdminPanel>
 
-      <Modal
+      {/* ── Create / Edit category modal ─────────────────── */}
+      <AdminModal
         open={showModal}
-        modalHeading={editingCategory ? 'Edit category' : 'Create category'}
-        primaryButtonText={isSubmitting ? 'Saving...' : editingCategory ? 'Save changes' : 'Create category'}
-        secondaryButtonText="Cancel"
-        onRequestClose={() => {
-          setShowModal(false);
-          resetForm();
-        }}
-        onRequestSubmit={() => void handleSubmit()}
-        primaryButtonDisabled={isSubmitting || !formData.name.trim()}
+        title={editingCategory ? 'Edit category' : 'Create category'}
+        primaryLabel={isSubmitting ? 'Saving…' : editingCategory ? 'Save changes' : 'Create category'}
+        primaryDisabled={isSubmitting || !formData.name.trim()}
+        onConfirm={() => void handleSubmit()}
+        onClose={() => { setShowModal(false); resetForm(); }}
       >
-        <div className="admin-grid">
-          <TextInput
-            id="category-name"
-            labelText="Name"
-            value={formData.name}
-            onChange={(event) => setFormData((current) => ({ ...current, name: event.target.value }))}
-          />
-          <TextInput
-            id="category-icon"
-            labelText="Emoji"
-            value={formData.icon}
-            onChange={(event) => setFormData((current) => ({ ...current, icon: event.target.value }))}
-          />
-          <TextArea
-            id="category-description"
-            labelText="Description"
-            value={formData.description}
-            onChange={(event) => setFormData((current) => ({ ...current, description: event.target.value }))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="afield">
+            <label className="afield__label">Name</label>
+            <input className="afield__input" value={formData.name} onChange={(e) => setFormData((c) => ({ ...c, name: e.target.value }))} />
+          </div>
+          <div className="afield">
+            <label className="afield__label">Emoji</label>
+            <input className="afield__input" value={formData.icon} onChange={(e) => setFormData((c) => ({ ...c, icon: e.target.value }))} />
+          </div>
+          <div className="afield">
+            <label className="afield__label">Description</label>
+            <textarea className="afield__textarea" value={formData.description} onChange={(e) => setFormData((c) => ({ ...c, description: e.target.value }))} />
+          </div>
+        </div>
+      </AdminModal>
+
+      {/* ── Import Pinterest modal ───────────────────────── */}
+      <AdminModal
+        open={showImportModal}
+        title="Import Pinterest board"
+        primaryLabel={isImporting ? 'Importing…' : 'Start import'}
+        primaryDisabled={isImporting || !importUrl.trim()}
+        onConfirm={() => void handleImport()}
+        onClose={() => { setShowImportModal(false); setImportUrl(''); }}
+        size="sm"
+      >
+        <div className="afield">
+          <label className="afield__label">Pinterest board URL</label>
+          <input
+            className="afield__input"
+            placeholder="https://www.pinterest.com/username/boardname/"
+            value={importUrl}
+            onChange={(e) => setImportUrl(e.target.value)}
           />
         </div>
-      </Modal>
-
-      <Modal
-        open={showImportModal}
-        modalHeading="Import Pinterest board"
-        primaryButtonText={isImporting ? 'Importing...' : 'Start import'}
-        secondaryButtonText="Cancel"
-        onRequestClose={() => {
-          setShowImportModal(false);
-          setImportUrl('');
-        }}
-        onRequestSubmit={() => void handleImport()}
-        primaryButtonDisabled={isImporting || !importUrl.trim()}
-      >
-        <TextInput
-          id="pinterest-url"
-          labelText="Pinterest board URL"
-          placeholder="https://www.pinterest.com/username/boardname/"
-          value={importUrl}
-          onChange={(event) => setImportUrl(event.target.value)}
-        />
-      </Modal>
+      </AdminModal>
     </AdminPage>
   );
 }

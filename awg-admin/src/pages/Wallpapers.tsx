@@ -1,19 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import {
-  Button,
-  Checkbox,
-  Modal,
-  ProgressBar,
-  Search,
-  Select,
-  SelectItem,
-  TextInput,
-} from '@carbon/react';
-import { Add, Edit, Star, TrashCan } from '@carbon/icons-react';
+import { Edit, Plus, Search, Star, Trash2, Upload } from 'lucide-react';
 import { categoriesApi, packsApi, wallpapersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
-import { FilePicker } from '../components/admin/FilePicker';
+import { AdminModal } from '../components/admin/AdminModal';
+import { Button } from '../components/ui/button';
 
 interface Wallpaper {
   id: string;
@@ -428,6 +419,8 @@ export default function Wallpapers() {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const visibleSelected = filteredWallpapers.filter((wallpaper) => selectedIds.has(wallpaper.id)).length;
 
   return (
@@ -438,19 +431,19 @@ export default function Wallpapers() {
         <>
           {selectedIds.size > 0 ? (
             <>
-              <Button kind="secondary" renderIcon={Star} onClick={() => void handleBulkSetPro(true)}>
-                Mark Pro
+              <Button variant="secondary" size="sm" onClick={() => void handleBulkSetPro(true)}>
+                <Star size={14} /> Mark Pro
               </Button>
-              <Button kind="secondary" renderIcon={Star} onClick={() => void handleBulkSetPro(false)}>
+              <Button variant="secondary" size="sm" onClick={() => void handleBulkSetPro(false)}>
                 Mark Free
               </Button>
-              <Button kind="danger--tertiary" renderIcon={TrashCan} onClick={() => void handleBulkDelete()}>
-                Delete selected
+              <Button variant="destructive" size="sm" onClick={() => void handleBulkDelete()}>
+                <Trash2 size={14} /> Delete ({selectedIds.size})
               </Button>
             </>
           ) : null}
-          <Button renderIcon={Add} onClick={() => setShowModal(true)}>
-            Upload wallpapers
+          <Button size="sm" onClick={() => setShowModal(true)}>
+            <Upload size={14} /> Upload wallpapers
           </Button>
         </>
       }
@@ -472,28 +465,30 @@ export default function Wallpapers() {
 
       <AdminPanel title="Filters" description="Search the loaded inventory and narrow the feed by category.">
         <div className="admin-form-grid">
-          <Search
-            id="wallpaper-search"
-            labelText="Search wallpapers"
-            placeholder="Search by title or category"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-          <Select
-            id="wallpaper-category-filter"
-            labelText="Category"
-            value={selectedCategory}
-            onChange={(event) => {
-              setSelectedCategory(event.target.value);
-              setPage(1);
-              setHasMore(true);
-            }}
-          >
-            <SelectItem value="all" text="All categories" />
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.slug || category.id} text={category.name} />
-            ))}
-          </Select>
+          <div className="afield">
+            <label className="afield__label">Search wallpapers</label>
+            <div style={{ position: 'relative' }}>
+              <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-sub)' }} />
+              <input
+                className="afield__input"
+                style={{ paddingLeft: 32 }}
+                placeholder="Search by title or category"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="afield">
+            <label className="afield__label">Category</label>
+            <select
+              className="afield__select"
+              value={selectedCategory}
+              onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); setHasMore(true); }}
+            >
+              <option value="all">All categories</option>
+              {categories.map((c) => <option key={c.id} value={c.slug || c.id}>{c.name}</option>)}
+            </select>
+          </div>
         </div>
       </AdminPanel>
 
@@ -502,7 +497,7 @@ export default function Wallpapers() {
         description={`${filteredWallpapers.length} loaded wallpapers${selectedIds.size ? `, ${visibleSelected} selected` : ''}`}
       >
         {isLoading ? (
-          <p>Loading wallpapers...</p>
+          <p style={{ color: 'var(--admin-text-muted)', padding: '16px 0' }}>Loading wallpapers…</p>
         ) : filteredWallpapers.length === 0 ? (
           <EmptyState
             title="No wallpapers found"
@@ -516,7 +511,10 @@ export default function Wallpapers() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Select</th>
+                    <th><input type="checkbox" onChange={(e) => {
+                      if (e.target.checked) setSelectedIds(new Set(filteredWallpapers.map((w) => w.id)));
+                      else setSelectedIds(new Set());
+                    }} /></th>
                     <th>Wallpaper</th>
                     <th>Category</th>
                     <th>Downloads</th>
@@ -528,29 +526,23 @@ export default function Wallpapers() {
                   {filteredWallpapers.map((wallpaper) => (
                     <tr key={wallpaper.id}>
                       <td>
-                        <Checkbox
-                          id={`wallpaper-${wallpaper.id}`}
-                          labelText=""
+                        <input
+                          type="checkbox"
                           checked={selectedIds.has(wallpaper.id)}
-                          onChange={(_, { checked }) =>
-                            setSelectedIds((current) => {
-                              const next = new Set(current);
-                              if (checked) {
-                                next.add(wallpaper.id);
-                              } else {
-                                next.delete(wallpaper.id);
-                              }
-                              return next;
-                            })
-                          }
+                          onChange={(e) => setSelectedIds((cur) => {
+                            const next = new Set(cur);
+                            if (e.target.checked) next.add(wallpaper.id);
+                            else next.delete(wallpaper.id);
+                            return next;
+                          })}
                         />
                       </td>
                       <td>
                         <div className="admin-media-object">
                           <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} />
                           <div>
-                            <strong>{wallpaper.title}</strong>
-                            <div className="admin-authors">{wallpaper.id}</div>
+                            <strong style={{ fontSize: 13 }}>{wallpaper.title}</strong>
+                            <div style={{ fontSize: 11, color: 'var(--admin-text-sub)', marginTop: 2 }}>{wallpaper.id}</div>
                           </div>
                         </div>
                       </td>
@@ -563,42 +555,32 @@ export default function Wallpapers() {
                       </td>
                       <td>
                         <div className="admin-inline-actions">
-                          <Button
-                            kind="ghost"
-                            size="sm"
-                            renderIcon={Edit}
-                            iconDescription="Edit wallpaper"
-                            hasIconOnly
+                          <button
+                            className="admin-round-button"
+                            title="Edit wallpaper"
                             onClick={() => {
                               setEditingWallpaper(wallpaper);
-                              setFormData((current) => ({
-                                ...current,
-                                title: wallpaper.title,
-                                categories: wallpaper.category?.id ? [wallpaper.category.id] : [],
-                                tags: wallpaper.tags?.join(', ') || '',
-                                isPro: wallpaper.isPro,
-                                isWide: Boolean(wallpaper.isWide),
-                                packId: '',
-                              }));
+                              setFormData((c) => ({ ...c, title: wallpaper.title, categories: wallpaper.category?.id ? [wallpaper.category.id] : [], tags: wallpaper.tags?.join(', ') || '', isPro: wallpaper.isPro, isWide: Boolean(wallpaper.isWide), packId: '' }));
                               setShowEditModal(true);
                             }}
-                          />
-                          <Button
-                            kind="ghost"
-                            size="sm"
-                            renderIcon={Star}
-                            iconDescription="Toggle pro status"
-                            hasIconOnly
+                          >
+                            <Edit size={13} />
+                          </button>
+                          <button
+                            className="admin-round-button"
+                            title="Toggle pro"
                             onClick={() => void handleTogglePro(wallpaper)}
-                          />
-                          <Button
-                            kind="ghost"
-                            size="sm"
-                            renderIcon={TrashCan}
-                            iconDescription="Delete wallpaper"
-                            hasIconOnly
+                          >
+                            <Star size={13} />
+                          </button>
+                          <button
+                            className="admin-round-button"
+                            title="Delete"
+                            style={{ color: 'var(--admin-red)' }}
                             onClick={() => void handleDelete(wallpaper.id)}
-                          />
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -608,200 +590,161 @@ export default function Wallpapers() {
             </div>
 
             {hasMore ? (
-              <Button kind="secondary" onClick={() => void fetchWallpapers(false)} disabled={isLoadingMore}>
-                {isLoadingMore ? 'Loading more...' : 'Load more'}
+              <Button variant="secondary" size="sm" onClick={() => void fetchWallpapers(false)} disabled={isLoadingMore}>
+                {isLoadingMore ? 'Loading more…' : 'Load more'}
               </Button>
             ) : null}
           </div>
         )}
       </AdminPanel>
 
-      <Modal
+      {/* ── Upload modal ─────────────────────────────────── */}
+      <AdminModal
         open={showModal}
-        modalHeading="Upload wallpapers"
-        primaryButtonText={isSubmitting ? 'Uploading...' : 'Start upload'}
-        secondaryButtonText="Cancel"
-        primaryButtonDisabled={isSubmitting}
-        onRequestClose={() => {
-          setShowModal(false);
-          resetForm();
-        }}
-        onRequestSubmit={() => void handleSubmit()}
+        title="Upload wallpapers"
+        primaryLabel={isSubmitting ? `Uploading… ${uploadProgress}%` : 'Start upload'}
+        primaryDisabled={isSubmitting}
+        onConfirm={() => void handleSubmit()}
+        onClose={() => { setShowModal(false); resetForm(); }}
         size="lg"
       >
-        <div className="admin-grid">
-          <FilePicker
-            label="Wallpaper images"
-            helperText="Choose one or more files. Uploads can target multiple categories at once."
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-          />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {/* File picker */}
+          <div className="afield">
+            <label className="afield__label">Wallpaper images</label>
+            <p className="afield__helper">Choose one or more files. Uploads can target multiple categories at once.</p>
+            <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFileSelect} />
+            <button className="aupload-zone" type="button" onClick={() => fileInputRef.current?.click()}>
+              <Upload size={16} /> Choose files
+            </button>
+          </div>
 
-          {previewUrls.length ? (
+          {previewUrls.length > 0 && (
             <div className="admin-preview-grid">
               {previewUrls.map((url, index) => (
                 <div key={url} className="admin-preview-card">
                   <img src={url} alt={`Preview ${index + 1}`} />
-                  <Button kind="ghost" size="sm" onClick={() => removeFile(index)}>
-                    Remove
-                  </Button>
+                  <button type="button" style={{ fontSize: 11, color: 'var(--admin-red)', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => removeFile(index)}>Remove</button>
                 </div>
               ))}
             </div>
-          ) : null}
+          )}
 
-          {isSubmitting ? (
-            <ProgressBar label="Upload progress" value={uploadProgress} max={100} helperText={`${uploadProgress}%`} />
-          ) : null}
+          {isSubmitting && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12 }}>
+                <span style={{ color: 'var(--admin-text-muted)' }}>Upload progress</span>
+                <span style={{ fontWeight: 600 }}>{uploadProgress}%</span>
+              </div>
+              <div className="admin-progress-track"><div className="admin-progress-bar" style={{ width: `${uploadProgress}%` }} /></div>
+            </div>
+          )}
 
           <div className="admin-form-grid">
-            <TextInput
-              id="wallpaper-title"
-              labelText={selectedFiles.length > 1 ? 'Base title' : 'Title'}
-              helperText="Leave empty to auto-generate titles from the category name."
-              value={formData.title}
-              onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
-            />
-
-            <TextInput
-              id="wallpaper-tags"
-              labelText="Tags"
-              helperText="Comma separated tags."
-              value={formData.tags}
-              onChange={(event) => setFormData((current) => ({ ...current, tags: event.target.value }))}
-            />
-
-            <Select
-              id="wallpaper-pack"
-              labelText="Assign to pack"
-              value={formData.packId}
-              onChange={(event) => setFormData((current) => ({ ...current, packId: event.target.value }))}
-            >
-              <SelectItem value="" text="No pack" />
-              {packs.map((pack) => (
-                <SelectItem key={pack.id} value={pack.id} text={pack.name} />
-              ))}
-            </Select>
-
-            <TextInput
-              id="new-category-name"
-              labelText="Create new category"
-              helperText="Optional. If set, uploads will also create/use this category."
-              value={formData.newCategoryName}
-              onChange={(event) => setFormData((current) => ({ ...current, newCategoryName: event.target.value }))}
-            />
-
-            <TextInput
-              id="new-category-icon"
-              labelText="New category emoji"
-              value={formData.newCategoryEmoji}
-              onChange={(event) => setFormData((current) => ({ ...current, newCategoryEmoji: event.target.value }))}
-            />
+            <div className="afield">
+              <label className="afield__label">{selectedFiles.length > 1 ? 'Base title' : 'Title'}</label>
+              <input className="afield__input" placeholder="Leave empty to auto-generate from category" value={formData.title} onChange={(e) => setFormData((c) => ({ ...c, title: e.target.value }))} />
+              <span className="afield__helper">Leave empty to auto-generate titles from the category name.</span>
+            </div>
+            <div className="afield">
+              <label className="afield__label">Tags</label>
+              <input className="afield__input" placeholder="Comma separated tags" value={formData.tags} onChange={(e) => setFormData((c) => ({ ...c, tags: e.target.value }))} />
+              <span className="afield__helper">Comma separated tags.</span>
+            </div>
+            <div className="afield">
+              <label className="afield__label">Assign to pack</label>
+              <select className="afield__select" value={formData.packId} onChange={(e) => setFormData((c) => ({ ...c, packId: e.target.value }))}>
+                <option value="">No pack</option>
+                {packs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="afield">
+              <label className="afield__label">Create new category</label>
+              <input className="afield__input" placeholder="Category name" value={formData.newCategoryName} onChange={(e) => setFormData((c) => ({ ...c, newCategoryName: e.target.value }))} />
+              <span className="afield__helper">Optional. If set, uploads will also create/use this category.</span>
+            </div>
+            <div className="afield">
+              <label className="afield__label">New category emoji</label>
+              <input className="afield__input" value={formData.newCategoryEmoji} onChange={(e) => setFormData((c) => ({ ...c, newCategoryEmoji: e.target.value }))} />
+            </div>
           </div>
 
-          <div className="admin-grid">
-            <strong>Assign to existing categories</strong>
-            <div className="admin-grid admin-grid--cards">
-              {categories.map((category) => (
-                <div key={category.id} className="admin-panel">
-                  <Checkbox
-                    id={`category-select-${category.id}`}
-                    labelText={category.name}
-                    checked={formData.categories.includes(category.id)}
-                    onChange={(_, { checked }) => toggleCategorySelection(category.id, Boolean(checked))}
+          <div>
+            <strong style={{ display: 'block', fontSize: 13, marginBottom: 10 }}>Assign to existing categories</strong>
+            <div className="acat-grid">
+              {categories.map((cat) => (
+                <label
+                  key={cat.id}
+                  className={`acat-item ${formData.categories.includes(cat.id) ? 'acat-item--selected' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.categories.includes(cat.id)}
+                    onChange={(e) => toggleCategorySelection(cat.id, e.target.checked)}
                   />
-                </div>
+                  <span>{cat.name}</span>
+                </label>
               ))}
             </div>
           </div>
 
-          <div className="admin-chip-row">
-            <Checkbox
-              id="wallpaper-pro"
-              labelText="Pro only"
-              checked={formData.isPro}
-              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isPro: Boolean(checked) }))}
-            />
-            <Checkbox
-              id="wallpaper-wide"
-              labelText="Wide desktop wallpaper"
-              checked={formData.isWide}
-              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isWide: Boolean(checked) }))}
-            />
+          <div style={{ display: 'flex', gap: 20 }}>
+            <label className="afield__checkbox-row">
+              <input type="checkbox" checked={formData.isPro} onChange={(e) => setFormData((c) => ({ ...c, isPro: e.target.checked }))} />
+              <span>Pro only</span>
+            </label>
+            <label className="afield__checkbox-row">
+              <input type="checkbox" checked={formData.isWide} onChange={(e) => setFormData((c) => ({ ...c, isWide: e.target.checked }))} />
+              <span>Wide desktop wallpaper</span>
+            </label>
           </div>
         </div>
-      </Modal>
+      </AdminModal>
 
-      <Modal
+      {/* ── Edit modal ───────────────────────────────────── */}
+      <AdminModal
         open={showEditModal}
-        modalHeading="Edit wallpaper"
-        primaryButtonText="Save changes"
-        secondaryButtonText="Cancel"
-        onRequestClose={() => {
-          setShowEditModal(false);
-          setEditingWallpaper(null);
-        }}
-        onRequestSubmit={() => void handleEditSubmit()}
+        title="Edit wallpaper"
+        primaryLabel="Save changes"
+        onConfirm={() => void handleEditSubmit()}
+        onClose={() => { setShowEditModal(false); setEditingWallpaper(null); }}
       >
-        <div className="admin-grid">
-          <TextInput
-            id="edit-wallpaper-title"
-            labelText="Title"
-            value={formData.title}
-            onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
-          />
-
-          <TextInput
-            id="edit-wallpaper-tags"
-            labelText="Tags"
-            helperText="Comma separated tags."
-            value={formData.tags}
-            onChange={(event) => setFormData((current) => ({ ...current, tags: event.target.value }))}
-          />
-
-          <Select
-            id="edit-wallpaper-category"
-            labelText="Category"
-            value={formData.categories[0] || ''}
-            onChange={(event) =>
-              setFormData((current) => ({ ...current, categories: event.target.value ? [event.target.value] : [] }))
-            }
-          >
-            <SelectItem value="" text="Select category" />
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id} text={category.name} />
-            ))}
-          </Select>
-
-          <Select
-            id="edit-wallpaper-pack"
-            labelText="Pack"
-            value={formData.packId}
-            onChange={(event) => setFormData((current) => ({ ...current, packId: event.target.value }))}
-          >
-            <SelectItem value="" text="No pack" />
-            {packs.map((pack) => (
-              <SelectItem key={pack.id} value={pack.id} text={pack.name} />
-            ))}
-          </Select>
-
-          <div className="admin-chip-row">
-            <Checkbox
-              id="edit-wallpaper-pro"
-              labelText="Pro only"
-              checked={formData.isPro}
-              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isPro: Boolean(checked) }))}
-            />
-            <Checkbox
-              id="edit-wallpaper-wide"
-              labelText="Wide desktop wallpaper"
-              checked={formData.isWide}
-              onChange={(_, { checked }) => setFormData((current) => ({ ...current, isWide: Boolean(checked) }))}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="afield">
+            <label className="afield__label">Title</label>
+            <input className="afield__input" value={formData.title} onChange={(e) => setFormData((c) => ({ ...c, title: e.target.value }))} />
+          </div>
+          <div className="afield">
+            <label className="afield__label">Tags</label>
+            <input className="afield__input" placeholder="Comma separated tags" value={formData.tags} onChange={(e) => setFormData((c) => ({ ...c, tags: e.target.value }))} />
+            <span className="afield__helper">Comma separated tags.</span>
+          </div>
+          <div className="afield">
+            <label className="afield__label">Category</label>
+            <select className="afield__select" value={formData.categories[0] || ''} onChange={(e) => setFormData((c) => ({ ...c, categories: e.target.value ? [e.target.value] : [] }))}>
+              <option value="">Select category</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="afield">
+            <label className="afield__label">Pack</label>
+            <select className="afield__select" value={formData.packId} onChange={(e) => setFormData((c) => ({ ...c, packId: e.target.value }))}>
+              <option value="">No pack</option>
+              {packs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 20 }}>
+            <label className="afield__checkbox-row">
+              <input type="checkbox" checked={formData.isPro} onChange={(e) => setFormData((c) => ({ ...c, isPro: e.target.checked }))} />
+              <span>Pro only</span>
+            </label>
+            <label className="afield__checkbox-row">
+              <input type="checkbox" checked={formData.isWide} onChange={(e) => setFormData((c) => ({ ...c, isWide: e.target.checked }))} />
+              <span>Wide desktop wallpaper</span>
+            </label>
           </div>
         </div>
-      </Modal>
+      </AdminModal>
     </AdminPage>
   );
 }

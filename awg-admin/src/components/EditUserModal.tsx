@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Checkbox, DatePicker, DatePickerInput, Modal, Select, SelectItem, TextInput } from '@carbon/react';
 import toast from 'react-hot-toast';
 import { usersApi } from '../services/api';
+import { AdminModal } from './admin/AdminModal';
 
 interface EditableUser {
   id: string;
@@ -30,25 +30,20 @@ export default function EditUserModal({ isOpen, onClose, user, onSuccess }: Edit
   });
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     setFormData({
       displayName: user.displayName || '',
       isActive: user.isActive,
       plan: user.subscription?.plan || 'free',
-      expiryDate: user.subscription?.expiryDate ? new Date(user.subscription.expiryDate).toISOString().split('T')[0] : '',
+      expiryDate: user.subscription?.expiryDate
+        ? new Date(user.subscription.expiryDate).toISOString().split('T')[0]
+        : '',
     });
   }, [user]);
 
   const handleSubmit = async () => {
-    if (!user) {
-      return;
-    }
-
+    if (!user) return;
     setIsLoading(true);
-
     try {
       await usersApi.update(user.id, {
         displayName: formData.displayName,
@@ -70,59 +65,60 @@ export default function EditUserModal({ isOpen, onClose, user, onSuccess }: Edit
   };
 
   return (
-    <Modal
+    <AdminModal
       open={isOpen}
-      modalHeading="Edit user"
-      primaryButtonText={isLoading ? 'Saving...' : 'Save changes'}
-      secondaryButtonText="Cancel"
-      onRequestClose={onClose}
-      onRequestSubmit={() => void handleSubmit()}
-      primaryButtonDisabled={isLoading}
+      title="Edit user"
+      primaryLabel={isLoading ? 'Saving…' : 'Save changes'}
+      primaryDisabled={isLoading}
+      onConfirm={() => void handleSubmit()}
+      onClose={onClose}
+      size="sm"
     >
-      <div className="admin-grid">
-        <TextInput
-          id="displayName"
-          labelText="Display name"
-          value={formData.displayName}
-          onChange={(event) => setFormData((current) => ({ ...current, displayName: event.target.value }))}
-        />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="afield">
+          <label className="afield__label">Display name</label>
+          <input
+            className="afield__input"
+            value={formData.displayName}
+            onChange={(e) => setFormData((c) => ({ ...c, displayName: e.target.value }))}
+          />
+        </div>
 
-        <Checkbox
-          id="isActive"
-          labelText="Account is active"
-          checked={formData.isActive}
-          onChange={(_, { checked }) => setFormData((current) => ({ ...current, isActive: Boolean(checked) }))}
-        />
+        <label className="afield__checkbox-row">
+          <input
+            type="checkbox"
+            checked={formData.isActive}
+            onChange={(e) => setFormData((c) => ({ ...c, isActive: e.target.checked }))}
+          />
+          <span>Account is active</span>
+        </label>
 
-        <Select
-          id="plan"
-          labelText="Subscription plan"
-          value={formData.plan}
-          onChange={(event) => setFormData((current) => ({ ...current, plan: event.target.value }))}
-        >
-          <SelectItem value="free" text="Free" />
-          <SelectItem value="monthly" text="Monthly" />
-          <SelectItem value="annual" text="Annual" />
-          <SelectItem value="lifetime" text="Lifetime" />
-        </Select>
+        <div className="afield">
+          <label className="afield__label">Subscription plan</label>
+          <select
+            className="afield__select"
+            value={formData.plan}
+            onChange={(e) => setFormData((c) => ({ ...c, plan: e.target.value }))}
+          >
+            <option value="free">Free</option>
+            <option value="monthly">Monthly</option>
+            <option value="annual">Annual</option>
+            <option value="lifetime">Lifetime</option>
+          </select>
+        </div>
 
         {formData.plan !== 'free' && formData.plan !== 'lifetime' ? (
-          <DatePicker
-            datePickerType="single"
-            dateFormat="Y-m-d"
-            value={formData.expiryDate}
-            onChange={(dates) => {
-              const nextDate = dates[0];
-              setFormData((current) => ({
-                ...current,
-                expiryDate: nextDate instanceof Date && !Number.isNaN(nextDate.valueOf()) ? nextDate.toISOString().split('T')[0] : '',
-              }));
-            }}
-          >
-            <DatePickerInput id="expiryDate" labelText="Expiry date" placeholder="yyyy-mm-dd" />
-          </DatePicker>
+          <div className="afield">
+            <label className="afield__label">Expiry date</label>
+            <input
+              type="date"
+              className="afield__input"
+              value={formData.expiryDate}
+              onChange={(e) => setFormData((c) => ({ ...c, expiryDate: e.target.value }))}
+            />
+          </div>
         ) : null}
       </div>
-    </Modal>
+    </AdminModal>
   );
 }

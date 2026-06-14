@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search } from '@carbon/react';
+import { Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { categoriesApi, wallpapersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
@@ -165,13 +165,13 @@ export default function ReassignWallpapers() {
       subtitle="Move wallpapers between categories with a drag-and-drop board built for high-volume cleanup."
     >
       <AdminPanel title="Search" description="Filter the board by title or category before dragging items between columns.">
-        <Search
-          id="reassign-search"
-          labelText="Search wallpapers"
-          placeholder="Search wallpapers"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-        />
+        <div className="afield">
+          <label className="afield__label">Search wallpapers</label>
+          <div style={{ position: 'relative' }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-sub)' }} />
+            <input className="afield__input" style={{ paddingLeft: 32 }} placeholder="Search wallpapers" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          </div>
+        </div>
       </AdminPanel>
 
       <AdminPanel
