@@ -21,6 +21,7 @@ const users_1 = __importDefault(require("./routes/users"));
 const subscriptions_1 = __importDefault(require("./routes/subscriptions"));
 const packs_1 = __importDefault(require("./routes/packs"));
 const notifications_1 = __importDefault(require("./routes/notifications"));
+const settings_1 = __importDefault(require("./routes/settings"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Store database connection error for debugging
@@ -121,6 +122,7 @@ app.get("/api", (req, res) => {
             "/api/subscriptions",
             "/api/packs",
             "/api/notifications",
+            "/api/settings",
         ],
     });
 });
@@ -133,6 +135,7 @@ app.use("/api/users", users_1.default);
 app.use("/api/subscriptions", subscriptions_1.default);
 app.use("/api/packs", packs_1.default);
 app.use("/api/notifications", notifications_1.default);
+app.use("/api/settings", settings_1.default);
 // Health check endpoint
 app.get("/api/health", async (req, res) => {
     const dbConnected = data_source_1.AppDataSource.isInitialized;

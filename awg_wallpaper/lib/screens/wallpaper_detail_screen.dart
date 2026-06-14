@@ -12,6 +12,7 @@ import '../config/theme.dart';
 import '../models/wallpaper.dart';
 import '../providers/bookmark_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../providers/wallpaper_provider.dart';
 import 'subscription_screen.dart';
 
 class WallpaperDetailScreen extends StatefulWidget {
@@ -1187,6 +1188,15 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
       if (mounted) {
         Navigator.pop(context); // Close progress dialog
         if (result == true) {
+          final downloads = await context
+              .read<WallpaperProvider>()
+              .trackDownload(_currentWallpaper.id);
+          if (mounted && downloads != null) {
+            setState(() {
+              widget.wallpapers[_currentIndex] =
+                  _currentWallpaper.copyWith(downloads: downloads);
+            });
+          }
           _showSuccessMsg('Downloaded to Gallery successfully');
         } else {
           _showMsg('Download failed');

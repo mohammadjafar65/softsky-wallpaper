@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendNotificationToAll = exports.sendNotificationToUser = exports.sendNotificationToTokens = exports.sendNotificationToToken = void 0;
+exports.sendNotificationToAll = exports.sendNotificationToUser = exports.sendNotificationToTokens = exports.sendNotificationToToken = exports.getFirebaseStatus = void 0;
 const admin = __importStar(require("firebase-admin"));
 const data_source_1 = require("../data-source");
 const User_1 = require("../entities/User");
@@ -76,6 +76,14 @@ const initializeFirebaseAdmin = () => {
 };
 // Initialize on module load
 initializeFirebaseAdmin();
+const getFirebaseStatus = () => ({
+    initialized: admin.apps.length > 0,
+    projectId: process.env.FIREBASE_PROJECT_ID || null,
+    hasClientEmail: Boolean(process.env.FIREBASE_CLIENT_EMAIL),
+    hasPrivateKey: Boolean(process.env.FIREBASE_PRIVATE_KEY),
+    hasServiceAccountPath: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_PATH),
+});
+exports.getFirebaseStatus = getFirebaseStatus;
 /**
  * Send notification to a single device token
  */
@@ -254,6 +262,7 @@ const sendNotificationToAll = async (title, body, data, imageUrl) => {
 };
 exports.sendNotificationToAll = sendNotificationToAll;
 exports.default = {
+    getFirebaseStatus: exports.getFirebaseStatus,
     sendNotificationToToken: exports.sendNotificationToToken,
     sendNotificationToTokens: exports.sendNotificationToTokens,
     sendNotificationToUser: exports.sendNotificationToUser,

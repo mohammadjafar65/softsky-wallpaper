@@ -68,5 +68,29 @@ class WallpaperPack {
           : null,
     );
   }
+
+  WallpaperPack copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? coverImage,
+    List<Wallpaper>? wallpapers,
+    bool? isPro,
+    int? wallpaperCount,
+    String? author,
+    DateTime? createdAt,
+  }) {
+    return WallpaperPack(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      coverImage: coverImage ?? this.coverImage,
+      wallpapers: wallpapers ?? this.wallpapers,
+      isPro: isPro ?? this.isPro,
+      wallpaperCount: wallpaperCount ?? this.wallpaperCount,
+      author: author ?? this.author,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 

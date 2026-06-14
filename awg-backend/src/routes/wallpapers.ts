@@ -571,11 +571,16 @@ router.delete("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) 
 // Track download
 router.post("/:id/download", optionalAuth, async (req: AuthRequest, res) => {
     try {
+        const wallpaperId = parseInt(req.params.id, 10);
+        if (isNaN(wallpaperId)) {
+            return res.status(400).json({ error: "Invalid wallpaper ID" });
+        }
+
         const wallpaperRepository = AppDataSource.getRepository(Wallpaper);
         const userRepository = AppDataSource.getRepository(User);
 
         const wallpaper = await wallpaperRepository.findOne({
-            where: { id: parseInt(req.params.id) },
+            where: { id: wallpaperId },
         });
 
         if (!wallpaper) {
@@ -583,23 +588,27 @@ router.post("/:id/download", optionalAuth, async (req: AuthRequest, res) => {
         }
 
         // Increment wallpaper downloads
-        await wallpaperRepository.increment(
-            { id: wallpaper.id },
-            "downloads",
-            1
-        );
+        await wallpaperRepository.increment({ id: wallpaper.id }, "downloads", 1);
 
         // If user is authenticated, track their download
+        let userDownloads: number | undefined;
         if (req.user?.id) {
-            await userRepository.increment(
-                { id: parseInt(req.user.id) },
-                "downloads",
-                1
-            );
+            const userId = parseInt(req.user.id, 10);
+            if (!isNaN(userId)) {
+                await userRepository.increment({ id: userId }, "downloads", 1);
+                const user = await userRepository.findOne({ where: { id: userId } });
+                userDownloads = user?.downloads;
+            }
         }
 
-        res.json({ downloads: wallpaper.downloads + 1 });
+        res.json({
+            success: true,
+            wallpaperId: wallpaper.id,
+            downloads: wallpaper.downloads + 1,
+            userDownloads,
+        });
     } catch (error) {
+        console.error("Track download error:", error);
         res.status(500).json({ error: "Failed to track download" });
     }
 });

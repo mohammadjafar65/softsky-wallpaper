@@ -7,6 +7,7 @@ class Wallpaper {
   final bool isWide;
   final bool isPro;
   final String? packId;
+  final int downloads;
   final DateTime? createdAt;
 
   Wallpaper({
@@ -18,6 +19,7 @@ class Wallpaper {
     this.isWide = false,
     this.isPro = false,
     this.packId,
+    this.downloads = 0,
     this.createdAt,
   });
 
@@ -31,6 +33,7 @@ class Wallpaper {
       'isWide': isWide,
       'isPro': isPro,
       'packId': packId,
+      'downloads': downloads,
       'createdAt': createdAt?.toIso8601String(),
     };
   }
@@ -67,6 +70,7 @@ class Wallpaper {
       isWide: json['isWide'] as bool? ?? false,
       isPro: json['isPro'] as bool? ?? false,
       packId: json['packId']?.toString(), // Use toString() for safety
+      downloads: int.tryParse(json['downloads']?.toString() ?? '') ?? 0,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'].toString())
           : null,
@@ -82,6 +86,7 @@ class Wallpaper {
     bool? isWide,
     bool? isPro,
     String? packId,
+    int? downloads,
     DateTime? createdAt,
   }) {
     return Wallpaper(
@@ -93,6 +98,7 @@ class Wallpaper {
       isWide: isWide ?? this.isWide,
       isPro: isPro ?? this.isPro,
       packId: packId ?? this.packId,
+      downloads: downloads ?? this.downloads,
       createdAt: createdAt ?? this.createdAt,
     );
   }

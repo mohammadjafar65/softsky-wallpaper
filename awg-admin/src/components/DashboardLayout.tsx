@@ -33,13 +33,17 @@ const navBusiness = [
   { label: 'Notifications', to: '/notifications', icon: Bell },
 ];
 
+const navSystem = [
+  { label: 'Settings', to: '/settings', icon: Settings },
+];
+
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isNavOpen, setIsNavOpen] = useState(false);
 
-  const allNav = [...navOverview, ...navBusiness];
+  const allNav = [...navOverview, ...navBusiness, ...navSystem];
   const currentPage = useMemo(
     () =>
       allNav.find((item) =>
@@ -108,11 +112,27 @@ export default function DashboardLayout() {
           </nav>
         </div>
 
+        <div className="admin-sidebar__section">
+          <p className="admin-sidebar__eyebrow">System</p>
+          <nav className="admin-sidebar__nav">
+            {navSystem.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsNavOpen(false)}
+                  className={`admin-sidebar__link ${isActive(item.to) ? 'admin-sidebar__link--active' : ''}`}
+                >
+                  <Icon size={15} />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
+
         <div className="admin-sidebar__footer">
-          <button type="button" className="admin-sidebar__link">
-            <Settings size={15} />
-            <span>Settings</span>
-          </button>
           <button
             type="button"
             className="admin-sidebar__link admin-sidebar__logout"

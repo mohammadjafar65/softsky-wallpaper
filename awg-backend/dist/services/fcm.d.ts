@@ -1,3 +1,10 @@
+export declare const getFirebaseStatus: () => {
+    initialized: boolean;
+    projectId: string | null;
+    hasClientEmail: boolean;
+    hasPrivateKey: boolean;
+    hasServiceAccountPath: boolean;
+};
 /**
  * Send notification to a single device token
  */
@@ -31,6 +38,13 @@ export declare const sendNotificationToAll: (title: string, body: string, data?:
     totalUsers: number;
 }>;
 declare const _default: {
+    getFirebaseStatus: () => {
+        initialized: boolean;
+        projectId: string | null;
+        hasClientEmail: boolean;
+        hasPrivateKey: boolean;
+        hasServiceAccountPath: boolean;
+    };
     sendNotificationToToken: (token: string, title: string, body: string, data?: Record<string, string>, imageUrl?: string) => Promise<{
         success: boolean;
         messageId?: string;

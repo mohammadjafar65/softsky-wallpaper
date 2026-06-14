@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const User_1 = require("../entities/User");
+const Wallpaper_1 = require("../entities/Wallpaper");
 const auth_1 = require("../middleware/auth");
+const typeorm_1 = require("typeorm");
 const router = (0, express_1.Router)();
 // Known valid product IDs (keep in sync with your Google Play console)
 const KNOWN_PRODUCT_IDS = new Set([
@@ -12,6 +14,89 @@ const KNOWN_PRODUCT_IDS = new Set([
     "ssw_pro_lifetime",
     // Add any additional product IDs here
 ]);
+// Admin subscription stats
+router.get("/stats", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
+    try {
+        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
+        const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
+        const now = new Date();
+        const totalUsers = await userRepository.count({ where: { role: "user" } });
+        const proUsers = await userRepository
+            .createQueryBuilder("user")
+            .where("user.role = :role", { role: "user" })
+            .andWhere("user.subscriptionPlan != :free", { free: "free" })
+            .andWhere("(user.subscriptionPlan = :lifetime OR user.subscriptionExpiryDate > :now)", { lifetime: "lifetime", now })
+            .getCount();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const newUsersThisMonth = await userRepository.count({
+            where: { role: "user", createdAt: (0, typeorm_1.MoreThan)(firstDayOfMonth) },
+        });
+        const wallpaperStats = await wallpaperRepository
+            .createQueryBuilder("wallpaper")
+            .select("COALESCE(SUM(wallpaper.downloads), 0)", "totalDownloads")
+            .getRawOne();
+        const subscriptionStats = await userRepository
+            .createQueryBuilder("user")
+            .select(`CASE 
+                    WHEN user.subscription_plan = 'free' THEN 'free'
+                    WHEN user.subscription_plan = 'lifetime' THEN 'lifetime'
+                    WHEN user.subscription_expiry_date > :now THEN user.subscription_plan
+                    ELSE 'free'
+                END`, "plan")
+            .addSelect("COUNT(*)", "count")
+            .where("user.role = :role", { role: "user" })
+            .setParameter("now", now)
+            .groupBy("plan")
+            .getRawMany();
+        res.json({
+            totalUsers,
+            proUsers,
+            freeUsers: totalUsers - proUsers,
+            newUsersThisMonth,
+            totalWallpaperDownloads: parseInt(wallpaperStats?.totalDownloads || "0", 10),
+            subscriptionBreakdown: subscriptionStats.reduce((acc, curr) => {
+                acc[curr.plan] = parseInt(curr.count, 10);
+                return acc;
+            }, {}),
+        });
+    }
+    catch (error) {
+        console.error("Subscription stats error:", error);
+        res.status(500).json({ error: "Failed to get subscription stats" });
+    }
+});
+// Admin subscriber roster
+router.get("/subscribers", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 300, 1000);
+        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
+        const now = new Date();
+        const users = await userRepository
+            .createQueryBuilder("user")
+            .where("user.role = :role", { role: "user" })
+            .andWhere("user.subscriptionPlan != :free", { free: "free" })
+            .andWhere("(user.subscriptionPlan = :lifetime OR user.subscriptionExpiryDate > :now)", { lifetime: "lifetime", now })
+            .orderBy("user.subscriptionExpiryDate", "ASC")
+            .take(limit)
+            .getMany();
+        res.json({
+            users: users.map((user) => ({
+                id: user.id,
+                email: user.email,
+                displayName: user.displayName,
+                subscription: user.subscription,
+                downloads: user.downloads,
+                isActive: user.isActive,
+                createdAt: user.createdAt,
+                hasFcmToken: !!user.fcmToken,
+            })),
+        });
+    }
+    catch (error) {
+        console.error("Subscriber roster error:", error);
+        res.status(500).json({ error: "Failed to get subscribers" });
+    }
+});
 // Verify and update subscription from purchase
 router.post("/verify", auth_1.authenticate, async (req, res) => {
     try {

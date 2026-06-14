@@ -18,6 +18,28 @@ type PackListParams = {
     isActive?: boolean;
 };
 
+export type AppSettings = {
+    appName: string;
+    supportEmail: string;
+    contactEmail: string;
+    privacyPolicyUrl: string;
+    termsUrl: string;
+    androidPackageName: string;
+    minAppVersion: string;
+    latestAppVersion: string;
+    forceUpdate: boolean;
+    maintenanceMode: boolean;
+    maintenanceMessage: string;
+    freeDownloadLimitPerDay: number;
+    proDownloadLimitPerDay: number;
+    enableNotifications: boolean;
+    enableSubscriptions: boolean;
+    enableWideWallpapers: boolean;
+    defaultNotificationTitle: string;
+    defaultNotificationMessage: string;
+    updatedAt?: string;
+};
+
 // Add auth token to requests
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
@@ -97,6 +119,7 @@ export const packsApi = {
 
 // Notifications API
 export const notificationsApi = {
+    getStatus: () => api.get('/notifications/status'),
     sendToUser: (data: { userId: string; title: string; message: string; imageUrl?: string; data?: Record<string, string> }) =>
         api.post('/notifications/send-to-user', data),
     sendToAll: (data: { title: string; message: string; imageUrl?: string; data?: Record<string, string> }) =>
@@ -107,11 +130,18 @@ export const notificationsApi = {
 
 // Subscriptions API
 export const subscriptionsApi = {
-    getStats: () => usersApi.getStats(),
+    getStats: () => api.get('/subscriptions/stats'),
+    getSubscribers: (params?: { limit?: number }) => api.get('/subscriptions/subscribers', { params }),
 };
 
 export const healthApi = {
     get: () => api.get('/health'),
+};
+
+export const settingsApi = {
+    get: () => api.get('/settings'),
+    update: (data: Partial<AppSettings>) => api.put('/settings', data),
+    getPublic: () => api.get('/settings/public'),
 };
 
 export default api;

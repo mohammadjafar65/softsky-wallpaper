@@ -18,6 +18,7 @@ import userRoutes from "./routes/users";
 import subscriptionRoutes from "./routes/subscriptions";
 import packRoutes from "./routes/packs";
 import notificationRoutes from "./routes/notifications";
+import settingRoutes from "./routes/settings";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -139,6 +140,7 @@ app.get("/api", (req, res) => {
             "/api/subscriptions",
             "/api/packs",
             "/api/notifications",
+            "/api/settings",
         ],
     });
 });
@@ -152,6 +154,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/packs", packRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/settings", settingRoutes);
 
 // Health check endpoint
 app.get("/api/health", async (req, res) => {

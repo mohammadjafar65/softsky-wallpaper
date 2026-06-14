@@ -448,12 +448,36 @@ class WallpaperProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> trackDownload(String wallpaperId) async {
+  Future<int?> trackDownload(String wallpaperId) async {
     try {
-      await _apiService.trackDownload(wallpaperId);
+      final downloads = await _apiService.trackDownload(wallpaperId);
+      if (downloads != null) {
+        _replaceWallpaperDownloadCount(wallpaperId, downloads);
+        _saveToCache();
+        notifyListeners();
+      }
+      return downloads;
     } catch (e) {
       debugPrint('Failed to track download: $e');
+      return null;
     }
+  }
+
+  void _replaceWallpaperDownloadCount(String wallpaperId, int downloads) {
+    List<Wallpaper> replaceInList(List<Wallpaper> source) {
+      return source
+          .map((wallpaper) => wallpaper.id == wallpaperId
+              ? wallpaper.copyWith(downloads: downloads)
+              : wallpaper)
+          .toList();
+    }
+
+    _wallpapers = replaceInList(_wallpapers);
+    _wideWallpapers = replaceInList(_wideWallpapers);
+    _proWallpapersList = replaceInList(_proWallpapersList);
+    _packs = _packs
+        .map((pack) => pack.copyWith(wallpapers: replaceInList(pack.wallpapers)))
+        .toList();
   }
 
   Future<void> refresh() async {

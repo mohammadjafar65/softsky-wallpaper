@@ -187,14 +187,27 @@ class ApiService {
   }
 
   /// Track wallpaper download
-  Future<void> trackDownload(String id) async {
+  Future<int?> trackDownload(String id) async {
     try {
-      await http.post(
-        Uri.parse('$baseUrl/wallpapers/$id/download'),
-        headers: headers,
+      final response = await _executeWithRetry(
+        () => http
+            .post(
+              Uri.parse('$baseUrl/wallpapers/$id/download'),
+              headers: headers,
+            )
+            .timeout(const Duration(seconds: 20)),
       );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = json.decode(response.body);
+        return int.tryParse(data['downloads']?.toString() ?? '');
+      }
+
+      debugPrint('Failed to track download: ${response.statusCode} - ${response.body}');
+      return null;
     } catch (e) {
       debugPrint('Error tracking download: $e');
+      return null;
     }
   }
 

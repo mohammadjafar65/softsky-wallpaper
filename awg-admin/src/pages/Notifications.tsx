@@ -15,6 +15,14 @@ interface User {
 type TargetType = 'all' | 'user' | 'test';
 type ResultType = 'success' | 'warning' | 'error';
 
+interface NotificationStatus {
+  initialized: boolean;
+  projectId?: string | null;
+  hasClientEmail: boolean;
+  hasPrivateKey: boolean;
+  hasServiceAccountPath: boolean;
+}
+
 export default function Notifications() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -25,6 +33,7 @@ export default function Notifications() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [notificationStatus, setNotificationStatus] = useState<NotificationStatus | null>(null);
   const [result, setResult] = useState<{ type: ResultType; message: string } | null>(null);
 
   const fetchUsers = async () => {
@@ -40,8 +49,18 @@ export default function Notifications() {
     }
   };
 
+  const fetchNotificationStatus = async () => {
+    try {
+      const response = await notificationsApi.getStatus();
+      setNotificationStatus(response.data.firebase || null);
+    } catch (error) {
+      console.error('Failed to fetch notification status:', error);
+    }
+  };
+
   useEffect(() => {
     void fetchUsers();
+    void fetchNotificationStatus();
   }, []);
 
   const selectedUser = useMemo(
@@ -143,7 +162,7 @@ export default function Notifications() {
       title="Push notifications"
       subtitle="Send broadcast, targeted, and test push campaigns with clear delivery readiness."
       actions={
-        <Button variant="secondary" size="sm" disabled={loadingUsers} onClick={() => void fetchUsers()}>
+        <Button variant="secondary" size="sm" disabled={loadingUsers} onClick={() => { void fetchUsers(); void fetchNotificationStatus(); }}>
           <RefreshCw size={13} className={loadingUsers ? 'admin-icon-spin' : ''} />
           {loadingUsers ? 'Refreshing…' : 'Refresh users'}
         </Button>
@@ -153,6 +172,7 @@ export default function Notifications() {
         <StatTile label="Loaded users" value={users.length.toLocaleString()} helper="Available targets" tone="blue" loading={loadingUsers} />
         <StatTile label="Push ready" value={reachableUsers.toLocaleString()} helper="Users with FCM token" tone="green" loading={loadingUsers} />
         <StatTile label="Missing token" value={(users.length - reachableUsers).toLocaleString()} helper="Open app to sync" tone="orange" loading={loadingUsers} />
+        <StatTile label="Firebase" value={notificationStatus?.initialized ? 'Ready' : 'Missing'} helper={notificationStatus?.projectId || 'Backend credentials'} tone={notificationStatus?.initialized ? 'green' : 'red'} />
       </div>
 
       <div className="admin-grid admin-grid--cards">
@@ -234,7 +254,9 @@ export default function Notifications() {
             <div className="admin-callout">
               <strong style={{ fontSize: 12 }}>Delivery readiness</strong>
               <p style={{ fontSize: 12, color: 'var(--admin-text-muted)', margin: 0 }}>
-                Broadcasts only reach users with a stored FCM token. If Firebase Admin credentials are missing on the backend, sends will return failures.
+                {notificationStatus?.initialized
+                  ? `Firebase Admin is initialized${notificationStatus.projectId ? ` for ${notificationStatus.projectId}` : ''}. Broadcasts only reach users with a stored FCM token.`
+                  : 'Firebase Admin is not initialized. Add Firebase credentials on the backend before production sends.'}
               </p>
             </div>
 

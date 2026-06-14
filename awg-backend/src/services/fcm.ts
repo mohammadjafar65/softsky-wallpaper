@@ -51,6 +51,14 @@ const initializeFirebaseAdmin = () => {
 // Initialize on module load
 initializeFirebaseAdmin();
 
+export const getFirebaseStatus = () => ({
+    initialized: admin.apps.length > 0,
+    projectId: process.env.FIREBASE_PROJECT_ID || null,
+    hasClientEmail: Boolean(process.env.FIREBASE_CLIENT_EMAIL),
+    hasPrivateKey: Boolean(process.env.FIREBASE_PRIVATE_KEY),
+    hasServiceAccountPath: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_PATH),
+});
+
 /**
  * Send notification to a single device token
  */
@@ -269,6 +277,7 @@ export const sendNotificationToAll = async (
 };
 
 export default {
+    getFirebaseStatus,
     sendNotificationToToken,
     sendNotificationToTokens,
     sendNotificationToUser,

@@ -4,6 +4,16 @@ import fcmService from '../services/fcm';
 
 const router = Router();
 
+router.get('/status', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+        res.json({
+            firebase: fcmService.getFirebaseStatus(),
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: 'Failed to get notification status', details: error.message });
+    }
+});
+
 /**
  * @route   POST /api/notifications/send-to-user
  * @desc    Send notification to a specific user

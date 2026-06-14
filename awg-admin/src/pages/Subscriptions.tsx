@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Edit, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { usersApi } from '../services/api';
+import { subscriptionsApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatTile, StatusTag } from '../components/admin/AdminPage';
 import EditUserModal from '../components/EditUserModal';
 import { Button } from '../components/ui/button';
@@ -49,19 +49,13 @@ export default function Subscriptions() {
     }
 
     try {
-      const [statsResponse, monthlyResponse, annualResponse, lifetimeResponse] = await Promise.all([
-        usersApi.getStats(),
-        usersApi.getAll({ page: 1, limit: 100, plan: 'monthly' }),
-        usersApi.getAll({ page: 1, limit: 100, plan: 'annual' }),
-        usersApi.getAll({ page: 1, limit: 100, plan: 'lifetime' }),
+      const [statsResponse, subscribersResponse] = await Promise.all([
+        subscriptionsApi.getStats(),
+        subscriptionsApi.getSubscribers({ limit: 500 }),
       ]);
 
       setStats(statsResponse.data);
-      setSubscribers([
-        ...(monthlyResponse.data.users || []),
-        ...(annualResponse.data.users || []),
-        ...(lifetimeResponse.data.users || []),
-      ]);
+      setSubscribers(subscribersResponse.data.users || []);
     } catch (error) {
       console.error('Failed to fetch subscription data:', error);
       toast.error('Failed to load subscription data');

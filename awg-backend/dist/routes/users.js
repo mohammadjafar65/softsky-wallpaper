@@ -56,6 +56,61 @@ router.get("/", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
         res.status(500).json({ error: "Failed to get users" });
     }
 });
+// Get user stats (admin only)
+router.get("/stats/overview", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
+    try {
+        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
+        const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
+        const totalUsers = await userRepository.count({ where: { role: "user" } });
+        const now = new Date();
+        const proUsers = await userRepository
+            .createQueryBuilder("user")
+            .where("user.role = :role", { role: "user" })
+            .andWhere("user.subscriptionPlan != :free", { free: "free" })
+            .andWhere("(user.subscriptionPlan = :lifetime OR user.subscriptionExpiryDate > :now)", { lifetime: "lifetime", now })
+            .getCount();
+        const wallpaperStats = await wallpaperRepository
+            .createQueryBuilder("wallpaper")
+            .select("COALESCE(SUM(wallpaper.downloads), 0)", "totalDownloads")
+            .getRawOne();
+        const totalWallpaperDownloads = parseInt(wallpaperStats?.totalDownloads || "0", 10);
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const newUsersThisMonth = await userRepository.count({
+            where: {
+                role: "user",
+                createdAt: (0, typeorm_1.MoreThan)(firstDayOfMonth),
+            },
+        });
+        const subscriptionStats = await userRepository
+            .createQueryBuilder("user")
+            .select(`CASE 
+                    WHEN user.subscription_plan = 'free' THEN 'free'
+                    WHEN user.subscription_plan = 'lifetime' THEN 'lifetime'
+                    WHEN user.subscription_expiry_date > :now THEN user.subscription_plan
+                    ELSE 'free'
+                END`, "plan")
+            .addSelect("COUNT(*)", "count")
+            .where("user.role = :role", { role: "user" })
+            .setParameter("now", now)
+            .groupBy("plan")
+            .getRawMany();
+        res.json({
+            totalUsers,
+            proUsers,
+            totalWallpaperDownloads,
+            freeUsers: totalUsers - proUsers,
+            newUsersThisMonth,
+            subscriptionBreakdown: subscriptionStats.reduce((acc, curr) => {
+                acc[curr.plan] = parseInt(curr.count, 10);
+                return acc;
+            }, {}),
+        });
+    }
+    catch (error) {
+        console.error("Get user stats error:", error);
+        res.status(500).json({ error: "Failed to get user stats" });
+    }
+});
 // Get single user (admin only)
 router.get("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
     try {
@@ -151,66 +206,6 @@ router.delete("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res)
     }
     catch (error) {
         res.status(500).json({ error: "Failed to delete user" });
-    }
-});
-// Get user stats (admin only)
-router.get("/stats/overview", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
-    try {
-        const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
-        const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
-        // Total users
-        const totalUsers = await userRepository.count({ where: { role: "user" } });
-        // Active pro users (not expired)
-        const now = new Date();
-        const proUsers = await userRepository
-            .createQueryBuilder("user")
-            .where("user.role = :role", { role: "user" })
-            .andWhere("user.subscriptionPlan != :free", { free: "free" })
-            .andWhere("(user.subscriptionPlan = :lifetime OR user.subscriptionExpiryDate > :now)", { lifetime: "lifetime", now })
-            .getCount();
-        // Total wallpaper downloads
-        const wallpaperStats = await wallpaperRepository
-            .createQueryBuilder("wallpaper")
-            .select("SUM(wallpaper.downloads)", "totalDownloads")
-            .getRawOne();
-        const totalWallpaperDownloads = parseInt(wallpaperStats?.totalDownloads || "0");
-        // New users this month
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const newUsersThisMonth = await userRepository.count({
-            where: {
-                role: "user",
-                createdAt: (0, typeorm_1.MoreThan)(firstDayOfMonth),
-            },
-        });
-        // Subscription breakdown with proper expiry handling
-        const subscriptionStats = await userRepository
-            .createQueryBuilder("user")
-            .select(`CASE 
-                    WHEN user.subscription_plan = 'free' THEN 'free'
-                    WHEN user.subscription_plan = 'lifetime' THEN 'lifetime'
-                    WHEN user.subscription_expiry_date > :now THEN user.subscription_plan
-                    ELSE 'free'
-                END`, "plan")
-            .addSelect("COUNT(*)", "count")
-            .where("user.role = :role", { role: "user" })
-            .setParameter("now", now)
-            .groupBy("plan")
-            .getRawMany();
-        res.json({
-            totalUsers,
-            proUsers,
-            totalWallpaperDownloads,
-            freeUsers: totalUsers - proUsers,
-            newUsersThisMonth,
-            subscriptionBreakdown: subscriptionStats.reduce((acc, curr) => {
-                acc[curr.plan] = parseInt(curr.count);
-                return acc;
-            }, {}),
-        });
-    }
-    catch (error) {
-        console.error("Get user stats error:", error);
-        res.status(500).json({ error: "Failed to get user stats" });
     }
 });
 // Update FCM token for current user

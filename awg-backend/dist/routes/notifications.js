@@ -7,6 +7,16 @@ const express_1 = require("express");
 const auth_1 = require("../middleware/auth");
 const fcm_1 = __importDefault(require("../services/fcm"));
 const router = (0, express_1.Router)();
+router.get('/status', auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
+    try {
+        res.json({
+            firebase: fcm_1.default.getFirebaseStatus(),
+        });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to get notification status', details: error.message });
+    }
+});
 /**
  * @route   POST /api/notifications/send-to-user
  * @desc    Send notification to a specific user

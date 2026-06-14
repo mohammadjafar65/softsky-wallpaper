@@ -1923,6 +1923,72 @@ button { cursor: pointer; }
   color: var(--admin-text);
 }
 
+.settings-switch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+
+.settings-switch-row > span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.settings-switch-row strong {
+  color: var(--admin-text);
+  font-size: 13px;
+}
+
+.settings-switch-row input[type="checkbox"] {
+  width: 42px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #d9dee8;
+  cursor: pointer;
+  position: relative;
+  transition: background 140ms, border-color 140ms;
+}
+
+.settings-switch-row input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.18);
+  transition: transform 140ms;
+}
+
+.settings-switch-row input[type="checkbox"]:checked {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+.settings-switch-row input[type="checkbox"]:checked::after {
+  transform: translateX(18px);
+}
+
 /* ─── Upload zone ──────────────────────────────────────── */
 .aupload-zone {
   width: 100%;

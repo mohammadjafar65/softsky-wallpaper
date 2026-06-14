@@ -460,10 +460,14 @@ router.delete("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res)
 // Track download
 router.post("/:id/download", auth_1.optionalAuth, async (req, res) => {
     try {
+        const wallpaperId = parseInt(req.params.id, 10);
+        if (isNaN(wallpaperId)) {
+            return res.status(400).json({ error: "Invalid wallpaper ID" });
+        }
         const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
         const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
         const wallpaper = await wallpaperRepository.findOne({
-            where: { id: parseInt(req.params.id) },
+            where: { id: wallpaperId },
         });
         if (!wallpaper) {
             return res.status(404).json({ error: "Wallpaper not found" });
@@ -471,12 +475,24 @@ router.post("/:id/download", auth_1.optionalAuth, async (req, res) => {
         // Increment wallpaper downloads
         await wallpaperRepository.increment({ id: wallpaper.id }, "downloads", 1);
         // If user is authenticated, track their download
+        let userDownloads;
         if (req.user?.id) {
-            await userRepository.increment({ id: parseInt(req.user.id) }, "downloads", 1);
+            const userId = parseInt(req.user.id, 10);
+            if (!isNaN(userId)) {
+                await userRepository.increment({ id: userId }, "downloads", 1);
+                const user = await userRepository.findOne({ where: { id: userId } });
+                userDownloads = user?.downloads;
+            }
         }
-        res.json({ downloads: wallpaper.downloads + 1 });
+        res.json({
+            success: true,
+            wallpaperId: wallpaper.id,
+            downloads: wallpaper.downloads + 1,
+            userDownloads,
+        });
     }
     catch (error) {
+        console.error("Track download error:", error);
         res.status(500).json({ error: "Failed to track download" });
     }
 });

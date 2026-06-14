@@ -11,6 +11,7 @@ import Users from './pages/Users';
 import Packs from './pages/Packs';
 import Subscriptions from './pages/Subscriptions';
 import Notifications from './pages/Notifications';
+import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -56,6 +57,7 @@ function AppRoutes() {
         <Route path="packs" element={<Packs />} />
         <Route path="subscriptions" element={<Subscriptions />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );
