@@ -250,6 +250,28 @@ export default function Categories() {
             <label className="afield__label">Description</label>
             <textarea className="afield__textarea" value={formData.description} onChange={(e) => setFormData((c) => ({ ...c, description: e.target.value }))} />
           </div>
+
+          {editingCategory ? (
+            <div className="admin-callout">
+              <strong style={{ fontSize: 12 }}>Wallpapers in this category</strong>
+              {isWallpapersLoading ? (
+                <p style={{ fontSize: 12, color: 'var(--admin-text-muted)', margin: 0 }}>Loading wallpapers...</p>
+              ) : categoryWallpapers.length > 0 ? (
+                <div className="admin-preview-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))' }}>
+                  {categoryWallpapers.slice(0, 8).map((wallpaper) => (
+                    <div key={wallpaper.id} className="admin-preview-card">
+                      <img src={wallpaper.thumbnailUrl || wallpaper.imageUrl} alt={wallpaper.title} style={{ height: 96 }} />
+                      <span style={{ fontSize: 11, color: 'var(--admin-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {wallpaper.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: 12, color: 'var(--admin-text-muted)', margin: 0 }}>No wallpapers found in this category.</p>
+              )}
+            </div>
+          ) : null}
         </div>
       </AdminModal>
 

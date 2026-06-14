@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { RefreshCw, Send } from 'lucide-react';
 import { notificationsApi, usersApi } from '../services/api';
-import { AdminPage, AdminPanel, StatusTag, StatTile } from '../components/admin/AdminPage';
+import { AdminPage, AdminPanel, StatTile } from '../components/admin/AdminPage';
 import { Button } from '../components/ui/button';
 
 interface User {

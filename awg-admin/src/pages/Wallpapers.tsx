@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Edit, Plus, Search, Star, Trash2, Upload } from 'lucide-react';
+import { Edit, Search, Star, Trash2, Upload } from 'lucide-react';
 import { categoriesApi, packsApi, wallpapersApi } from '../services/api';
 import { AdminPage, AdminPanel, EmptyState, StatusTag } from '../components/admin/AdminPage';
 import { AdminModal } from '../components/admin/AdminModal';
