@@ -446,6 +446,63 @@ button { cursor: pointer; }
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
+.category-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.category-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: var(--admin-panel);
+  box-shadow: var(--shadow-card);
+}
+
+.category-card__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.category-card__copy {
+  min-width: 0;
+}
+
+.category-card__title {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.category-card__description {
+  margin: 4px 0 0;
+  color: var(--admin-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.category-card .admin-inline-actions {
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.category-card .admin-info-list {
+  width: 100%;
+}
+
 /* ─── Card / Panel ─────────────────────────────────────── */
 .admin-panel {
   background: var(--admin-panel);

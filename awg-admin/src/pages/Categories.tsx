@@ -175,13 +175,17 @@ export default function Categories() {
             onAction={() => setShowModal(true)}
           />
         ) : (
-          <div className="admin-grid admin-grid--cards">
+          <div className="category-card-grid">
             {categories.map((category) => (
-              <AdminPanel
+              <article
                 key={category.id}
-                title={`${category.icon || '📁'} ${category.name}`}
-                description={category.description || 'No description provided.'}
-                actions={
+                className="category-card"
+              >
+                <div className="category-card__header">
+                  <div className="category-card__copy">
+                    <h3 className="category-card__title">{category.icon || '📁'} {category.name}</h3>
+                    <p className="category-card__description">{category.description || 'No description provided.'}</p>
+                  </div>
                   <div className="admin-inline-actions">
                     <button className="admin-round-button" title="Edit" onClick={() => void handleEdit(category)}>
                       <Edit size={13} />
@@ -190,8 +194,8 @@ export default function Categories() {
                       <Trash2 size={13} />
                     </button>
                   </div>
-                }
-              >
+                </div>
+
                 <div className="admin-info-list">
                   <div className="admin-info-row">
                     <span>Wallpapers</span>
@@ -222,7 +226,7 @@ export default function Categories() {
                     </button>
                   </div>
                 )}
-              </AdminPanel>
+              </article>
             ))}
           </div>
         )}
