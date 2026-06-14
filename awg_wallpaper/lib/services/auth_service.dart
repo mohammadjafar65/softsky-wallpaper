@@ -187,7 +187,9 @@ class AuthService {
       try {
         final fcmToken = await NotificationService().getToken();
         if (fcmToken != null) {
-          await NotificationService().sendTokenToBackend(fcmToken);
+          final synced = await _apiService.updateFCMToken(fcmToken);
+          debugPrint(
+              'AuthService: FCM token sync after backend login: $synced');
         }
       } catch (e) {
         debugPrint('AuthService: Failed to sync FCM token after login: $e');

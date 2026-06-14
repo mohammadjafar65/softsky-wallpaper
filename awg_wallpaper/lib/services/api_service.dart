@@ -81,6 +81,8 @@ class ApiService {
     _authToken = null;
   }
 
+  bool get hasAuthToken => _authToken != null && _authToken!.isNotEmpty;
+
   Map<String, String> get headers {
     final headersMap = {'Content-Type': 'application/json'};
     if (_authToken != null) {
@@ -325,11 +327,11 @@ class ApiService {
   }
 
   /// Update FCM token
-  Future<void> updateFCMToken(String token) async {
+  Future<bool> updateFCMToken(String token) async {
     try {
       if (_authToken == null) {
         debugPrint('Cannot update FCM token: No auth token');
-        return;
+        return false;
       }
 
       final response = await http.post(
@@ -340,11 +342,14 @@ class ApiService {
 
       if (response.statusCode != 200) {
         debugPrint('Failed to update FCM token: ${response.body}');
+        return false;
       } else {
         debugPrint('FCM token updated successfully on backend');
+        return true;
       }
     } catch (e) {
       debugPrint('Error updating FCM token: $e');
+      return false;
     }
   }
 }

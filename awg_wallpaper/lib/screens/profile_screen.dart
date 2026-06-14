@@ -364,6 +364,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Icons.star_border_rounded,
                                 title: 'Rate App',
                                 subtitle: 'Share your feedback',
+                                isDark: isDark,
                                 onTap: () => showDialog(
                                     context: context,
                                     builder: (_) => const RatingDialog()),
@@ -372,6 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Icons.mail_outline_rounded,
                                 title: 'Contact Us',
                                 subtitle: 'Get help and support',
+                                isDark: isDark,
                                 onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -382,6 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Icons.privacy_tip_outlined,
                                 title: 'Privacy Policy',
                                 subtitle: 'View privacy policy',
+                                isDark: isDark,
                                 onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -392,6 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Icons.description_outlined,
                                 title: 'Terms of Service',
                                 subtitle: 'View terms and conditions',
+                                isDark: isDark,
                                 onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -404,9 +408,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 32),
 
                           Text(
-                            'Version 3.0.22',
+                            'Version 3.0.23',
                             style: TextStyle(
-                              color: AppTheme.textMuted.withValues(alpha: 0.4),
+                              color: AppTheme.getTextMuted(isDark)
+                                  .withValues(alpha: 0.65),
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
@@ -779,10 +784,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool isDark = false,
     bool showLock = false,
   }) {
-    return ListTile(
+    return InkWell(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      leading: Container(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -800,16 +810,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           size: 22,
           color: iconColor,
         ),
-      ),
-      title: Text(
+        ),
+        title: Text(
         title,
         style: TextStyle(
           color: AppTheme.getTextPrimary(isDark),
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
-      ),
-      subtitle: Padding(
+        ),
+        subtitle: Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
           subtitle,
@@ -818,8 +828,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontSize: 13,
           ),
         ),
-      ),
-      trailing: showLock
+        ),
+        trailing: showLock
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
@@ -861,6 +871,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 size: 20,
               ),
             ),
+      ),
     );
   }
 
@@ -873,10 +884,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color? iconColor,
     bool isDark = false,
   }) {
-    return ListTile(
+    return InkWell(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      leading: Container(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: (iconColor ?? AppTheme.primary).withValues(alpha: 0.15),
@@ -887,16 +903,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           size: 20,
           color: iconColor ?? AppTheme.primary,
         ),
-      ),
-      title: Text(
+        ),
+        title: Text(
         title,
         style: TextStyle(
           color: AppTheme.getTextPrimary(isDark),
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
-      ),
-      subtitle: subtitle != null
+        ),
+        subtitle: subtitle != null
           ? Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
@@ -909,12 +925,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             )
           : null,
-      trailing: trailing ??
+        trailing: trailing ??
           Icon(
             Icons.chevron_right_rounded,
             color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.5),
             size: 20,
           ),
+      ),
     );
   }
 

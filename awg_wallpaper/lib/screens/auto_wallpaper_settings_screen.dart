@@ -665,6 +665,10 @@ class _AutoWallpaperSettingsScreenState
   }) {
     return InkWell(
       onTap: onTap,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Row(
@@ -726,6 +730,10 @@ class _AutoWallpaperSettingsScreenState
   }) {
     return InkWell(
       onTap: onTap,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Row(
@@ -908,19 +916,26 @@ class _AutoWallpaperSettingsScreenState
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppTheme.darkSurface,
-              AppTheme.darkSurface.withValues(alpha: 0.95),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      builder: (context) => Theme(
+        data: Theme.of(context).copyWith(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
         ),
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.darkSurface,
+                AppTheme.darkSurface.withValues(alpha: 0.95),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -949,6 +964,9 @@ class _AutoWallpaperSettingsScreenState
                       ),
                     ),
                     child: ListTile(
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                      selectedTileColor: Colors.transparent,
                       leading: Radio<ScheduleInterval>(
                         value: interval,
                         groupValue: provider.interval,
@@ -978,6 +996,7 @@ class _AutoWallpaperSettingsScreenState
               const SizedBox(height: 20),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -987,19 +1006,26 @@ class _AutoWallpaperSettingsScreenState
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppTheme.darkSurface,
-              AppTheme.darkSurface.withValues(alpha: 0.95),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      builder: (context) => Theme(
+        data: Theme.of(context).copyWith(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
         ),
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.darkSurface,
+                AppTheme.darkSurface.withValues(alpha: 0.95),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1028,6 +1054,9 @@ class _AutoWallpaperSettingsScreenState
                       ),
                     ),
                     child: ListTile(
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                      selectedTileColor: Colors.transparent,
                       leading: Radio<WallpaperSource>(
                         value: source,
                         groupValue: provider.source,
@@ -1056,6 +1085,7 @@ class _AutoWallpaperSettingsScreenState
                   )),
               const SizedBox(height: 20),
             ],
+          ),
           ),
         ),
       ),

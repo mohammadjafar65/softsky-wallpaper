@@ -6,7 +6,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'api_service.dart';
 
 // Top-level function to handle background messages
@@ -147,25 +146,20 @@ class NotificationService {
   }
 
   /// Send FCM token to backend
-  Future<void> sendTokenToBackend(String token) async {
+  Future<bool> sendTokenToBackend(String token) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final idToken = await user.getIdToken();
-        if (idToken != null) {
-          debugPrint('NotificationService: Sending FCM token to backend...');
-          final apiService = ApiService();
-          apiService.setAuthToken(idToken);
-          await apiService.updateFCMToken(token);
-        } else {
-          debugPrint('NotificationService: Could not get Firebase ID token');
-        }
-      } else {
+      final apiService = ApiService();
+      if (!apiService.hasAuthToken) {
         debugPrint(
-            'NotificationService: No currentUser found, skipping token sync');
+            'NotificationService: Backend auth token is not ready, token sync deferred');
+        return false;
       }
+
+      debugPrint('NotificationService: Sending FCM token to backend...');
+      return apiService.updateFCMToken(token);
     } catch (e) {
       debugPrint('NotificationService: Error sending FCM token to backend: $e');
+      return false;
     }
   }
 
