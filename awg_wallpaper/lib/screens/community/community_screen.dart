@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,11 @@ class _CommunityScreenState extends State<CommunityScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<CommunityProvider>();
@@ -62,83 +68,119 @@ class _CommunityScreenState extends State<CommunityScreen>
 
     return Scaffold(
       backgroundColor: AppTheme.getBackground(isDark),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // App bar
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                children: [
-                  Text(
-                    'Community',
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // App bar
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Community',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.getTextPrimary(isDark),
+                        ),
+                      ),
+                      const Spacer(),
+                      // Upload button
+                      if (AuthService().isLoggedIn)
+                        GestureDetector(
+                          onTap: () => _openUpload(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.add_photo_alternate_outlined,
+                                color: AppTheme.primary, size: 22),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Tab content
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _FeedGrid(scrollController: _feedScrollController),
+                      _TrendingGrid(
+                          scrollController: _trendingScrollController),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Floating filter tab bar above bottom nav (exact same UI as HomeScreen)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 142,
+            child: Center(
+              child: _buildFilterTabBar(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabBar() {
+    final labels = ['Following', 'Trending'];
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(50),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: 46,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(labels.length, (i) {
+              final isSelected = _tabController.index == i;
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _tabController.animateTo(i);
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 86,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Text(
+                    labels[i],
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.getTextPrimary(isDark),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.black : Colors.white70,
                     ),
                   ),
-                  const Spacer(),
-                  // Upload button
-                  if (AuthService().isLoggedIn)
-                    GestureDetector(
-                      onTap: () => _openUpload(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.add_photo_alternate_outlined,
-                            color: AppTheme.primary, size: 22),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // Tab bar
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: AppTheme.getSurface(isDark),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(10),
                 ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                labelColor: Colors.black,
-                unselectedLabelColor: AppTheme.getTextMuted(isDark),
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 14),
-                tabs: const [
-                  Tab(text: 'Following'),
-                  Tab(text: 'Trending'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Tab content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _FeedGrid(scrollController: _feedScrollController),
-                  _TrendingGrid(
-                      scrollController: _trendingScrollController),
-                ],
-              ),
-            ),
-          ],
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -184,7 +226,7 @@ class _FeedGrid extends StatelessWidget {
             controller: scrollController,
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 120),
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 210),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
@@ -278,7 +320,7 @@ class _TrendingGrid extends StatelessWidget {
             controller: scrollController,
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 120),
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 210),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {

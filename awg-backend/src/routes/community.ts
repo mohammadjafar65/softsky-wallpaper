@@ -7,7 +7,7 @@ import { CommunitySave } from "../entities/CommunitySave";
 import { Follow } from "../entities/Follow";
 import { PostReport } from "../entities/PostReport";
 import { User } from "../entities/User";
-import { authenticate, AuthRequest } from "../middleware/auth";
+import { authenticate, requireAdmin, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -244,16 +244,17 @@ router.get("/posts/:id", authenticate, async (req: Request, res: Response) => {
 router.delete("/posts/:id", authenticate, async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user?.id;
+        const userRole = (req as any).user?.role;
         const postId = parseInt(req.params.id);
         const postRepo = AppDataSource.getRepository(CommunityPost);
         const userRepo = AppDataSource.getRepository(User);
 
         const post = await postRepo.findOne({ where: { id: postId } });
         if (!post) return res.status(404).json({ error: "Post not found" });
-        if (post.userId !== userId) return res.status(403).json({ error: "Forbidden" });
+        if (post.userId !== userId && userRole !== "admin") return res.status(403).json({ error: "Forbidden" });
 
         await postRepo.delete(postId);
-        await userRepo.decrement({ id: userId }, "postsCount", 1);
+        await userRepo.decrement({ id: post.userId }, "postsCount", 1);
 
         return res.json({ success: true });
     } catch (err: any) {
@@ -689,6 +690,245 @@ router.get("/me/posts", authenticate, async (req: Request, res: Response) => {
         return res.json({ posts: serialized, page, hasMore: posts.length === limit });
     } catch (err: any) {
         console.error("GET /community/me/posts error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts/:id/report — report inappropriate post
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts/:id/report", authenticate, async (req: Request, res: Response) => {
+    try {
+        const reporterId = (req as any).user?.id;
+        const postId = parseInt(req.params.id);
+        const { reason } = req.body;
+
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        const reportRepo = AppDataSource.getRepository(PostReport);
+
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post) return res.status(404).json({ error: "Post not found" });
+
+        const validReasons = ["spam", "nudity", "copyright", "other"];
+        const report = reportRepo.create({
+            reporterId,
+            postId,
+            reason: validReasons.includes(reason) ? reason : "other",
+        });
+        await reportRepo.save(report);
+
+        post.isReported = true;
+        await postRepo.save(post);
+
+        return res.json({ success: true, message: "Post reported successfully" });
+    } catch (err: any) {
+        console.error("POST /community/posts/:id/report error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN ENDPOINTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/community/admin/stats — community overview stats
+router.get("/admin/stats", authenticate, requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        const reportRepo = AppDataSource.getRepository(PostReport);
+
+        const totalPosts = await postRepo.count();
+        const reportedPosts = await postRepo.count({ where: { isReported: true } });
+        const unapprovedPosts = await postRepo.count({ where: { isApproved: false } });
+        const totalReports = await reportRepo.count();
+
+        return res.json({
+            totalPosts,
+            reportedPosts,
+            unapprovedPosts,
+            totalReports,
+        });
+    } catch (err: any) {
+        console.error("GET /community/admin/stats error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// GET /api/community/admin/posts — list community posts for admin
+router.get("/admin/posts", authenticate, requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const page = Math.max(1, parseInt((req.query.page as string) || "1"));
+        const limit = Math.max(1, Math.min(100, parseInt((req.query.limit as string) || "24")));
+        const search = ((req.query.search as string) || "").trim();
+        const filter = (req.query.filter as string) || "all";
+        const skip = (page - 1) * limit;
+
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        let qb = postRepo
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.author", "author")
+            .orderBy("post.createdAt", "DESC");
+
+        if (filter === "reported") {
+            qb = qb.andWhere("post.isReported = true");
+        } else if (filter === "unapproved") {
+            qb = qb.andWhere("post.isApproved = false");
+        }
+
+        if (search) {
+            qb = qb.andWhere(
+                "(post.title LIKE :search OR post.description LIKE :search OR author.displayName LIKE :search OR author.username LIKE :search OR author.email LIKE :search)",
+                { search: `%${search}%` }
+            );
+        }
+
+        const [posts, total] = await qb.skip(skip).take(limit).getManyAndCount();
+
+        return res.json({
+            posts: posts.map((p) => ({
+                id: p.id,
+                imageUrl: p.imageUrl,
+                thumbnailUrl: p.thumbnailUrl,
+                title: p.title,
+                description: p.description,
+                width: p.width,
+                height: p.height,
+                likesCount: p.likesCount,
+                commentsCount: p.commentsCount,
+                savesCount: p.savesCount,
+                isApproved: p.isApproved,
+                isReported: p.isReported,
+                createdAt: p.createdAt,
+                author: p.author
+                    ? {
+                          id: p.author.id,
+                          displayName: p.author.displayName,
+                          username: p.author.username,
+                          email: p.author.email,
+                          photoUrl: p.author.photoUrl,
+                      }
+                    : null,
+            })),
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        });
+    } catch (err: any) {
+        console.error("GET /community/admin/posts error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// DELETE /api/community/admin/posts/:id — admin delete any post
+router.delete("/admin/posts/:id", authenticate, requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const postId = parseInt(req.params.id);
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        const userRepo = AppDataSource.getRepository(User);
+
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post) return res.status(404).json({ error: "Post not found" });
+
+        await postRepo.delete(postId);
+        await userRepo.decrement({ id: post.userId }, "postsCount", 1);
+
+        return res.json({ success: true, message: "Post deleted" });
+    } catch (err: any) {
+        console.error("DELETE /community/admin/posts/:id error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// PATCH /api/community/admin/posts/:id/toggle-approve
+router.patch("/admin/posts/:id/toggle-approve", authenticate, requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const postId = parseInt(req.params.id);
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post) return res.status(404).json({ error: "Post not found" });
+
+        post.isApproved = !post.isApproved;
+        await postRepo.save(post);
+
+        return res.json({ success: true, isApproved: post.isApproved });
+    } catch (err: any) {
+        console.error("PATCH /community/admin/posts/:id/toggle-approve error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// GET /api/community/admin/reports — list user reports
+router.get("/admin/reports", authenticate, requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const reportRepo = AppDataSource.getRepository(PostReport);
+        const reports = await reportRepo
+            .createQueryBuilder("report")
+            .leftJoinAndSelect("report.reporter", "reporter")
+            .leftJoinAndSelect("report.post", "post")
+            .leftJoinAndSelect("post.author", "author")
+            .orderBy("report.createdAt", "DESC")
+            .take(50)
+            .getMany();
+
+        return res.json({
+            reports: reports.map((r) => ({
+                id: r.id,
+                reason: r.reason,
+                createdAt: r.createdAt,
+                reporter: r.reporter
+                    ? {
+                          id: r.reporter.id,
+                          displayName: r.reporter.displayName,
+                          username: r.reporter.username,
+                          email: r.reporter.email,
+                      }
+                    : null,
+                post: r.post
+                    ? {
+                          id: r.post.id,
+                          imageUrl: r.post.imageUrl,
+                          thumbnailUrl: r.post.thumbnailUrl,
+                          title: r.post.title,
+                          author: r.post.author
+                              ? {
+                                    id: r.post.author.id,
+                                    displayName: r.post.author.displayName,
+                                    username: r.post.author.username,
+                                }
+                              : null,
+                      }
+                    : null,
+            })),
+        });
+    } catch (err: any) {
+        console.error("GET /community/admin/reports error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// DELETE /api/community/admin/reports/:id — dismiss report
+router.delete("/admin/reports/:id", authenticate, requireAdmin, async (req: Request, res: Response) => {
+    try {
+        const reportId = parseInt(req.params.id);
+        const reportRepo = AppDataSource.getRepository(PostReport);
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+
+        const report = await reportRepo.findOne({ where: { id: reportId } });
+        if (!report) return res.status(404).json({ error: "Report not found" });
+
+        const postId = report.postId;
+        await reportRepo.delete(reportId);
+
+        // If no more reports, clear isReported flag
+        const remaining = await reportRepo.count({ where: { postId } });
+        if (remaining === 0) {
+            await postRepo.update(postId, { isReported: false });
+        }
+
+        return res.json({ success: true, message: "Report dismissed" });
+    } catch (err: any) {
+        console.error("DELETE /community/admin/reports/:id error:", err);
         return res.status(500).json({ error: "Internal server error" });
     }
 });

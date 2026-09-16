@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquareHeart,
   MoveHorizontal,
   Search,
   Settings,
@@ -22,6 +23,7 @@ import { useAuth } from '../context/AuthContext';
 const navOverview = [
   { label: 'Dashboard', to: '/', icon: LayoutDashboard },
   { label: 'Wallpapers', to: '/wallpapers', icon: Images },
+  { label: 'Community', to: '/community', icon: MessageSquareHeart },
   { label: 'Reassign', to: '/reassign-wallpapers', icon: MoveHorizontal },
   { label: 'Categories', to: '/categories', icon: Grid2X2 },
   { label: 'Packs', to: '/packs', icon: Boxes },

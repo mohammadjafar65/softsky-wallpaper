@@ -144,4 +144,15 @@ export const settingsApi = {
     getPublic: () => api.get('/settings/public'),
 };
 
+// Community API
+export const communityApi = {
+    getStats: () => api.get('/community/admin/stats'),
+    getPosts: (params?: { page?: number; limit?: number; search?: string; filter?: string }) =>
+        api.get('/community/admin/posts', { params }),
+    deletePost: (id: number | string) => api.delete(`/community/admin/posts/${id}`),
+    toggleApprove: (id: number | string) => api.patch(`/community/admin/posts/${id}/toggle-approve`),
+    getReports: () => api.get('/community/admin/reports'),
+    dismissReport: (id: number | string) => api.delete(`/community/admin/reports/${id}`),
+};
+
 export default api;
