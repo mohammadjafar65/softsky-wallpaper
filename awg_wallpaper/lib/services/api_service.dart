@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:http/http.dart' as http;
 import '../models/wallpaper.dart';
@@ -12,7 +13,7 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // TODO: Update this URL to your deployed backend URL
+  // Deployed backend URL
   static const String baseUrl = 'https://softskyapi.softsky.studio/api';
 
   // Retry configuration
@@ -415,7 +416,44 @@ class SubscriptionStatus {
 extension CommunityApiExtension on ApiService {
   static String get _communityBase => '${ApiService.baseUrl}/community';
 
-  /// Create a new community post
+  /// Upload community post image file directly to custom hosting backend
+  Future<Map<String, dynamic>> uploadCommunityPostFile({
+    required File file,
+    String? title,
+    String? description,
+    int? width,
+    int? height,
+  }) async {
+    final uri = Uri.parse('$_communityBase/posts');
+    final request = http.MultipartRequest('POST', uri);
+
+    if (_authToken != null) {
+      request.headers['Authorization'] = 'Bearer $_authToken';
+    }
+
+    if (title != null && title.isNotEmpty) request.fields['title'] = title;
+    if (description != null && description.isNotEmpty) {
+      request.fields['description'] = description;
+    }
+    if (width != null) request.fields['width'] = width.toString();
+    if (height != null) request.fields['height'] = height.toString();
+
+    request.files.add(await http.MultipartFile.fromPath(
+      'image',
+      file.path,
+    ));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode != 201) {
+      throw Exception(data['error'] ?? 'Failed to upload post');
+    }
+    return data;
+  }
+
+  /// Create a new community post via json
   Future<Map<String, dynamic>> createCommunityPost({
     required String imageUrl,
     String? thumbnailUrl,

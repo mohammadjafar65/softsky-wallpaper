@@ -10,6 +10,9 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { AppDataSource } from "./data-source";
 
+import path from "path";
+import fs from "fs";
+
 // Import routes
 import authRoutes from "./routes/auth";
 import wallpaperRoutes from "./routes/wallpapers";
@@ -23,6 +26,15 @@ import communityRoutes from "./routes/community";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Ensure local uploads directory exists
+const uploadsDir = path.join(process.cwd(), "uploads", "community");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Store database connection error for debugging
 let dbConnectionError: string | null = null;

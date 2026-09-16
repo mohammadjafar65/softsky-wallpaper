@@ -83,25 +83,17 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
       // Re-validate and get decoded image
       final decoded = await _uploadService.validateImage(_selectedFile!);
 
-      // Upload to Firebase Storage
-      final urls = await _uploadService.uploadWallpaper(
-        _selectedFile!,
-        decoded,
-        onProgress: (p) => setState(() => _uploadProgress = p),
-      );
-
-      // Create backend record
-      final data = await _api.createCommunityPost(
-        imageUrl: urls['imageUrl']!,
-        thumbnailUrl: urls['thumbnailUrl'],
+      // Upload directly to custom hosting server
+      final data = await _api.uploadCommunityPostFile(
+        file: _selectedFile!,
         title: _titleController.text.trim().isNotEmpty
             ? _titleController.text.trim()
             : null,
         description: _descController.text.trim().isNotEmpty
             ? _descController.text.trim()
             : null,
-        width: int.tryParse(urls['width'] ?? ''),
-        height: int.tryParse(urls['height'] ?? ''),
+        width: decoded.width,
+        height: decoded.height,
       );
 
       final post =
@@ -122,7 +114,8 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
     } on UploadValidationException catch (e) {
       _showError(e.message);
     } catch (e) {
-      _showError('Upload failed. Please try again.');
+      debugPrint('Wallpaper upload exception: $e');
+      _showError('Upload failed: $e');
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }

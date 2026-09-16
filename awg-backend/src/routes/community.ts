@@ -59,47 +59,88 @@ async function serializePost(post: CommunityPost, viewerId: number | null) {
     };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/community/posts — create a new post
-// ─────────────────────────────────────────────────────────────────────────────
-router.post("/posts", authenticate, async (req: Request, res: Response) => {
-    try {
-        const userId = (req as any).user?.id;
-        const { imageUrl, thumbnailUrl, title, description, width, height } = req.body;
+import { upload, uploadToCloudinary } from "../middleware/upload";
+import path from "path";
+import fs from "fs";
 
-        if (!imageUrl) {
-            return res.status(400).json({ error: "imageUrl is required" });
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts — create a new post (supports multipart file or json)
+// ─────────────────────────────────────────────────────────────────────────────
+router.post(
+    "/posts",
+    authenticate,
+    upload.fields([
+        { name: "image", maxCount: 1 },
+        { name: "thumbnail", maxCount: 1 },
+    ]),
+    async (req: Request, res: Response) => {
+        try {
+            const userId = (req as any).user?.id;
+            let { imageUrl, thumbnailUrl, title, description, width, height } = req.body;
+
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+            const imageFile = files?.image?.[0];
+
+            if (imageFile) {
+                // Try Cloudinary first if configured
+                if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+                    try {
+                        const uploaded = await uploadToCloudinary(imageFile.buffer, "community");
+                        imageUrl = uploaded.url;
+                        thumbnailUrl = uploaded.thumbnailUrl;
+                    } catch (cloudErr) {
+                        console.error("Cloudinary failed, falling back to local file storage:", cloudErr);
+                    }
+                }
+
+                // If Cloudinary didn't provide an imageUrl (or failed), save locally on hosting server
+                if (!imageUrl) {
+                    const ext = path.extname(imageFile.originalname) || ".jpg";
+                    const filename = `community_${Date.now()}_${Math.random().toString(36).substring(2, 9)}${ext}`;
+                    const targetPath = path.join(process.cwd(), "uploads", "community", filename);
+                    fs.writeFileSync(targetPath, imageFile.buffer);
+
+                    const protocol = req.protocol;
+                    const host = req.get("host") || "softskyapi.softsky.studio";
+                    imageUrl = `${protocol}://${host}/uploads/community/${filename}`;
+                    thumbnailUrl = imageUrl;
+                }
+            }
+
+            if (!imageUrl) {
+                return res.status(400).json({ error: "Image file or imageUrl is required" });
+            }
+
+            const postRepo = AppDataSource.getRepository(CommunityPost);
+            const userRepo = AppDataSource.getRepository(User);
+
+            const post = postRepo.create({
+                userId,
+                imageUrl,
+                thumbnailUrl: thumbnailUrl || imageUrl,
+                title,
+                description,
+                width: width ? parseInt(width) : undefined,
+                height: height ? parseInt(height) : undefined,
+            });
+            await postRepo.save(post);
+
+            // Increment user posts count
+            await userRepo.increment({ id: userId }, "postsCount", 1);
+
+            // Reload with author
+            const saved = await postRepo.findOne({
+                where: { id: post.id },
+                relations: ["author"],
+            });
+
+            return res.status(201).json({ post: await serializePost(saved!, userId) });
+        } catch (err: any) {
+            console.error("POST /community/posts error:", err);
+            return res.status(500).json({ error: err.message || "Internal server error" });
         }
-
-        const postRepo = AppDataSource.getRepository(CommunityPost);
-        const userRepo = AppDataSource.getRepository(User);
-
-        const post = postRepo.create({
-            userId,
-            imageUrl,
-            thumbnailUrl,
-            title,
-            description,
-            width: width ? parseInt(width) : undefined,
-            height: height ? parseInt(height) : undefined,
-        });
-        await postRepo.save(post);
-
-        // Increment user posts count
-        await userRepo.increment({ id: userId }, "postsCount", 1);
-
-        // Reload with author
-        const saved = await postRepo.findOne({
-            where: { id: post.id },
-            relations: ["author"],
-        });
-
-        return res.status(201).json({ post: await serializePost(saved!, userId) });
-    } catch (err: any) {
-        console.error("POST /community/posts error:", err);
-        return res.status(500).json({ error: "Internal server error" });
     }
-});
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/feed — paginated feed (following + own posts)
