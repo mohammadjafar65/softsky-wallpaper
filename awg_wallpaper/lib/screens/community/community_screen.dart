@@ -243,7 +243,7 @@ class _FeedGrid extends StatelessWidget {
                       }
                       return _PostCard(
                           post: provider.feedPosts[i],
-                          onTap: () => _openDetail(context, provider.feedPosts[i]));
+                          onTap: () => _openDetail(context, provider.feedPosts, i));
                     },
                     childCount: provider.feedPosts.length +
                         (provider.feedHasMore ? 1 : 0),
@@ -264,10 +264,12 @@ class _FeedGrid extends StatelessWidget {
     );
   }
 
-  void _openDetail(BuildContext context, CommunityPost post) {
+  void _openDetail(BuildContext context, List<CommunityPost> posts, int initialIndex) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
+      MaterialPageRoute(
+        builder: (_) => PostDetailScreen(posts: posts, initialIndex: initialIndex),
+      ),
     );
   }
 
@@ -328,7 +330,7 @@ class _TrendingGrid extends StatelessWidget {
                           post: provider.trendingPosts[i],
                           showLikes: true,
                           onTap: () =>
-                              _openDetail(context, provider.trendingPosts[i]));
+                              _openDetail(context, provider.trendingPosts, i));
                     },
                     childCount: provider.trendingPosts.length,
                   ),
@@ -348,10 +350,12 @@ class _TrendingGrid extends StatelessWidget {
     );
   }
 
-  void _openDetail(BuildContext context, CommunityPost post) {
+  void _openDetail(BuildContext context, List<CommunityPost> posts, int initialIndex) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => PostDetailScreen(post: post)),
+      MaterialPageRoute(
+        builder: (_) => PostDetailScreen(posts: posts, initialIndex: initialIndex),
+      ),
     );
   }
 }

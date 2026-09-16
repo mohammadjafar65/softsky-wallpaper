@@ -251,7 +251,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                                     MaterialPageRoute(
                                       builder: (_) =>
                                           PostDetailScreen(
-                                              post: _posts[i]),
+                                              posts: _posts,
+                                              initialIndex: i),
                                     ),
                                   ),
                                   child: ClipRRect(
