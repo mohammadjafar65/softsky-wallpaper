@@ -19,17 +19,21 @@ async function serializePost(post, viewerId) {
     const likeRepo = data_source_1.AppDataSource.getRepository(CommunityLike_1.CommunityLike);
     const saveRepo = data_source_1.AppDataSource.getRepository(CommunitySave_1.CommunitySave);
     const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+    const safeViewerId = viewerId ? Number(viewerId) : null;
     const [isLiked, isSaved, isFollowing] = await Promise.all([
-        viewerId
-            ? likeRepo.findOne({ where: { userId: viewerId, postId: post.id } })
+        safeViewerId
+            ? likeRepo.findOne({ where: { userId: safeViewerId, postId: post.id } })
             : null,
-        viewerId
-            ? saveRepo.findOne({ where: { userId: viewerId, postId: post.id } })
+        safeViewerId
+            ? saveRepo.findOne({ where: { userId: safeViewerId, postId: post.id } })
             : null,
-        viewerId && post.author
-            ? followRepo.findOne({ where: { followerId: viewerId, followingId: post.userId } })
+        safeViewerId && post.author
+            ? followRepo.findOne({ where: { followerId: safeViewerId, followingId: post.userId } })
             : null,
     ]);
+    const authorUsername = post.author?.username || (post.author?.displayName
+        ? post.author.displayName.toLowerCase().replace(/[^a-z0-9_]/g, '')
+        : 'user');
     return {
         id: post.id,
         imageUrl: post.imageUrl,
@@ -38,22 +42,22 @@ async function serializePost(post, viewerId) {
         description: post.description,
         width: post.width,
         height: post.height,
-        likesCount: post.likesCount,
-        commentsCount: post.commentsCount,
-        savesCount: post.savesCount,
+        likesCount: post.likesCount || 0,
+        commentsCount: post.commentsCount || 0,
+        savesCount: post.savesCount || 0,
         isLiked: !!isLiked,
         isSaved: !!isSaved,
         createdAt: post.createdAt,
         author: post.author
             ? {
                 id: post.author.id,
-                displayName: post.author.displayName,
+                displayName: post.author.displayName || "Community Member",
                 photoUrl: post.author.photoUrl,
-                username: post.author.username,
+                username: authorUsername,
                 bio: post.author.bio,
-                followersCount: post.author.followersCount,
-                followingCount: post.author.followingCount,
-                postsCount: post.author.postsCount,
+                followersCount: post.author.followersCount || 0,
+                followingCount: post.author.followingCount || 0,
+                postsCount: post.author.postsCount || 0,
                 isFollowing: !!isFollowing,
             }
             : null,
@@ -132,12 +136,12 @@ router.post("/posts", auth_1.authenticate, upload_1.upload.fields([
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/feed", auth_1.optionalAuth, async (req, res) => {
     try {
-        const userId = req.user?.id || null;
+        const userId = req.user?.id ? parseInt(req.user.id, 10) : null;
         if (!userId) {
             return res.json({ posts: [], page: 1, hasMore: false });
         }
-        const page = parseInt(req.query.page || "1");
-        const limit = parseInt(req.query.limit || "20");
+        const page = parseInt(req.query.page || "1", 10);
+        const limit = parseInt(req.query.limit || "20", 10);
         const skip = (page - 1) * limit;
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
         const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
@@ -173,9 +177,9 @@ router.get("/feed", auth_1.optionalAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/trending", auth_1.optionalAuth, async (req, res) => {
     try {
-        const userId = req.user?.id || null;
-        const page = parseInt(req.query.page || "1");
-        const limit = parseInt(req.query.limit || "20");
+        const userId = req.user?.id ? parseInt(req.user.id, 10) : null;
+        const page = parseInt(req.query.page || "1", 10);
+        const limit = parseInt(req.query.limit || "20", 10);
         const skip = (page - 1) * limit;
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
         const sevenDaysAgo = new Date();
@@ -202,8 +206,8 @@ router.get("/trending", auth_1.optionalAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/posts/:id", auth_1.optionalAuth, async (req, res) => {
     try {
-        const userId = req.user?.id;
-        const postId = parseInt(req.params.id);
+        const userId = req.user?.id ? parseInt(req.user.id, 10) : null;
+        const postId = parseInt(req.params.id, 10);
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
         const post = await postRepo.findOne({
             where: { id: postId, isApproved: true },
@@ -247,14 +251,22 @@ router.delete("/posts/:id", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/posts/:id/like", auth_1.authenticate, async (req, res) => {
     try {
-        const userId = req.user?.id;
-        const postId = parseInt(req.params.id);
+        const userId = parseInt(req.user?.id, 10);
+        const postId = parseInt(req.params.id, 10);
+        if (isNaN(userId) || isNaN(postId)) {
+            return res.status(400).json({ error: "Invalid user or post ID" });
+        }
         const likeRepo = data_source_1.AppDataSource.getRepository(CommunityLike_1.CommunityLike);
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
         const existing = await likeRepo.findOne({ where: { userId, postId } });
         if (existing) {
             await likeRepo.delete({ userId, postId });
-            await postRepo.decrement({ id: postId }, "likesCount", 1);
+            await postRepo
+                .createQueryBuilder()
+                .update(CommunityPost_1.CommunityPost)
+                .set({ likesCount: () => "GREATEST(likes_count - 1, 0)" })
+                .where("id = :id", { id: postId })
+                .execute();
             return res.json({ liked: false });
         }
         else {
@@ -273,9 +285,12 @@ router.post("/posts/:id/like", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/posts/:id/comment", auth_1.authenticate, async (req, res) => {
     try {
-        const userId = req.user?.id;
-        const postId = parseInt(req.params.id);
+        const userId = parseInt(req.user?.id, 10);
+        const postId = parseInt(req.params.id, 10);
         const { content } = req.body;
+        if (isNaN(userId) || isNaN(postId)) {
+            return res.status(400).json({ error: "Invalid user or post ID" });
+        }
         if (!content || content.trim().length === 0) {
             return res.status(400).json({ error: "Comment content is required" });
         }
@@ -289,16 +304,19 @@ router.post("/posts/:id/comment", auth_1.authenticate, async (req, res) => {
         await commentRepo.save(comment);
         await postRepo.increment({ id: postId }, "commentsCount", 1);
         const author = await userRepo.findOne({ where: { id: userId } });
+        const authorUsername = author?.username || (author?.displayName
+            ? author.displayName.toLowerCase().replace(/[^a-z0-9_]/g, '')
+            : 'user');
         return res.status(201).json({
             comment: {
                 id: comment.id,
                 content: comment.content,
                 createdAt: comment.createdAt,
                 author: {
-                    id: author.id,
-                    displayName: author.displayName,
-                    photoUrl: author.photoUrl,
-                    username: author.username,
+                    id: author ? author.id : userId,
+                    displayName: author?.displayName || "Community Member",
+                    photoUrl: author?.photoUrl || null,
+                    username: authorUsername,
                 },
             },
         });
@@ -309,20 +327,23 @@ router.post("/posts/:id/comment", auth_1.authenticate, async (req, res) => {
     }
 });
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /api/community/posts/:id/comments — paginated comments
+// GET /api/community/posts/:id/comments — paginated comments (public/optionalAuth)
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/posts/:id/comments", auth_1.authenticate, async (req, res) => {
+router.get("/posts/:id/comments", auth_1.optionalAuth, async (req, res) => {
     try {
-        const postId = parseInt(req.params.id);
-        const page = parseInt(req.query.page || "1");
-        const limit = parseInt(req.query.limit || "20");
+        const postId = parseInt(req.params.id, 10);
+        if (isNaN(postId)) {
+            return res.status(400).json({ error: "Invalid post ID" });
+        }
+        const page = parseInt(req.query.page || "1", 10);
+        const limit = parseInt(req.query.limit || "20", 10);
         const skip = (page - 1) * limit;
         const commentRepo = data_source_1.AppDataSource.getRepository(CommunityComment_1.CommunityComment);
         const comments = await commentRepo
             .createQueryBuilder("comment")
             .leftJoinAndSelect("comment.author", "author")
             .where("comment.postId = :postId", { postId })
-            .orderBy("comment.createdAt", "ASC")
+            .orderBy("comment.createdAt", "DESC")
             .skip(skip)
             .take(limit)
             .getMany();
@@ -332,10 +353,12 @@ router.get("/posts/:id/comments", auth_1.authenticate, async (req, res) => {
                 content: c.content,
                 createdAt: c.createdAt,
                 author: {
-                    id: c.author.id,
-                    displayName: c.author.displayName,
-                    photoUrl: c.author.photoUrl,
-                    username: c.author.username,
+                    id: c.author ? c.author.id : c.userId,
+                    displayName: c.author?.displayName || "Community Member",
+                    photoUrl: c.author?.photoUrl || null,
+                    username: c.author?.username || (c.author?.displayName
+                        ? c.author.displayName.toLowerCase().replace(/[^a-z0-9_]/g, '')
+                        : 'user'),
                 },
             })),
             page,
@@ -352,14 +375,22 @@ router.get("/posts/:id/comments", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/posts/:id/save", auth_1.authenticate, async (req, res) => {
     try {
-        const userId = req.user?.id;
-        const postId = parseInt(req.params.id);
+        const userId = parseInt(req.user?.id, 10);
+        const postId = parseInt(req.params.id, 10);
+        if (isNaN(userId) || isNaN(postId)) {
+            return res.status(400).json({ error: "Invalid user or post ID" });
+        }
         const saveRepo = data_source_1.AppDataSource.getRepository(CommunitySave_1.CommunitySave);
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
         const existing = await saveRepo.findOne({ where: { userId, postId } });
         if (existing) {
             await saveRepo.delete({ userId, postId });
-            await postRepo.decrement({ id: postId }, "savesCount", 1);
+            await postRepo
+                .createQueryBuilder()
+                .update(CommunityPost_1.CommunityPost)
+                .set({ savesCount: () => "GREATEST(saves_count - 1, 0)" })
+                .where("id = :id", { id: postId })
+                .execute();
             return res.json({ saved: false });
         }
         else {
@@ -378,9 +409,11 @@ router.post("/posts/:id/save", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/saved", auth_1.authenticate, async (req, res) => {
     try {
-        const userId = req.user?.id;
-        const page = parseInt(req.query.page || "1");
-        const limit = parseInt(req.query.limit || "20");
+        const userId = parseInt(req.user?.id, 10);
+        if (isNaN(userId))
+            return res.json({ posts: [], page: 1, hasMore: false });
+        const page = parseInt(req.query.page || "1", 10);
+        const limit = parseInt(req.query.limit || "20", 10);
         const skip = (page - 1) * limit;
         const saveRepo = data_source_1.AppDataSource.getRepository(CommunitySave_1.CommunitySave);
         const saves = await saveRepo
@@ -405,9 +438,12 @@ router.get("/saved", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/posts/:id/report", auth_1.authenticate, async (req, res) => {
     try {
-        const reporterId = req.user?.id;
-        const postId = parseInt(req.params.id);
+        const reporterId = parseInt(req.user?.id, 10);
+        const postId = parseInt(req.params.id, 10);
         const { reason } = req.body;
+        if (isNaN(reporterId) || isNaN(postId)) {
+            return res.status(400).json({ error: "Invalid reporter or post ID" });
+        }
         const validReasons = ["spam", "nudity", "copyright", "other"];
         if (!validReasons.includes(reason)) {
             return res.status(400).json({ error: "Invalid report reason" });
@@ -435,8 +471,11 @@ router.post("/posts/:id/report", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/follow/:userId", auth_1.authenticate, async (req, res) => {
     try {
-        const followerId = req.user?.id;
-        const followingId = parseInt(req.params.userId);
+        const followerId = parseInt(req.user?.id, 10);
+        const followingId = parseInt(req.params.userId, 10);
+        if (isNaN(followerId) || isNaN(followingId)) {
+            return res.status(400).json({ error: "Invalid IDs" });
+        }
         if (followerId === followingId) {
             return res.status(400).json({ error: "Cannot follow yourself" });
         }
@@ -444,7 +483,7 @@ router.post("/follow/:userId", auth_1.authenticate, async (req, res) => {
         const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
         const existing = await followRepo.findOne({ where: { followerId, followingId } });
         if (existing) {
-            return res.status(409).json({ error: "Already following" });
+            return res.json({ following: true, message: "Already following" });
         }
         await followRepo.save(followRepo.create({ followerId, followingId }));
         await userRepo.increment({ id: followerId }, "followingCount", 1);
@@ -461,17 +500,30 @@ router.post("/follow/:userId", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.delete("/follow/:userId", auth_1.authenticate, async (req, res) => {
     try {
-        const followerId = req.user?.id;
-        const followingId = parseInt(req.params.userId);
+        const followerId = parseInt(req.user?.id, 10);
+        const followingId = parseInt(req.params.userId, 10);
+        if (isNaN(followerId) || isNaN(followingId)) {
+            return res.status(400).json({ error: "Invalid IDs" });
+        }
         const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
         const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
         const existing = await followRepo.findOne({ where: { followerId, followingId } });
         if (!existing) {
-            return res.status(404).json({ error: "Not following" });
+            return res.json({ following: false, message: "Not following" });
         }
         await followRepo.delete({ followerId, followingId });
-        await userRepo.decrement({ id: followerId }, "followingCount", 1);
-        await userRepo.decrement({ id: followingId }, "followersCount", 1);
+        await userRepo
+            .createQueryBuilder()
+            .update(User_1.User)
+            .set({ followingCount: () => "GREATEST(following_count - 1, 0)" })
+            .where("id = :id", { id: followerId })
+            .execute();
+        await userRepo
+            .createQueryBuilder()
+            .update(User_1.User)
+            .set({ followersCount: () => "GREATEST(followers_count - 1, 0)" })
+            .where("id = :id", { id: followingId })
+            .execute();
         return res.json({ following: false });
     }
     catch (err) {

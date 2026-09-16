@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -16,7 +49,7 @@ const data_source_1 = require("./data-source");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 // Import routes
-const auth_1 = __importDefault(require("./routes/auth"));
+const auth_1 = __importStar(require("./routes/auth"));
 const wallpapers_1 = __importDefault(require("./routes/wallpapers"));
 const categories_1 = __importDefault(require("./routes/categories"));
 const users_1 = __importDefault(require("./routes/users"));
@@ -206,6 +239,7 @@ data_source_1.AppDataSource.initialize()
     console.log("✅ Connected to MySQL");
     console.log(`   Host: ${process.env.MYSQL_HOST || "localhost"}`);
     console.log(`   Database: ${process.env.MYSQL_DATABASE || "softoatk_ssw_wallpaper"}`);
+    (0, auth_1.backfillMissingUsernames)();
 })
     .catch((error) => {
     dbConnectionError = error.message;

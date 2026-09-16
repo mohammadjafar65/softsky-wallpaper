@@ -67,6 +67,69 @@ router.post("/admin/login", async (req, res) => {
     }
 });
 
+/**
+ * Generate a clean, unique username based on display name or email.
+ * E.g., "Jafar Mansuri" -> "jafarmansuri" (or "jafarmansuri1" if taken)
+ */
+export async function generateUniqueUsername(
+    userRepository: any,
+    nameOrEmail: string,
+    excludeUserId?: number
+): Promise<string> {
+    let base = (nameOrEmail || "user")
+        .toLowerCase()
+        .replace(/@.+$/, "") // Strip email domain
+        .replace(/[^a-z0-9_]/g, "") // Keep only lowercase alphanumeric & underscore
+        .slice(0, 24);
+
+    if (!base || base.length < 3) {
+        base = "user";
+    }
+
+    let candidate = base;
+    let counter = 1;
+
+    while (true) {
+        const query = userRepository
+            .createQueryBuilder("u")
+            .where("u.username = :candidate", { candidate });
+        if (excludeUserId) {
+            query.andWhere("u.id != :excludeUserId", { excludeUserId });
+        }
+        const existing = await query.getOne();
+        if (!existing) {
+            return candidate;
+        }
+        candidate = `${base}${counter}`;
+        counter++;
+    }
+}
+
+/**
+ * Backfill missing usernames for any existing users in DB.
+ */
+export async function backfillMissingUsernames() {
+    try {
+        const userRepo = AppDataSource.getRepository(User);
+        const users = await userRepo
+            .createQueryBuilder("u")
+            .where("u.username IS NULL OR u.username = ''")
+            .getMany();
+
+        for (const user of users) {
+            user.username = await generateUniqueUsername(
+                userRepo,
+                user.displayName || user.email,
+                user.id
+            );
+            await userRepo.save(user);
+            console.log(`[Username Backfill] Assigned @${user.username} to user ${user.id} (${user.displayName})`);
+        }
+    } catch (e) {
+        console.error("[Username Backfill] Error:", e);
+    }
+}
+
 // Verify Firebase token and sync user (for mobile app)
 router.post("/firebase/verify", async (req, res) => {
     try {
@@ -92,17 +155,47 @@ router.post("/firebase/verify", async (req, res) => {
                 user.firebaseUid = firebaseUid;
                 user.authProvider = authProvider || "google";
                 if (photoUrl) user.photoUrl = photoUrl;
+                if (!user.username) {
+                    user.username = await generateUniqueUsername(
+                        userRepository,
+                        user.displayName || displayName || email,
+                        user.id
+                    );
+                }
                 await userRepository.save(user);
             } else {
-                // Create new user
+                // Create new user with automatic unique username
+                const username = await generateUniqueUsername(
+                    userRepository,
+                    displayName || email
+                );
                 user = userRepository.create({
                     firebaseUid,
                     email,
                     displayName: displayName || email.split("@")[0],
+                    username,
                     photoUrl,
                     authProvider: authProvider || "google",
                     role: "user",
                 });
+                await userRepository.save(user);
+            }
+        } else {
+            // Existing user found by firebaseUid - check if username is missing
+            let updated = false;
+            if (!user.username) {
+                user.username = await generateUniqueUsername(
+                    userRepository,
+                    user.displayName || displayName || email,
+                    user.id
+                );
+                updated = true;
+            }
+            if (photoUrl && !user.photoUrl) {
+                user.photoUrl = photoUrl;
+                updated = true;
+            }
+            if (updated) {
                 await userRepository.save(user);
             }
         }
@@ -120,6 +213,7 @@ router.post("/firebase/verify", async (req, res) => {
                 id: user.id,
                 email: user.email,
                 displayName: user.displayName,
+                username: user.username,
                 photoUrl: user.photoUrl,
                 role: user.role,
                 subscription: user.subscription,
@@ -143,10 +237,21 @@ router.get("/me", authenticate, async (req: AuthRequest, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
+        // Auto-generate username if null
+        if (!user.username) {
+            user.username = await generateUniqueUsername(
+                userRepository,
+                user.displayName || user.email,
+                user.id
+            );
+            await userRepository.save(user);
+        }
+
         res.json({
             id: user.id,
             email: user.email,
             displayName: user.displayName,
+            username: user.username,
             photoUrl: user.photoUrl,
             role: user.role,
             subscription: user.subscription,

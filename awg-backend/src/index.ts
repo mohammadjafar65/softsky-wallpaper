@@ -14,7 +14,7 @@ import path from "path";
 import fs from "fs";
 
 // Import routes
-import authRoutes from "./routes/auth";
+import authRoutes, { backfillMissingUsernames } from "./routes/auth";
 import wallpaperRoutes from "./routes/wallpapers";
 import categoryRoutes from "./routes/categories";
 import userRoutes from "./routes/users";
@@ -241,6 +241,7 @@ AppDataSource.initialize()
         console.log("✅ Connected to MySQL");
         console.log(`   Host: ${process.env.MYSQL_HOST || "localhost"}`);
         console.log(`   Database: ${process.env.MYSQL_DATABASE || "softoatk_ssw_wallpaper"}`);
+        backfillMissingUsernames();
     })
     .catch((error) => {
         dbConnectionError = error.message;

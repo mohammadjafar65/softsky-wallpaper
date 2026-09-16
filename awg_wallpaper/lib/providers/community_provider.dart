@@ -136,29 +136,41 @@ class CommunityProvider extends ChangeNotifier {
 
   // ─── Like ─────────────────────────────────────────────────────────────────
 
-  Future<void> toggleLike(int postId) async {
-    _optimisticToggleLike(postId);
-    try {
-      final liked = await _api.toggleLike(postId);
-      // Sync actual value from server
-      _updatePostLike(postId, liked);
-    } catch (e) {
-      // Revert on failure
-      _optimisticToggleLike(postId);
-      debugPrint('toggleLike error: $e');
-    }
-    notifyListeners();
-  }
-
-  void _optimisticToggleLike(int postId) {
+  Future<bool> toggleLike(int postId, {bool? targetState}) async {
+    bool? desired;
     for (final list in [_feedPosts, _trendingPosts, _myPosts]) {
-      for (int i = 0; i < list.length; i++) {
-        if (list[i].id == postId) {
-          final p = list[i];
-          p.isLiked = !p.isLiked;
-          p.likesCount += p.isLiked ? 1 : -1;
+      for (final p in list) {
+        if (p.id == postId) {
+          desired ??= targetState ?? !p.isLiked;
+          p.isLiked = desired;
+          p.likesCount += desired ? 1 : -1;
+          if (p.likesCount < 0) p.likesCount = 0;
         }
       }
+    }
+    notifyListeners();
+
+    try {
+      final liked = await _api.toggleLike(postId);
+      _updatePostLike(postId, liked);
+      notifyListeners();
+      return liked;
+    } catch (e) {
+      if (desired != null) {
+        final revert = !desired;
+        for (final list in [_feedPosts, _trendingPosts, _myPosts]) {
+          for (final p in list) {
+            if (p.id == postId) {
+              p.isLiked = revert;
+              p.likesCount += revert ? 1 : -1;
+              if (p.likesCount < 0) p.likesCount = 0;
+            }
+          }
+        }
+        notifyListeners();
+      }
+      debugPrint('toggleLike error: $e');
+      rethrow;
     }
   }
 
@@ -174,26 +186,41 @@ class CommunityProvider extends ChangeNotifier {
 
   // ─── Save ─────────────────────────────────────────────────────────────────
 
-  Future<void> toggleSave(int postId) async {
-    _optimisticToggleSave(postId);
-    try {
-      final saved = await _api.toggleSave(postId);
-      _updatePostSave(postId, saved);
-    } catch (e) {
-      _optimisticToggleSave(postId);
-      debugPrint('toggleSave error: $e');
-    }
-    notifyListeners();
-  }
-
-  void _optimisticToggleSave(int postId) {
+  Future<bool> toggleSave(int postId, {bool? targetState}) async {
+    bool? desired;
     for (final list in [_feedPosts, _trendingPosts, _myPosts]) {
       for (final p in list) {
         if (p.id == postId) {
-          p.isSaved = !p.isSaved;
-          p.savesCount += p.isSaved ? 1 : -1;
+          desired ??= targetState ?? !p.isSaved;
+          p.isSaved = desired;
+          p.savesCount += desired ? 1 : -1;
+          if (p.savesCount < 0) p.savesCount = 0;
         }
       }
+    }
+    notifyListeners();
+
+    try {
+      final saved = await _api.toggleSave(postId);
+      _updatePostSave(postId, saved);
+      notifyListeners();
+      return saved;
+    } catch (e) {
+      if (desired != null) {
+        final revert = !desired;
+        for (final list in [_feedPosts, _trendingPosts, _myPosts]) {
+          for (final p in list) {
+            if (p.id == postId) {
+              p.isSaved = revert;
+              p.savesCount += revert ? 1 : -1;
+              if (p.savesCount < 0) p.savesCount = 0;
+            }
+          }
+        }
+        notifyListeners();
+      }
+      debugPrint('toggleSave error: $e');
+      rethrow;
     }
   }
 
