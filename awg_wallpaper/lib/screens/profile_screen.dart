@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -18,7 +17,6 @@ import 'auto_wallpaper_settings_screen.dart';
 import '../services/auth_service.dart';
 import '../providers/auto_wallpaper_provider.dart';
 import 'auth/login_screen.dart';
-import 'auth/register_screen.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -29,91 +27,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _loginPopupShown = false;
-  @override
-  void initState() {
-    super.initState();
-    // Delay popup for 8 seconds after screen opens
-    Future.delayed(const Duration(seconds: 8), _maybeShowLoginPopup);
-  }
-
-  void _maybeShowLoginPopup() {
-    if (!mounted || _loginPopupShown) return;
-    final isLoggedIn = AuthService().isLoggedIn;
-    if (!isLoggedIn) {
-      _loginPopupShown = true;
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        barrierColor: Colors.black.withOpacity(0.7),
-        builder: (ctx) => Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.grey[900]!.withOpacity(0.96),
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.person_outline_rounded, size: 38, color: Colors.white),
-                const SizedBox(height: 14),
-                Text('Sign in or Create Account',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 8),
-                Text('Sync favorites, access premium features, and more.',
-                    style: TextStyle(fontSize: 14, color: Colors.white70), textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-                        },
-                        child: const Text('Login'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white24),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));
-                        },
-                        child: const Text('Sign Up'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

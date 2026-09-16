@@ -4,6 +4,12 @@ import { User } from "./entities/User";
 import { Wallpaper } from "./entities/Wallpaper";
 import { Category } from "./entities/Category";
 import { Pack } from "./entities/Pack";
+import { CommunityPost } from "./entities/CommunityPost";
+import { Follow } from "./entities/Follow";
+import { CommunityLike } from "./entities/CommunityLike";
+import { CommunityComment } from "./entities/CommunityComment";
+import { CommunitySave } from "./entities/CommunitySave";
+import { PostReport } from "./entities/PostReport";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -20,7 +26,7 @@ export const AppDataSource = new DataSource({
     },
     synchronize: process.env.NODE_ENV !== "production", // Auto-sync in dev only
     logging: process.env.NODE_ENV !== "production",
-    entities: [User, Wallpaper, Category, Pack],
+    entities: [User, Wallpaper, Category, Pack, CommunityPost, Follow, CommunityLike, CommunityComment, CommunitySave, PostReport],
     subscribers: [],
     migrations: [],
 });

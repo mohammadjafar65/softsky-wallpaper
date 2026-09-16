@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _tosAccepted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +79,68 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 isPassword: true,
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
+
+              // ToS Checkbox
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: _tosAccepted,
+                    activeColor: AppTheme.primary,
+                    checkColor: Colors.black,
+                    side: const BorderSide(color: AppTheme.textMuted),
+                    onChanged: (v) => setState(() => _tosAccepted = v ?? false),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text.rich(
+                        TextSpan(
+                          text: 'I agree to the ',
+                          style: const TextStyle(
+                              color: AppTheme.textSecondary, fontSize: 13),
+                          children: [
+                            WidgetSpan(
+                              child: GestureDetector(
+                                onTap: () {},
+                                child: const Text(
+                                  'Terms of Service',
+                                  style: TextStyle(
+                                      color: AppTheme.primary,
+                                      fontSize: 13,
+                                      decoration: TextDecoration.underline),
+                                ),
+                              ),
+                            ),
+                            const TextSpan(text: ' and '),
+                            WidgetSpan(
+                              child: GestureDetector(
+                                onTap: () {},
+                                child: const Text(
+                                  'Privacy Policy',
+                                  style: TextStyle(
+                                      color: AppTheme.primary,
+                                      fontSize: 13,
+                                      decoration: TextDecoration.underline),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
 
               // Register Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
+                  onPressed: (_isLoading || !_tosAccepted) ? null : _register,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -92,6 +148,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(16)),
                     elevation: 4,
                     shadowColor: AppTheme.primary.withValues(alpha: 0.4),
+                    disabledBackgroundColor:
+                        AppTheme.primary.withValues(alpha: 0.4),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -177,18 +235,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    if (!_tosAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please accept the Terms of Service to continue.')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       await _authService.registerWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
+        displayName: _nameController.text.trim().isNotEmpty
+            ? _nameController.text.trim()
+            : null,
       );
-      // Can update profile name here if needed
-      if (mounted) Navigator.pop(context); // Go back or to home
+      if (mounted) Navigator.pop(context, true); // true = success
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration failed: ${e.toString()}')),
+          SnackBar(
+            content: Text('Registration failed: ${e.toString()}'),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
         );
       }
     } finally {

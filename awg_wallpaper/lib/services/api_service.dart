@@ -410,6 +410,190 @@ class SubscriptionStatus {
   }
 }
 
+// ==================== COMMUNITY API METHODS ====================
+
+extension CommunityApiExtension on ApiService {
+  static String get _communityBase => '${ApiService.baseUrl}/community';
+
+  /// Create a new community post
+  Future<Map<String, dynamic>> createCommunityPost({
+    required String imageUrl,
+    String? thumbnailUrl,
+    String? title,
+    String? description,
+    int? width,
+    int? height,
+  }) async {
+    final response = await _executeWithRetry(() => http.post(
+          Uri.parse('$_communityBase/posts'),
+          headers: headers,
+          body: jsonEncode({
+            'imageUrl': imageUrl,
+            if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+            if (title != null) 'title': title,
+            if (description != null) 'description': description,
+            if (width != null) 'width': width,
+            if (height != null) 'height': height,
+          }),
+        ));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 201) throw Exception(data['error'] ?? 'Failed to create post');
+    return data;
+  }
+
+  /// Get community feed (following + own)
+  Future<Map<String, dynamic>> getCommunityFeed({int page = 1, int limit = 20}) async {
+    final uri = Uri.parse('$_communityBase/feed').replace(
+        queryParameters: {'page': '$page', 'limit': '$limit'});
+    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load feed');
+    return data;
+  }
+
+  /// Get trending posts
+  Future<Map<String, dynamic>> getTrendingPosts({int page = 1, int limit = 20}) async {
+    final uri = Uri.parse('$_communityBase/trending').replace(
+        queryParameters: {'page': '$page', 'limit': '$limit'});
+    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load trending');
+    return data;
+  }
+
+  /// Toggle like on a post
+  Future<bool> toggleLike(int postId) async {
+    final response = await _executeWithRetry(() => http.post(
+          Uri.parse('$_communityBase/posts/$postId/like'),
+          headers: headers,
+        ));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to like post');
+    return data['liked'] as bool;
+  }
+
+  /// Toggle save on a post
+  Future<bool> toggleSave(int postId) async {
+    final response = await _executeWithRetry(() => http.post(
+          Uri.parse('$_communityBase/posts/$postId/save'),
+          headers: headers,
+        ));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to save post');
+    return data['saved'] as bool;
+  }
+
+  /// Add comment to a post
+  Future<Map<String, dynamic>> addComment(int postId, String content) async {
+    final response = await _executeWithRetry(() => http.post(
+          Uri.parse('$_communityBase/posts/$postId/comment'),
+          headers: headers,
+          body: jsonEncode({'content': content}),
+        ));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 201) throw Exception(data['error'] ?? 'Failed to add comment');
+    return data;
+  }
+
+  /// Get comments for a post
+  Future<Map<String, dynamic>> getComments(int postId, {int page = 1}) async {
+    final uri = Uri.parse('$_communityBase/posts/$postId/comments').replace(
+        queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load comments');
+    return data;
+  }
+
+  /// Follow a user
+  Future<void> followUser(int userId) async {
+    final response = await _executeWithRetry(() => http.post(
+          Uri.parse('$_communityBase/follow/$userId'),
+          headers: headers,
+        ));
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(data['error'] ?? 'Failed to follow user');
+    }
+  }
+
+  /// Unfollow a user
+  Future<void> unfollowUser(int userId) async {
+    final response = await _executeWithRetry(() => http.delete(
+          Uri.parse('$_communityBase/follow/$userId'),
+          headers: headers,
+        ));
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(data['error'] ?? 'Failed to unfollow user');
+    }
+  }
+
+  /// Get public user profile
+  Future<Map<String, dynamic>> getCommunityUser(int userId) async {
+    final response = await _executeWithRetry(
+        () => http.get(Uri.parse('$_communityBase/users/$userId'), headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'User not found');
+    return data;
+  }
+
+  /// Get user's community posts
+  Future<Map<String, dynamic>> getUserPosts(int userId, {int page = 1}) async {
+    final uri = Uri.parse('$_communityBase/users/$userId/posts').replace(
+        queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load posts');
+    return data;
+  }
+
+  /// Get current user's posts
+  Future<Map<String, dynamic>> getMyPosts({int page = 1}) async {
+    final uri = Uri.parse('$_communityBase/me/posts').replace(
+        queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load your posts');
+    return data;
+  }
+
+  /// Report a post
+  Future<void> reportPost(int postId, String reason) async {
+    final response = await _executeWithRetry(() => http.post(
+          Uri.parse('$_communityBase/posts/$postId/report'),
+          headers: headers,
+          body: jsonEncode({'reason': reason}),
+        ));
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(data['error'] ?? 'Failed to report post');
+    }
+  }
+
+  /// Delete own post
+  Future<void> deleteCommunityPost(int postId) async {
+    final response = await _executeWithRetry(() => http.delete(
+          Uri.parse('$_communityBase/posts/$postId'),
+          headers: headers,
+        ));
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      throw Exception(data['error'] ?? 'Failed to delete post');
+    }
+  }
+
+  /// Get saved community posts
+  Future<Map<String, dynamic>> getSavedPosts({int page = 1}) async {
+    final uri = Uri.parse('$_communityBase/saved').replace(
+        queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load saved posts');
+    return data;
+  }
+}
+
 class UserSyncResponse {
   final String token;
   final Map<String, dynamic> user;

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'home_screen.dart';
 import 'packs_screen.dart';
-import 'wide_wallpapers_screen.dart';
+import 'community/community_screen.dart';
 import 'bookmarks_screen.dart';
 import 'pro_wallpapers_screen.dart';
 import '../providers/wallpaper_provider.dart';
@@ -21,7 +21,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     PacksScreen(),
-    WideWallpapersScreen(),
+    CommunityScreen(),
     BookmarksScreen(),
     ProWallpapersScreen(),
   ];

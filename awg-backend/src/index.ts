@@ -19,6 +19,7 @@ import subscriptionRoutes from "./routes/subscriptions";
 import packRoutes from "./routes/packs";
 import notificationRoutes from "./routes/notifications";
 import settingRoutes from "./routes/settings";
+import communityRoutes from "./routes/community";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -155,6 +156,7 @@ app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/packs", packRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/settings", settingRoutes);
+app.use("/api/community", communityRoutes);
 
 // Health check endpoint
 app.get("/api/health", async (req, res) => {

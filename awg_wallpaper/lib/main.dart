@@ -14,6 +14,7 @@ import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/pack_provider.dart';
 import 'providers/auto_wallpaper_provider.dart';
+import 'providers/community_provider.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'services/auth_service.dart';
@@ -121,6 +122,7 @@ class AWGWallpaperApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => PackProvider()),
         ChangeNotifierProvider(create: (_) => AutoWallpaperProvider()),
+        ChangeNotifierProvider(create: (_) => CommunityProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

@@ -223,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       await _authService.signInWithEmail(email, password);
-      if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context, true); // true = success
     } on AuthException catch (e) {
       if (mounted) _showError(e.message);
     } catch (e) {
@@ -242,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) setState(() => _isLoading = false);
         return;
       }
-      if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context, true); // true = success
     } on AuthException catch (e) {
       if (mounted) _showError(e.message);
     } catch (e) {

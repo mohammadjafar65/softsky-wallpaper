@@ -22,7 +22,6 @@ class AuthService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    // Check if user is already logged in and sync with backend
     if (_auth.currentUser != null) {
       debugPrint(
           'AuthService: Restoring session for ${_auth.currentUser!.email}');
@@ -37,10 +36,15 @@ class AuthService {
     debugPrint('AuthService: Initialized (logged in: $isLoggedIn)');
   }
 
-  // Backend API token (for authenticated requests)
+  // Backend API token and user info
   String? _backendToken;
+  Map<String, dynamic>? _backendUser;
 
   String? get backendToken => _backendToken;
+  Map<String, dynamic>? get backendUser => _backendUser;
+  int? get backendUserId => _backendUser?['id'] is int
+      ? _backendUser!['id'] as int
+      : int.tryParse(_backendUser?['id']?.toString() ?? '');
 
   // Stream to notify when backend sync is complete
   final _syncCompleteController = StreamController<bool>.broadcast();
@@ -173,8 +177,9 @@ class AuthService {
         authProvider: provider,
       );
 
-      // Store backend token for authenticated API requests
+      // Store backend token and user info for authenticated API requests
       _backendToken = response.token;
+      _backendUser = response.user;
       _apiService.setAuthToken(response.token);
 
       debugPrint(
@@ -221,6 +226,7 @@ class AuthService {
     }
     await _auth.signOut();
     _backendToken = null;
+    _backendUser = null;
     _apiService.clearAuthToken();
   }
 
@@ -261,4 +267,3 @@ class AuthException implements Exception {
   @override
   String toString() => message;
 }
-

@@ -74,6 +74,22 @@ export class User {
     @Column({ name: "is_active", default: true })
     isActive!: boolean;
 
+    // Community fields
+    @Column({ length: 50, unique: true, nullable: true })
+    username?: string;
+
+    @Column({ type: "text", nullable: true })
+    bio?: string;
+
+    @Column({ name: "followers_count", default: 0 })
+    followersCount!: number;
+
+    @Column({ name: "following_count", default: 0 })
+    followingCount!: number;
+
+    @Column({ name: "posts_count", default: 0 })
+    postsCount!: number;
+
     @CreateDateColumn({ name: "created_at" })
     createdAt!: Date;
 

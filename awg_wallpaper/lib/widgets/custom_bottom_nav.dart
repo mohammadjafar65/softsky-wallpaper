@@ -158,7 +158,7 @@ class _CenterIcon extends StatelessWidget {
           // ],
         ),
         child: const Icon(
-          Icons.panorama_outlined,
+          Icons.people_alt_rounded,
           color: Colors.white,
           size: 25,
         ),
