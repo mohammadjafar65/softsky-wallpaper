@@ -26,7 +26,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
         waitForConnections: true,
         queueLimit: 0
     },
-    synchronize: process.env.NODE_ENV !== "production", // Auto-sync in dev only
+    synchronize: true, // Automatically create/update entity tables (community, etc.)
     logging: process.env.NODE_ENV !== "production",
     entities: [User_1.User, Wallpaper_1.Wallpaper, Category_1.Category, Pack_1.Pack, CommunityPost_1.CommunityPost, Follow_1.Follow, CommunityLike_1.CommunityLike, CommunityComment_1.CommunityComment, CommunitySave_1.CommunitySave, PostReport_1.PostReport],
     subscribers: [],

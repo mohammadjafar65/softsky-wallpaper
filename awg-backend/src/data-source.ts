@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
         waitForConnections: true,
         queueLimit: 0
     },
-    synchronize: process.env.NODE_ENV !== "production", // Auto-sync in dev only
+    synchronize: true, // Automatically create/update entity tables (community, etc.)
     logging: process.env.NODE_ENV !== "production",
     entities: [User, Wallpaper, Category, Pack, CommunityPost, Follow, CommunityLike, CommunityComment, CommunitySave, PostReport],
     subscribers: [],
