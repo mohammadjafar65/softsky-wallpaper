@@ -130,9 +130,12 @@ router.post("/posts", auth_1.authenticate, upload_1.upload.fields([
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/feed — paginated feed (following + own posts)
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/feed", auth_1.authenticate, async (req, res) => {
+router.get("/feed", auth_1.optionalAuth, async (req, res) => {
     try {
-        const userId = req.user?.id;
+        const userId = req.user?.id || null;
+        if (!userId) {
+            return res.json({ posts: [], page: 1, hasMore: false });
+        }
         const page = parseInt(req.query.page || "1");
         const limit = parseInt(req.query.limit || "20");
         const skip = (page - 1) * limit;
@@ -168,9 +171,9 @@ router.get("/feed", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/trending — top liked posts from last 7 days
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/trending", auth_1.authenticate, async (req, res) => {
+router.get("/trending", auth_1.optionalAuth, async (req, res) => {
     try {
-        const userId = req.user?.id;
+        const userId = req.user?.id || null;
         const page = parseInt(req.query.page || "1");
         const limit = parseInt(req.query.limit || "20");
         const skip = (page - 1) * limit;
@@ -197,7 +200,7 @@ router.get("/trending", auth_1.authenticate, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/posts/:id — single post
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/posts/:id", auth_1.authenticate, async (req, res) => {
+router.get("/posts/:id", auth_1.optionalAuth, async (req, res) => {
     try {
         const userId = req.user?.id;
         const postId = parseInt(req.params.id);

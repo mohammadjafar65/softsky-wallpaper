@@ -7,7 +7,7 @@ import { CommunitySave } from "../entities/CommunitySave";
 import { Follow } from "../entities/Follow";
 import { PostReport } from "../entities/PostReport";
 import { User } from "../entities/User";
-import { authenticate, requireAdmin, AuthRequest } from "../middleware/auth";
+import { authenticate, optionalAuth, requireAdmin, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -145,9 +145,12 @@ router.post(
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/feed — paginated feed (following + own posts)
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/feed", authenticate, async (req: Request, res: Response) => {
+router.get("/feed", optionalAuth, async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user?.id;
+        const userId = (req as any).user?.id || null;
+        if (!userId) {
+            return res.json({ posts: [], page: 1, hasMore: false });
+        }
         const page = parseInt((req.query.page as string) || "1");
         const limit = parseInt((req.query.limit as string) || "20");
         const skip = (page - 1) * limit;
@@ -186,9 +189,9 @@ router.get("/feed", authenticate, async (req: Request, res: Response) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/trending — top liked posts from last 7 days
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/trending", authenticate, async (req: Request, res: Response) => {
+router.get("/trending", optionalAuth, async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user?.id;
+        const userId = (req as any).user?.id || null;
         const page = parseInt((req.query.page as string) || "1");
         const limit = parseInt((req.query.limit as string) || "20");
         const skip = (page - 1) * limit;
@@ -218,7 +221,7 @@ router.get("/trending", authenticate, async (req: Request, res: Response) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/posts/:id — single post
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/posts/:id", authenticate, async (req: Request, res: Response) => {
+router.get("/posts/:id", optionalAuth, async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user?.id;
         const postId = parseInt(req.params.id);
