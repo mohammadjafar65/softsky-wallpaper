@@ -7,6 +7,12 @@ const User_1 = require("./entities/User");
 const Wallpaper_1 = require("./entities/Wallpaper");
 const Category_1 = require("./entities/Category");
 const Pack_1 = require("./entities/Pack");
+const CommunityPost_1 = require("./entities/CommunityPost");
+const Follow_1 = require("./entities/Follow");
+const CommunityLike_1 = require("./entities/CommunityLike");
+const CommunityComment_1 = require("./entities/CommunityComment");
+const CommunitySave_1 = require("./entities/CommunitySave");
+const PostReport_1 = require("./entities/PostReport");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "mysql",
     host: process.env.MYSQL_HOST || "localhost",
@@ -22,7 +28,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     },
     synchronize: process.env.NODE_ENV !== "production", // Auto-sync in dev only
     logging: process.env.NODE_ENV !== "production",
-    entities: [User_1.User, Wallpaper_1.Wallpaper, Category_1.Category, Pack_1.Pack],
+    entities: [User_1.User, Wallpaper_1.Wallpaper, Category_1.Category, Pack_1.Pack, CommunityPost_1.CommunityPost, Follow_1.Follow, CommunityLike_1.CommunityLike, CommunityComment_1.CommunityComment, CommunitySave_1.CommunitySave, PostReport_1.PostReport],
     subscribers: [],
     migrations: [],
 });

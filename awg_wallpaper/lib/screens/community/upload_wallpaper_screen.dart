@@ -115,7 +115,8 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
       _showError(e.message);
     } catch (e) {
       debugPrint('Wallpaper upload exception: $e');
-      _showError('Upload failed: $e');
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      _showError(msg);
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }

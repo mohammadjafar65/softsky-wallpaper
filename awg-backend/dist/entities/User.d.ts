@@ -13,6 +13,11 @@ export declare class User {
     downloads: number;
     fcmToken?: string;
     isActive: boolean;
+    username?: string;
+    bio?: string;
+    followersCount: number;
+    followingCount: number;
+    postsCount: number;
     createdAt: Date;
     updatedAt: Date;
     get subscription(): {

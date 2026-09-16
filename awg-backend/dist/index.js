@@ -13,6 +13,8 @@ const cors_1 = __importDefault(require("cors"));
 const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const data_source_1 = require("./data-source");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 // Import routes
 const auth_1 = __importDefault(require("./routes/auth"));
 const wallpapers_1 = __importDefault(require("./routes/wallpapers"));
@@ -22,8 +24,16 @@ const subscriptions_1 = __importDefault(require("./routes/subscriptions"));
 const packs_1 = __importDefault(require("./routes/packs"));
 const notifications_1 = __importDefault(require("./routes/notifications"));
 const settings_1 = __importDefault(require("./routes/settings"));
+const community_1 = __importDefault(require("./routes/community"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
+// Ensure local uploads directory exists
+const uploadsDir = path_1.default.join(process.cwd(), "uploads", "community");
+if (!fs_1.default.existsSync(uploadsDir)) {
+    fs_1.default.mkdirSync(uploadsDir, { recursive: true });
+}
+// Serve uploaded files statically
+app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 // Store database connection error for debugging
 let dbConnectionError = null;
 // ----------– CORS ------------------------------------------
@@ -136,6 +146,7 @@ app.use("/api/subscriptions", subscriptions_1.default);
 app.use("/api/packs", packs_1.default);
 app.use("/api/notifications", notifications_1.default);
 app.use("/api/settings", settings_1.default);
+app.use("/api/community", community_1.default);
 // Health check endpoint
 app.get("/api/health", async (req, res) => {
     const dbConnected = data_source_1.AppDataSource.isInitialized;

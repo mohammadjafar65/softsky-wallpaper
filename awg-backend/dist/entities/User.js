@@ -120,6 +120,26 @@ __decorate([
     __metadata("design:type", Boolean)
 ], User.prototype, "isActive", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ length: 50, unique: true, nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "username", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "bio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: "followers_count", default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "followersCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: "following_count", default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "followingCount", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: "posts_count", default: 0 }),
+    __metadata("design:type", Number)
+], User.prototype, "postsCount", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ name: "created_at" }),
     __metadata("design:type", Date)
 ], User.prototype, "createdAt", void 0);

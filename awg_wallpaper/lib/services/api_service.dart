@@ -445,10 +445,24 @@ extension CommunityApiExtension on ApiService {
 
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode == 404) {
+      throw Exception('Community server endpoint not found (404). Please ensure the backend server has the latest community update deployed.');
+    }
+
+    Map<String, dynamic> data = {};
+    try {
+      if (response.body.isNotEmpty) {
+        data = jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {
+      if (response.statusCode != 201 && response.statusCode != 200) {
+        throw Exception('Server error (${response.statusCode}): ${response.body.isNotEmpty ? response.body : "Empty response"}');
+      }
+    }
 
     if (response.statusCode != 201) {
-      throw Exception(data['error'] ?? 'Failed to upload post');
+      throw Exception(data['error'] ?? data['message'] ?? 'Failed to upload post (${response.statusCode})');
     }
     return data;
   }

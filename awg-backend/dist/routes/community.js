@@ -1,0 +1,634 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const data_source_1 = require("../data-source");
+const CommunityPost_1 = require("../entities/CommunityPost");
+const CommunityLike_1 = require("../entities/CommunityLike");
+const CommunityComment_1 = require("../entities/CommunityComment");
+const CommunitySave_1 = require("../entities/CommunitySave");
+const Follow_1 = require("../entities/Follow");
+const PostReport_1 = require("../entities/PostReport");
+const User_1 = require("../entities/User");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+// ─── Helper: serialize a post with viewer context ────────────────────────────
+async function serializePost(post, viewerId) {
+    const likeRepo = data_source_1.AppDataSource.getRepository(CommunityLike_1.CommunityLike);
+    const saveRepo = data_source_1.AppDataSource.getRepository(CommunitySave_1.CommunitySave);
+    const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+    const [isLiked, isSaved, isFollowing] = await Promise.all([
+        viewerId
+            ? likeRepo.findOne({ where: { userId: viewerId, postId: post.id } })
+            : null,
+        viewerId
+            ? saveRepo.findOne({ where: { userId: viewerId, postId: post.id } })
+            : null,
+        viewerId && post.author
+            ? followRepo.findOne({ where: { followerId: viewerId, followingId: post.userId } })
+            : null,
+    ]);
+    return {
+        id: post.id,
+        imageUrl: post.imageUrl,
+        thumbnailUrl: post.thumbnailUrl,
+        title: post.title,
+        description: post.description,
+        width: post.width,
+        height: post.height,
+        likesCount: post.likesCount,
+        commentsCount: post.commentsCount,
+        savesCount: post.savesCount,
+        isLiked: !!isLiked,
+        isSaved: !!isSaved,
+        createdAt: post.createdAt,
+        author: post.author
+            ? {
+                id: post.author.id,
+                displayName: post.author.displayName,
+                photoUrl: post.author.photoUrl,
+                username: post.author.username,
+                bio: post.author.bio,
+                followersCount: post.author.followersCount,
+                followingCount: post.author.followingCount,
+                postsCount: post.author.postsCount,
+                isFollowing: !!isFollowing,
+            }
+            : null,
+    };
+}
+const upload_1 = require("../middleware/upload");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts — create a new post (supports multipart file or json)
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts", auth_1.authenticate, upload_1.upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "thumbnail", maxCount: 1 },
+]), async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        let { imageUrl, thumbnailUrl, title, description, width, height } = req.body;
+        const files = req.files;
+        const imageFile = files?.image?.[0];
+        if (imageFile) {
+            // Try Cloudinary first if configured
+            if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+                try {
+                    const uploaded = await (0, upload_1.uploadToCloudinary)(imageFile.buffer, "community");
+                    imageUrl = uploaded.url;
+                    thumbnailUrl = uploaded.thumbnailUrl;
+                }
+                catch (cloudErr) {
+                    console.error("Cloudinary failed, falling back to local file storage:", cloudErr);
+                }
+            }
+            // If Cloudinary didn't provide an imageUrl (or failed), save locally on hosting server
+            if (!imageUrl) {
+                const ext = path_1.default.extname(imageFile.originalname) || ".jpg";
+                const filename = `community_${Date.now()}_${Math.random().toString(36).substring(2, 9)}${ext}`;
+                const targetPath = path_1.default.join(process.cwd(), "uploads", "community", filename);
+                fs_1.default.writeFileSync(targetPath, imageFile.buffer);
+                const protocol = req.protocol;
+                const host = req.get("host") || "softskyapi.softsky.studio";
+                imageUrl = `${protocol}://${host}/uploads/community/${filename}`;
+                thumbnailUrl = imageUrl;
+            }
+        }
+        if (!imageUrl) {
+            return res.status(400).json({ error: "Image file or imageUrl is required" });
+        }
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
+        const post = postRepo.create({
+            userId,
+            imageUrl,
+            thumbnailUrl: thumbnailUrl || imageUrl,
+            title,
+            description,
+            width: width ? parseInt(width) : undefined,
+            height: height ? parseInt(height) : undefined,
+        });
+        await postRepo.save(post);
+        // Increment user posts count
+        await userRepo.increment({ id: userId }, "postsCount", 1);
+        // Reload with author
+        const saved = await postRepo.findOne({
+            where: { id: post.id },
+            relations: ["author"],
+        });
+        return res.status(201).json({ post: await serializePost(saved, userId) });
+    }
+    catch (err) {
+        console.error("POST /community/posts error:", err);
+        return res.status(500).json({ error: err.message || "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/feed — paginated feed (following + own posts)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/feed", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "20");
+        const skip = (page - 1) * limit;
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+        // Get IDs of people the user follows
+        const follows = await followRepo.find({ where: { followerId: userId } });
+        const followingIds = follows.map((f) => f.followingId);
+        // Include own posts
+        const feedIds = [...followingIds, userId];
+        let posts;
+        if (feedIds.length === 0) {
+            posts = [];
+        }
+        else {
+            posts = await postRepo
+                .createQueryBuilder("post")
+                .leftJoinAndSelect("post.author", "author")
+                .where("post.userId IN (:...ids) AND post.isApproved = true", { ids: feedIds })
+                .orderBy("post.createdAt", "DESC")
+                .skip(skip)
+                .take(limit)
+                .getMany();
+        }
+        const serialized = await Promise.all(posts.map((p) => serializePost(p, userId)));
+        return res.json({ posts: serialized, page, hasMore: posts.length === limit });
+    }
+    catch (err) {
+        console.error("GET /community/feed error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/trending — top liked posts from last 7 days
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/trending", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "20");
+        const skip = (page - 1) * limit;
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const posts = await postRepo
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.author", "author")
+            .where("post.createdAt >= :since AND post.isApproved = true", { since: sevenDaysAgo })
+            .orderBy("post.likesCount", "DESC")
+            .addOrderBy("post.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        const serialized = await Promise.all(posts.map((p) => serializePost(p, userId)));
+        return res.json({ posts: serialized, page, hasMore: posts.length === limit });
+    }
+    catch (err) {
+        console.error("GET /community/trending error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/posts/:id — single post
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/posts/:id", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const postId = parseInt(req.params.id);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const post = await postRepo.findOne({
+            where: { id: postId, isApproved: true },
+            relations: ["author"],
+        });
+        if (!post)
+            return res.status(404).json({ error: "Post not found" });
+        return res.json({ post: await serializePost(post, userId) });
+    }
+    catch (err) {
+        console.error("GET /community/posts/:id error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE /api/community/posts/:id — delete own post
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete("/posts/:id", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const postId = parseInt(req.params.id);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post)
+            return res.status(404).json({ error: "Post not found" });
+        if (post.userId !== userId)
+            return res.status(403).json({ error: "Forbidden" });
+        await postRepo.delete(postId);
+        await userRepo.decrement({ id: userId }, "postsCount", 1);
+        return res.json({ success: true });
+    }
+    catch (err) {
+        console.error("DELETE /community/posts/:id error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts/:id/like — toggle like
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts/:id/like", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const postId = parseInt(req.params.id);
+        const likeRepo = data_source_1.AppDataSource.getRepository(CommunityLike_1.CommunityLike);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const existing = await likeRepo.findOne({ where: { userId, postId } });
+        if (existing) {
+            await likeRepo.delete({ userId, postId });
+            await postRepo.decrement({ id: postId }, "likesCount", 1);
+            return res.json({ liked: false });
+        }
+        else {
+            await likeRepo.save(likeRepo.create({ userId, postId }));
+            await postRepo.increment({ id: postId }, "likesCount", 1);
+            return res.json({ liked: true });
+        }
+    }
+    catch (err) {
+        console.error("POST /community/posts/:id/like error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts/:id/comment — add comment
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts/:id/comment", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const postId = parseInt(req.params.id);
+        const { content } = req.body;
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ error: "Comment content is required" });
+        }
+        if (content.length > 1000) {
+            return res.status(400).json({ error: "Comment too long (max 1000 chars)" });
+        }
+        const commentRepo = data_source_1.AppDataSource.getRepository(CommunityComment_1.CommunityComment);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
+        const comment = commentRepo.create({ userId, postId, content: content.trim() });
+        await commentRepo.save(comment);
+        await postRepo.increment({ id: postId }, "commentsCount", 1);
+        const author = await userRepo.findOne({ where: { id: userId } });
+        return res.status(201).json({
+            comment: {
+                id: comment.id,
+                content: comment.content,
+                createdAt: comment.createdAt,
+                author: {
+                    id: author.id,
+                    displayName: author.displayName,
+                    photoUrl: author.photoUrl,
+                    username: author.username,
+                },
+            },
+        });
+    }
+    catch (err) {
+        console.error("POST /community/posts/:id/comment error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/posts/:id/comments — paginated comments
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/posts/:id/comments", auth_1.authenticate, async (req, res) => {
+    try {
+        const postId = parseInt(req.params.id);
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "20");
+        const skip = (page - 1) * limit;
+        const commentRepo = data_source_1.AppDataSource.getRepository(CommunityComment_1.CommunityComment);
+        const comments = await commentRepo
+            .createQueryBuilder("comment")
+            .leftJoinAndSelect("comment.author", "author")
+            .where("comment.postId = :postId", { postId })
+            .orderBy("comment.createdAt", "ASC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        return res.json({
+            comments: comments.map((c) => ({
+                id: c.id,
+                content: c.content,
+                createdAt: c.createdAt,
+                author: {
+                    id: c.author.id,
+                    displayName: c.author.displayName,
+                    photoUrl: c.author.photoUrl,
+                    username: c.author.username,
+                },
+            })),
+            page,
+            hasMore: comments.length === limit,
+        });
+    }
+    catch (err) {
+        console.error("GET /community/posts/:id/comments error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts/:id/save — toggle save
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts/:id/save", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const postId = parseInt(req.params.id);
+        const saveRepo = data_source_1.AppDataSource.getRepository(CommunitySave_1.CommunitySave);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const existing = await saveRepo.findOne({ where: { userId, postId } });
+        if (existing) {
+            await saveRepo.delete({ userId, postId });
+            await postRepo.decrement({ id: postId }, "savesCount", 1);
+            return res.json({ saved: false });
+        }
+        else {
+            await saveRepo.save(saveRepo.create({ userId, postId }));
+            await postRepo.increment({ id: postId }, "savesCount", 1);
+            return res.json({ saved: true });
+        }
+    }
+    catch (err) {
+        console.error("POST /community/posts/:id/save error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/saved — current user's saved posts
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/saved", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "20");
+        const skip = (page - 1) * limit;
+        const saveRepo = data_source_1.AppDataSource.getRepository(CommunitySave_1.CommunitySave);
+        const saves = await saveRepo
+            .createQueryBuilder("save")
+            .leftJoinAndSelect("save.post", "post")
+            .leftJoinAndSelect("post.author", "author")
+            .where("save.userId = :userId AND post.isApproved = true", { userId })
+            .orderBy("save.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        const serialized = await Promise.all(saves.map((s) => serializePost(s.post, userId)));
+        return res.json({ posts: serialized, page, hasMore: saves.length === limit });
+    }
+    catch (err) {
+        console.error("GET /community/saved error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts/:id/report — report a post
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts/:id/report", auth_1.authenticate, async (req, res) => {
+    try {
+        const reporterId = req.user?.id;
+        const postId = parseInt(req.params.id);
+        const { reason } = req.body;
+        const validReasons = ["spam", "nudity", "copyright", "other"];
+        if (!validReasons.includes(reason)) {
+            return res.status(400).json({ error: "Invalid report reason" });
+        }
+        const reportRepo = data_source_1.AppDataSource.getRepository(PostReport_1.PostReport);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        // Check for duplicate report
+        const existing = await reportRepo.findOne({ where: { reporterId, postId } });
+        if (existing) {
+            return res.status(409).json({ error: "You have already reported this post" });
+        }
+        const report = reportRepo.create({ reporterId, postId, reason });
+        await reportRepo.save(report);
+        // Mark post as reported
+        await postRepo.update(postId, { isReported: true });
+        return res.json({ success: true });
+    }
+    catch (err) {
+        console.error("POST /community/posts/:id/report error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/follow/:userId — follow a user
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/follow/:userId", auth_1.authenticate, async (req, res) => {
+    try {
+        const followerId = req.user?.id;
+        const followingId = parseInt(req.params.userId);
+        if (followerId === followingId) {
+            return res.status(400).json({ error: "Cannot follow yourself" });
+        }
+        const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+        const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
+        const existing = await followRepo.findOne({ where: { followerId, followingId } });
+        if (existing) {
+            return res.status(409).json({ error: "Already following" });
+        }
+        await followRepo.save(followRepo.create({ followerId, followingId }));
+        await userRepo.increment({ id: followerId }, "followingCount", 1);
+        await userRepo.increment({ id: followingId }, "followersCount", 1);
+        return res.json({ following: true });
+    }
+    catch (err) {
+        console.error("POST /community/follow/:userId error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE /api/community/follow/:userId — unfollow a user
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete("/follow/:userId", auth_1.authenticate, async (req, res) => {
+    try {
+        const followerId = req.user?.id;
+        const followingId = parseInt(req.params.userId);
+        const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+        const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
+        const existing = await followRepo.findOne({ where: { followerId, followingId } });
+        if (!existing) {
+            return res.status(404).json({ error: "Not following" });
+        }
+        await followRepo.delete({ followerId, followingId });
+        await userRepo.decrement({ id: followerId }, "followingCount", 1);
+        await userRepo.decrement({ id: followingId }, "followersCount", 1);
+        return res.json({ following: false });
+    }
+    catch (err) {
+        console.error("DELETE /community/follow/:userId error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/users/:userId — public profile
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/users/:userId", auth_1.authenticate, async (req, res) => {
+    try {
+        const viewerId = req.user?.id;
+        const targetId = parseInt(req.params.userId);
+        const userRepo = data_source_1.AppDataSource.getRepository(User_1.User);
+        const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+        const user = await userRepo.findOne({ where: { id: targetId, isActive: true } });
+        if (!user)
+            return res.status(404).json({ error: "User not found" });
+        const isFollowing = viewerId
+            ? !!(await followRepo.findOne({ where: { followerId: viewerId, followingId: targetId } }))
+            : false;
+        return res.json({
+            user: {
+                id: user.id,
+                displayName: user.displayName,
+                photoUrl: user.photoUrl,
+                username: user.username,
+                bio: user.bio,
+                followersCount: user.followersCount,
+                followingCount: user.followingCount,
+                postsCount: user.postsCount,
+                isFollowing,
+            },
+        });
+    }
+    catch (err) {
+        console.error("GET /community/users/:userId error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/users/:userId/posts — user's posts
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/users/:userId/posts", auth_1.authenticate, async (req, res) => {
+    try {
+        const viewerId = req.user?.id;
+        const targetId = parseInt(req.params.userId);
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "20");
+        const skip = (page - 1) * limit;
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const posts = await postRepo
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.author", "author")
+            .where("post.userId = :userId AND post.isApproved = true", { userId: targetId })
+            .orderBy("post.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        const serialized = await Promise.all(posts.map((p) => serializePost(p, viewerId)));
+        return res.json({ posts: serialized, page, hasMore: posts.length === limit });
+    }
+    catch (err) {
+        console.error("GET /community/users/:userId/posts error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/users/:userId/followers
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/users/:userId/followers", auth_1.authenticate, async (req, res) => {
+    try {
+        const targetId = parseInt(req.params.userId);
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "30");
+        const skip = (page - 1) * limit;
+        const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+        const follows = await followRepo
+            .createQueryBuilder("follow")
+            .leftJoinAndSelect("follow.follower", "follower")
+            .where("follow.followingId = :id", { id: targetId })
+            .orderBy("follow.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        return res.json({
+            users: follows.map((f) => ({
+                id: f.follower.id,
+                displayName: f.follower.displayName,
+                photoUrl: f.follower.photoUrl,
+                username: f.follower.username,
+            })),
+            page,
+            hasMore: follows.length === limit,
+        });
+    }
+    catch (err) {
+        console.error("GET /community/users/:userId/followers error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/users/:userId/following
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/users/:userId/following", auth_1.authenticate, async (req, res) => {
+    try {
+        const targetId = parseInt(req.params.userId);
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "30");
+        const skip = (page - 1) * limit;
+        const followRepo = data_source_1.AppDataSource.getRepository(Follow_1.Follow);
+        const follows = await followRepo
+            .createQueryBuilder("follow")
+            .leftJoinAndSelect("follow.following", "following")
+            .where("follow.followerId = :id", { id: targetId })
+            .orderBy("follow.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        return res.json({
+            users: follows.map((f) => ({
+                id: f.following.id,
+                displayName: f.following.displayName,
+                photoUrl: f.following.photoUrl,
+                username: f.following.username,
+            })),
+            page,
+            hasMore: follows.length === limit,
+        });
+    }
+    catch (err) {
+        console.error("GET /community/users/:userId/following error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/community/me/posts — current user's own posts
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/me/posts", auth_1.authenticate, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const page = parseInt(req.query.page || "1");
+        const limit = parseInt(req.query.limit || "20");
+        const skip = (page - 1) * limit;
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const posts = await postRepo
+            .createQueryBuilder("post")
+            .leftJoinAndSelect("post.author", "author")
+            .where("post.userId = :userId", { userId })
+            .orderBy("post.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .getMany();
+        const serialized = await Promise.all(posts.map((p) => serializePost(p, userId)));
+        return res.json({ posts: serialized, page, hasMore: posts.length === limit });
+    }
+    catch (err) {
+        console.error("GET /community/me/posts error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+exports.default = router;
+//# sourceMappingURL=community.js.map
