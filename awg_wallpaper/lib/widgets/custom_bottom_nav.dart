@@ -19,24 +19,24 @@ class CustomBottomNav extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 24),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(44),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              height: 64,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF222226).withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(40),
+                color: const Color(0xFF222226).withValues(alpha: 0.74),
+                borderRadius: BorderRadius.circular(44),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.12),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -50,7 +50,7 @@ class CustomBottomNav extends StatelessWidget {
                     isSelected: currentIndex == 0,
                     onTap: () => onTap(0),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 14),
 
                   // 1: Home / Wallpapers
                   _NavButton(
@@ -59,7 +59,7 @@ class CustomBottomNav extends StatelessWidget {
                     isSelected: currentIndex == 1,
                     onTap: () => onTap(1),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 14),
 
                   // 2: Bookmarks
                   _NavButton(
@@ -68,7 +68,7 @@ class CustomBottomNav extends StatelessWidget {
                     isSelected: currentIndex == 2,
                     onTap: () => onTap(2),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 14),
 
                   // 3: Packs / Collections
                   _NavButton(
@@ -111,8 +111,8 @@ class _NavButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        width: 48,
-        height: 48,
+        width: 52,
+        height: 52,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: isSelected
@@ -128,7 +128,7 @@ class _NavButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF2558E6).withValues(alpha: 0.4),
+                    color: const Color(0xFF2558E6).withValues(alpha: 0.45),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -140,8 +140,8 @@ class _NavButton extends StatelessWidget {
             isSelected ? activeIcon : icon,
             color: isSelected
                 ? Colors.white
-                : Colors.white.withValues(alpha: 0.88),
-            size: 24,
+                : Colors.white.withValues(alpha: 0.85),
+            size: 25,
           ),
         ),
       ),

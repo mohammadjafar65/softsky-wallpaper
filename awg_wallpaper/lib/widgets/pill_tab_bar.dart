@@ -17,15 +17,15 @@ class PillTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(36),
+      borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
           decoration: BoxDecoration(
             color: const Color(0xFF222226).withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(36),
+            borderRadius: BorderRadius.circular(30),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.12),
               width: 1,
@@ -33,8 +33,8 @@ class PillTabBar extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -44,7 +44,7 @@ class PillTabBar extends StatelessWidget {
               final isSelected = selectedIndex == index;
               return Padding(
                 padding: EdgeInsets.only(
-                  right: index < tabs.length - 1 ? 8.0 : 0.0,
+                  right: index < tabs.length - 1 ? 5.0 : 0.0,
                 ),
                 child: GestureDetector(
                   onTap: () {
@@ -55,14 +55,14 @@ class PillTabBar extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    constraints: const BoxConstraints(minWidth: 92),
+                    constraints: const BoxConstraints(minWidth: 68),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 9,
+                      horizontal: 14,
+                      vertical: 6,
                     ),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(24),
                       gradient: isSelected
                           ? const LinearGradient(
                               begin: Alignment.topCenter,
@@ -78,8 +78,8 @@ class PillTabBar extends StatelessWidget {
                               BoxShadow(
                                 color: const Color(0xFF2558E6)
                                     .withValues(alpha: 0.4),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ]
                           : null,
@@ -91,9 +91,9 @@ class PillTabBar extends StatelessWidget {
                             ? Colors.white
                             : Colors.white.withValues(alpha: 0.75),
                         fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                        fontSize: 13,
-                        letterSpacing: 0.3,
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 12,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ),

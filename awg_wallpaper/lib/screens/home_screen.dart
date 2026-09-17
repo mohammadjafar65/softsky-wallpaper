@@ -242,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 100,
+            bottom: 104,
             child: Center(
               child: PillTabBar(
                 tabs: const ['Free', 'Pro'],
