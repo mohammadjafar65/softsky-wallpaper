@@ -240,6 +240,39 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
               ),
               const SizedBox(height: 12),
 
+              // App Logo Branding
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Image.asset(
+                    'assets/images/softsky_logo.png',
+                    width: 90,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
               // Header Row with Title and Close (X) button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
