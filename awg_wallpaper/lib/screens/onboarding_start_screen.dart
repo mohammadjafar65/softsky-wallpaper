@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -84,131 +85,215 @@ class _OnboardingStartScreenState extends State<OnboardingStartScreen>
             stops: [0.0, 1.0],
           ),
         ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnim,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Column(
-                children: [
-                  const Spacer(flex: 2),
-
-                  // App Logo with glowing shadow
-                  Transform.scale(
-                    scale: _scaleAnim.value,
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 28,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/app_logo.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // SoftSky Wordmark
-                  Image.asset(
-                    'assets/images/softsky_logo.png',
-                    width: size.width * 0.52,
-                    fit: BoxFit.contain,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'You\'re All Set!',
-                    style: GoogleFonts.poppins(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Text(
-                    'Explore thousands of 4K wallpapers, discover rising creators, and personalize your home screen.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.82),
-                      height: 1.5,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-
-                  const Spacer(flex: 2),
-
-                  // Features row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildChip(Icons.hd_rounded, 'Ultra HD 4K'),
-                      const SizedBox(width: 10),
-                      _buildChip(Icons.auto_awesome_rounded, 'Daily Updates'),
-                      const SizedBox(width: 10),
-                      _buildChip(Icons.people_alt_rounded, 'Collective'),
-                    ],
-                  ),
-
-                  const Spacer(flex: 2),
-
-                  // Swipe to get started slider
-                  SwipeToGetStarted(onCompleted: _onSwipeCompleted),
-
-                  const SizedBox(height: 32),
-                ],
+        child: Stack(
+          children: [
+            // Ambient background glow orbs for depth
+            Positioned(
+              top: -40,
+              left: -40,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF4C82FF).withValues(alpha: 0.20),
+                ),
               ),
             ),
-          ),
+            Positioned(
+              bottom: 80,
+              right: -50,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF0F1B85).withValues(alpha: 0.35),
+                ),
+              ),
+            ),
+
+            SafeArea(
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+
+                      // SoftSky Wordmark with subtle entrance scale
+                      Transform.scale(
+                        scale: _scaleAnim.value,
+                        child: Image.asset(
+                          'assets/images/softsky_logo.png',
+                          width: (size.width * 0.54).clamp(180.0, 230.0),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      // Title
+                      Text(
+                        'You\'re All Set!',
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Subtitle
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          'Explore thousands of 4K wallpapers, discover rising creators, and personalize your home screen.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: Colors.white.withValues(alpha: 0.82),
+                            height: 1.5,
+                            letterSpacing: 0.15,
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(flex: 2),
+
+                      // Modern Frosted Glass Feature Highlights Card
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.09),
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.16),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildFeatureRow(
+                                  icon: Icons.hd_rounded,
+                                  title: 'Ultra HD 4K Quality',
+                                  subtitle: 'Handcrafted for high-res AMOLED displays',
+                                ),
+                                Divider(
+                                  height: 22,
+                                  color: Colors.white.withValues(alpha: 0.10),
+                                  thickness: 0.8,
+                                ),
+                                _buildFeatureRow(
+                                  icon: Icons.auto_awesome_rounded,
+                                  title: 'Daily Fresh Drops',
+                                  subtitle: 'New trending collections updated every day',
+                                ),
+                                Divider(
+                                  height: 22,
+                                  color: Colors.white.withValues(alpha: 0.10),
+                                  thickness: 0.8,
+                                ),
+                                _buildFeatureRow(
+                                  icon: Icons.groups_rounded,
+                                  title: 'Creative Collective',
+                                  subtitle: 'Follow top artists & share your own creations',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const Spacer(flex: 3),
+
+                      // Centered "Swipe to get started" slider matching bottom bar width (256px)
+                      Center(
+                        child: SwipeToGetStarted(
+                          onCompleted: _onSwipeCompleted,
+                        ),
+                      ),
+
+                      const SizedBox(height: 38),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 14),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+  Widget _buildFeatureRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.14),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 0.8,
             ),
           ),
-        ],
-      ),
+          child: Center(
+            child: Icon(icon, color: Colors.white, size: 19),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
 /// Interactive "Swipe to get started" Pill Widget
+/// Sized at 256.0 x 58.0 to match the floating bottom navigation bar
 class SwipeToGetStarted extends StatefulWidget {
   final Future<void> Function() onCompleted;
 
@@ -229,8 +314,9 @@ class _SwipeToGetStartedState extends State<SwipeToGetStarted>
   late AnimationController _resetController;
   late Animation<double> _resetAnimation;
 
-  static const double _pillHeight = 60.0;
-  static const double _buttonSize = 48.0;
+  static const double _barWidth = 256.0;
+  static const double _pillHeight = 58.0;
+  static const double _buttonSize = 46.0;
   static const double _padding = 6.0;
 
   @override
@@ -258,8 +344,8 @@ class _SwipeToGetStartedState extends State<SwipeToGetStarted>
   void _onDragEnd(DragEndDetails details, double maxDrag) {
     if (_isCompleted) return;
 
-    // If dragged past 65% of the bar, trigger completion
-    if (_dragPosition >= maxDrag * 0.65) {
+    // If dragged past 55% of the bar, trigger completion
+    if (_dragPosition >= maxDrag * 0.55) {
       _completeSwipe(maxDrag);
     } else {
       _resetAnimation = Tween<double>(begin: _dragPosition, end: 0.0).animate(
@@ -289,45 +375,48 @@ class _SwipeToGetStartedState extends State<SwipeToGetStarted>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxDrag = constraints.maxWidth - _buttonSize - (_padding * 2);
-        final progress =
-            maxDrag > 0 ? (_dragPosition / maxDrag).clamp(0.0, 1.0) : 0.0;
+    const maxDrag = _barWidth - _buttonSize - (_padding * 2);
+    final progress = (_dragPosition / maxDrag).clamp(0.0, 1.0);
 
-        return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(_pillHeight / 2),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
           height: _pillHeight,
-          width: double.infinity,
+          width: _barWidth,
           decoration: BoxDecoration(
-            color: const Color(0xFF223A57).withValues(alpha: 0.85),
+            color: const Color(0xFF202024).withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(_pillHeight / 2),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
-              width: 1.0,
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 0.9,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
+                color: Colors.black.withValues(alpha: 0.28),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Stack(
-            alignment: Alignment.center,
+            alignment: Alignment.centerLeft,
             children: [
-              // Centered label text that fades out as user drags
-              Opacity(
-                opacity: (1.0 - progress * 1.5).clamp(0.0, 1.0),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 32),
-                  child: Text(
-                    'Swipe to get started',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFE2E8F0),
-                      letterSpacing: 0.2,
+              // Centered label text that fades out smoothly as user drags
+              Center(
+                child: Opacity(
+                  opacity: (1.0 - progress * 1.6).clamp(0.0, 1.0),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 36),
+                    child: Text(
+                      'Swipe to get started',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFE2E8F0),
+                        letterSpacing: 0.2,
+                      ),
                     ),
                   ),
                 ),
@@ -360,8 +449,8 @@ class _SwipeToGetStartedState extends State<SwipeToGetStarted>
                     child: const Center(
                       child: Icon(
                         Icons.arrow_forward_rounded,
-                        color: Color(0xFF274AB0),
-                        size: 24,
+                        color: Color(0xFF2B5CE6),
+                        size: 22,
                       ),
                     ),
                   ),
@@ -369,8 +458,8 @@ class _SwipeToGetStartedState extends State<SwipeToGetStarted>
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
