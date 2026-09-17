@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,7 +9,6 @@ import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/date_formatter.dart';
 import '../profile_screen.dart';
-import '../auth/login_screen.dart';
 import 'post_detail_screen.dart';
 import 'upload_wallpaper_screen.dart';
 import 'community_profile_screen.dart';
@@ -22,38 +20,21 @@ class CommunityScreen extends StatefulWidget {
   State<CommunityScreen> createState() => _CommunityScreenState();
 }
 
-class _CommunityScreenState extends State<CommunityScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final _feedScrollController = ScrollController();
-  final _trendingScrollController = ScrollController();
+class _CommunityScreenState extends State<CommunityScreen> {
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {});
-      }
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<CommunityProvider>();
-      provider.loadFeed(refresh: true);
       provider.loadTrending(refresh: true);
+      provider.loadFeed(refresh: true);
     });
 
-    _feedScrollController.addListener(() {
-      if (_feedScrollController.position.pixels >=
-          _feedScrollController.position.maxScrollExtent - 200) {
-        context.read<CommunityProvider>().loadFeed();
-      }
-    });
-
-    _trendingScrollController.addListener(() {
-      if (_trendingScrollController.position.pixels >=
-          _trendingScrollController.position.maxScrollExtent - 200) {
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
         context.read<CommunityProvider>().loadTrending();
       }
     });
@@ -61,9 +42,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _feedScrollController.dispose();
-    _trendingScrollController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -73,89 +52,18 @@ class _CommunityScreenState extends State<CommunityScreen>
 
     return Scaffold(
       backgroundColor: AppTheme.getBackground(isDark),
-      body: Stack(
-        children: [
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                // Top Bar with Date & Wallpaper Counter
-                _buildHeader(context),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Top Bar with Collective title, date, wallpaper count, upload & profile
+            _buildHeader(context),
 
-                // Tab content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _FeedGrid(scrollController: _feedScrollController),
-                      _TrendingGrid(
-                          scrollController: _trendingScrollController),
-                    ],
-                  ),
-                ),
-              ],
+            // Main Wallpapers Grid
+            Expanded(
+              child: _CollectiveGrid(scrollController: _scrollController),
             ),
-          ),
-
-          // Floating filter tab bar above bottom nav (exact same UI as HomeScreen)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 142,
-            child: Center(
-              child: _buildFilterTabBar(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterTabBar() {
-    final labels = ['Following', 'Trending'];
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(50),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          height: 46,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(50),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          padding: const EdgeInsets.all(4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(labels.length, (i) {
-              final isSelected = _tabController.index == i;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _tabController.animateTo(i);
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 86,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : Colors.transparent,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Text(
-                    labels[i],
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.black : Colors.white70,
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
+          ],
         ),
       ),
     );
@@ -163,99 +71,106 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Title + Subtitle
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'COLLECTIVE',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textWhite,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+              const Text(
+                'Collective',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
               ),
               const SizedBox(height: 4),
               Consumer<CommunityProvider>(
                 builder: (context, provider, _) {
                   final count = provider.totalPosts > 0
                       ? provider.totalPosts
-                      : (provider.feedPosts.length + provider.trendingPosts.length > 0
-                          ? (provider.feedPosts.length > provider.trendingPosts.length
-                              ? provider.feedPosts.length
-                              : provider.trendingPosts.length)
-                          : 0);
+                      : (provider.trendingPosts.isNotEmpty
+                          ? provider.trendingPosts.length
+                          : provider.feedPosts.length);
                   return Text(
                     count > 0
-                        ? '${DateFormatter.format()} • $count Collective Wallpapers'
+                        ? '${DateFormatter.format()} • $count Wallpapers'
                         : DateFormatter.format(),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textMuted,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   );
                 },
               ),
             ],
           ),
+
+          // Action Buttons: Upload + User Avatar
           Row(
             children: [
               // Upload Button
               GestureDetector(
                 onTap: () => _openUpload(context),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: const Icon(
-                        Icons.add_photo_alternate_outlined,
-                        color: Colors.white,
-                        size: 23,
-                      ),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C2C2E),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.file_upload_outlined,
+                      color: Colors.white,
+                      size: 22,
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              // Profile Button
+
+              // Profile Button (User photo)
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                  );
+                  final auth = AuthService();
+                  if (auth.isLoggedIn && auth.backendUserId != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CommunityProfileScreen(
+                            userId: auth.backendUserId!),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  }
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
-                        size: 23,
-                      ),
-                    ),
-                  ),
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: const Color(0xFF2C2C2E),
+                  backgroundImage: AuthService().currentUser?.photoURL != null
+                      ? CachedNetworkImageProvider(
+                          AuthService().currentUser!.photoURL!)
+                      : null,
+                  child: AuthService().currentUser?.photoURL == null
+                      ? const Icon(
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        )
+                      : null,
                 ),
               ),
             ],
@@ -268,59 +183,67 @@ class _CommunityScreenState extends State<CommunityScreen>
   void _openUpload(BuildContext context) async {
     if (!AuthService().isLoggedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to upload wallpapers')),
-      );
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        const SnackBar(content: Text('Please sign in to share wallpapers')),
       );
       return;
     }
-    final provider = context.read<CommunityProvider>();
-    final newPost = await Navigator.push(
+
+    final result = await Navigator.push<CommunityPost>(
       context,
       MaterialPageRoute(builder: (_) => const UploadWallpaperScreen()),
     );
-    if (newPost is CommunityPost) {
-      provider.addPostToFeed(newPost);
+
+    if (!mounted) return;
+    if (result != null) {
+      context.read<CommunityProvider>().loadTrending(refresh: true);
     }
   }
 }
 
-// ─── Feed Grid ───────────────────────────────────────────────────────────────
+// ─── Collective Grid ──────────────────────────────────────────────────────────
 
-class _FeedGrid extends StatelessWidget {
+class _CollectiveGrid extends StatelessWidget {
   final ScrollController scrollController;
-  const _FeedGrid({required this.scrollController});
+  const _CollectiveGrid({required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<CommunityProvider>(
       builder: (context, provider, _) {
-        if (provider.feedLoading && provider.feedPosts.isEmpty) {
+        final posts = provider.trendingPosts.isNotEmpty
+            ? provider.trendingPosts
+            : provider.feedPosts;
+
+        if (provider.trendingLoading && posts.isEmpty) {
           return _buildShimmer();
         }
 
-        if (provider.feedPosts.isEmpty) {
-          return _EmptyFeed(
-            message: 'Your feed is empty.\nFollow creators to see their wallpapers here.',
-            icon: Icons.people_outline_rounded,
+        if (posts.isEmpty) {
+          return const _EmptyFeed(
+            message: 'No collective wallpapers yet.\nBe the first to upload!',
+            icon: Icons.auto_awesome_rounded,
           );
         }
 
         return RefreshIndicator(
           color: AppTheme.primary,
-          onRefresh: () => provider.loadFeed(refresh: true),
+          onRefresh: () async {
+            await Future.wait([
+              provider.loadTrending(refresh: true),
+              provider.loadFeed(refresh: true),
+            ]);
+          },
           child: CustomScrollView(
             controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 210),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 140),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      if (i == provider.feedPosts.length) {
-                        return provider.feedLoading
+                      if (i == posts.length) {
+                        return provider.trendingLoading
                             ? const Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(16),
@@ -331,11 +254,12 @@ class _FeedGrid extends StatelessWidget {
                             : const SizedBox.shrink();
                       }
                       return _PostCard(
-                          post: provider.feedPosts[i],
-                          onTap: () => _openDetail(context, provider.feedPosts, i));
+                        post: posts[i],
+                        onTap: () => _openDetail(context, posts, i),
+                      );
                     },
-                    childCount: provider.feedPosts.length +
-                        (provider.feedHasMore ? 1 : 0),
+                    childCount: posts.length +
+                        (provider.trendingHasMore ? 1 : 0),
                   ),
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
@@ -364,7 +288,7 @@ class _FeedGrid extends StatelessWidget {
 
   Widget _buildShimmer() {
     return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 210),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 140),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -375,80 +299,14 @@ class _FeedGrid extends StatelessWidget {
       itemBuilder: (_, __) => Container(
         decoration: BoxDecoration(
           color: Colors.grey.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(22),
         ),
       ),
     );
   }
 }
 
-// ─── Trending Grid ────────────────────────────────────────────────────────────
-
-class _TrendingGrid extends StatelessWidget {
-  final ScrollController scrollController;
-  const _TrendingGrid({required this.scrollController});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CommunityProvider>(
-      builder: (context, provider, _) {
-        if (provider.trendingLoading && provider.trendingPosts.isEmpty) {
-          return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary));
-        }
-
-        if (provider.trendingPosts.isEmpty) {
-          return _EmptyFeed(
-            message: 'No trending wallpapers yet.\nBe the first to upload!',
-            icon: Icons.trending_up_rounded,
-          );
-        }
-
-        return RefreshIndicator(
-          color: AppTheme.primary,
-          onRefresh: () => provider.loadTrending(refresh: true),
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 210),
-                sliver: SliverGrid(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) {
-                      return _PostCard(
-                          post: provider.trendingPosts[i],
-                          onTap: () =>
-                              _openDetail(context, provider.trendingPosts, i));
-                    },
-                    childCount: provider.trendingPosts.length,
-                  ),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.65,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _openDetail(BuildContext context, List<CommunityPost> posts, int initialIndex) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PostDetailScreen(posts: posts, initialIndex: initialIndex),
-      ),
-    );
-  }
-}
-
-// ─── Post Card (Same UI & Size as HomeScreen WallpaperCard) ─────────────────
+// ─── Post Card ───────────────────────────────────────────────────────────────
 
 class _PostCard extends StatefulWidget {
   final CommunityPost post;
@@ -521,10 +379,10 @@ class _PostCardState extends State<_PostCard>
             tag: 'community_wallpaper_${post.id}',
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -534,7 +392,7 @@ class _PostCardState extends State<_PostCard>
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Image with cached image manager
+                  // Image
                   CachedNetworkImage(
                     imageUrl: post.thumbnailUrl ?? post.imageUrl,
                     cacheManager: CachedImageConfig.cacheManager,
@@ -560,7 +418,39 @@ class _PostCardState extends State<_PostCard>
                     ),
                   ),
 
-                  // Subtle gradient at bottom for text visibility
+                  // Top right: Like button (dark translucent circle with heart)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.read<CommunityProvider>().toggleLike(post.id);
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withValues(alpha: 0.35),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            post.isLiked
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            color: post.isLiked
+                                ? Colors.red
+                                : Colors.white.withValues(alpha: 0.9),
+                            size: 17,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Bottom subtle gradient for text readability
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -572,7 +462,7 @@ class _PostCardState extends State<_PostCard>
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.7),
+                            Colors.black.withValues(alpha: 0.65),
                             Colors.transparent,
                           ],
                         ),
@@ -580,14 +470,14 @@ class _PostCardState extends State<_PostCard>
                     ),
                   ),
 
-                  // User photo, profile name and downloads counter
+                  // Bottom row: Creator info on left, Downloads count on right
                   Positioned(
-                    bottom: 10,
-                    left: 10,
-                    right: 10,
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
                     child: Row(
                       children: [
-                        // User Avatar
+                        // Creator Avatar
                         GestureDetector(
                           onTap: () {
                             if (post.author != null) {
@@ -601,7 +491,7 @@ class _PostCardState extends State<_PostCard>
                             }
                           },
                           child: CircleAvatar(
-                            radius: 12,
+                            radius: 11,
                             backgroundColor: AppTheme.primary,
                             backgroundImage: post.author?.photoUrl != null
                                 ? CachedNetworkImageProvider(
@@ -623,7 +513,7 @@ class _PostCardState extends State<_PostCard>
                         ),
                         const SizedBox(width: 8),
 
-                        // Profile Name
+                        // Creator Name
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
@@ -640,9 +530,9 @@ class _PostCardState extends State<_PostCard>
                             child: Text(
                               post.author?.displayName ?? 'User',
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: Colors.white,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -657,15 +547,17 @@ class _PostCardState extends State<_PostCard>
                             const Icon(
                               Icons.download_rounded,
                               size: 14,
-                              color: Colors.white70,
+                              color: Colors.white,
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              '${post.downloadsCount}',
+                              post.downloadsCount >= 1000
+                                  ? '${(post.downloadsCount / 1000).toStringAsFixed(post.downloadsCount >= 10000 ? 0 : 1)}K'
+                                  : '${post.downloadsCount}',
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],

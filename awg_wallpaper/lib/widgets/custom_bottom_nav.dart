@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../config/theme.dart';
+import 'package:flutter/services.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -14,55 +14,74 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(26, 0, 26, 60),
-      height: 70,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _NavIcon(
-                  icon: Icons.collections_outlined,
-                  activeIcon: Icons.collections_rounded,
-                  isSelected: currentIndex == 0,
-                  color: AppTheme.textSecondary,
-                  onTap: () => onTap(0),
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(36),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                height: 64,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF222226).withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(36),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                _NavIcon(
-                  icon: Icons.workspace_premium_outlined,
-                  activeIcon: Icons.workspace_premium_outlined,
-                  isSelected: currentIndex == 4,
-                  color: AppTheme.textSecondary,
-                  onTap: () => onTap(4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 0: Collective (Default)
+                    _NavButton(
+                      icon: Icons.groups_outlined,
+                      activeIcon: Icons.groups_rounded,
+                      isSelected: currentIndex == 0,
+                      onTap: () => onTap(0),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // 1: Home / Wallpapers
+                    _NavButton(
+                      icon: Icons.photo_library_outlined,
+                      activeIcon: Icons.photo_library_rounded,
+                      isSelected: currentIndex == 1,
+                      onTap: () => onTap(1),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // 2: Bookmarks
+                    _NavButton(
+                      icon: Icons.bookmark_outline_rounded,
+                      activeIcon: Icons.bookmark_rounded,
+                      isSelected: currentIndex == 2,
+                      onTap: () => onTap(2),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // 3: Packs / Collections
+                    _NavButton(
+                      icon: Icons.folder_outlined,
+                      activeIcon: Icons.folder_rounded,
+                      isSelected: currentIndex == 3,
+                      onTap: () => onTap(3),
+                    ),
+                  ],
                 ),
-                _CenterIcon(
-                  isSelected: currentIndex == 2,
-                  onTap: () => onTap(2),
-                ),
-                _NavIcon(
-                  icon: Icons.bookmark_border_rounded,
-                  activeIcon: Icons.bookmark_rounded,
-                  isSelected: currentIndex == 3,
-                  color: AppTheme.textSecondary,
-                  onTap: () => onTap(3),
-                ),
-                _NavIcon(
-                  icon: Icons.folder_outlined,
-                  activeIcon: Icons.folder_rounded,
-                  isSelected: currentIndex == 1,
-                  color: AppTheme.textSecondary,
-                  onTap: () => onTap(1),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -71,96 +90,62 @@ class CustomBottomNav extends StatelessWidget {
   }
 }
 
-class _NavIcon extends StatelessWidget {
+class _NavButton extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
   final bool isSelected;
   final VoidCallback onTap;
-  final Color? color;
 
-  const _NavIcon({
+  const _NavButton({
     required this.icon,
     required this.activeIcon,
     required this.isSelected,
     required this.onTap,
-    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 60,
-        height: 60,
-        child: Center(
-          child: AnimatedScale(
-            scale: isSelected ? 1.1 : 1.0,
-            duration: const Duration(milliseconds: 200),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.primary.withValues(alpha: 0.1)
-                    : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                color: isSelected
-                    ? AppTheme.primary
-                    : (color ?? AppTheme.textSecondary),
-                size: 27,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CenterIcon extends StatelessWidget {
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _CenterIcon({
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 55,
-        height: 55,
+        curve: Curves.easeOutCubic,
+        width: 50,
+        height: 50,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppTheme.primary,
-              AppTheme.primary,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           shape: BoxShape.circle,
-          // boxShadow: [
-          //   BoxShadow(
-          //     color: AppTheme.primary.withValues(alpha: 0.4),
-          //     blurRadius: 10,
-          //     offset: const Offset(0, 0),
-          //   ),
-          // ],
+          gradient: isSelected
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF2B5CE6),
+                    Color(0xFF1E45C8),
+                  ],
+                )
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF2558E6).withValues(alpha: 0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
-        child: const Icon(
-          Icons.people_alt_rounded,
-          color: Colors.white,
-          size: 25,
+        child: Center(
+          child: Icon(
+            isSelected ? activeIcon : icon,
+            color: isSelected
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.88),
+            size: 24,
+          ),
         ),
       ),
     );

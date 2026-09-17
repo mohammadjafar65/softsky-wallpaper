@@ -76,10 +76,10 @@ class _CommunityPostCardState extends State<CommunityPostCard>
           },
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -115,6 +115,31 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                   ),
                 ),
 
+                // Top right: Like button (dark translucent circle with heart)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.35),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        post.isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: post.isLiked
+                            ? Colors.red
+                            : Colors.white.withValues(alpha: 0.9),
+                        size: 17,
+                      ),
+                    ),
+                  ),
+                ),
+
                 // Subtle gradient at bottom for text visibility
                 Positioned(
                   bottom: 0,
@@ -127,7 +152,7 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withValues(alpha: 0.7),
+                          Colors.black.withValues(alpha: 0.65),
                           Colors.transparent,
                         ],
                       ),
@@ -137,9 +162,9 @@ class _CommunityPostCardState extends State<CommunityPostCard>
 
                 // User photo, profile name and downloads counter
                 Positioned(
-                  bottom: 10,
-                  left: 10,
-                  right: 10,
+                  bottom: 12,
+                  left: 12,
+                  right: 12,
                   child: Row(
                     children: [
                       // User Avatar
@@ -156,7 +181,7 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                           }
                         },
                         child: CircleAvatar(
-                          radius: 12,
+                          radius: 11,
                           backgroundColor: AppTheme.primary,
                           backgroundImage: post.author?.photoUrl != null
                               ? CachedNetworkImageProvider(
@@ -185,53 +210,56 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                             if (post.author != null) {
                               Navigator.push(
                                 context,
-                              MaterialPageRoute(
-                                builder: (_) => CommunityProfileScreen(
-                                    userId: post.author!.id),
-                              ),
-                            );
-                          }
-                        },
-                        child: Text(
-                          post.author?.displayName ?? 'User',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                                MaterialPageRoute(
+                                  builder: (_) => CommunityProfileScreen(
+                                      userId: post.author!.id),
+                                ),
+                              );
+                            }
+                          },
+                          child: Text(
+                            post.author?.displayName ?? 'User',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
+                      const SizedBox(width: 6),
 
-                    // Downloads Counter
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.download_rounded,
-                          size: 14,
-                          color: Colors.white70,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          '${post.downloadsCount}',
-                          style: const TextStyle(
-                            fontSize: 11,
+                      // Downloads Counter
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.download_rounded,
+                            size: 14,
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 3),
+                          Text(
+                            post.downloadsCount >= 1000
+                                ? '${(post.downloadsCount / 1000).toStringAsFixed(post.downloadsCount >= 10000 ? 0 : 1)}K'
+                                : '${post.downloadsCount}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 }

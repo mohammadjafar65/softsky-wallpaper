@@ -16,23 +16,41 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 0; // 0: Collective by default
 
   final List<Widget> _screens = const [
-    HomeScreen(),
-    PacksScreen(),
-    CommunityScreen(),
-    BookmarksScreen(),
-    ProWallpapersScreen(),
+    CommunityScreen(), // 0: Collective (Default)
+    HomeScreen(),      // 1: Home
+    BookmarksScreen(), // 2: Bookmarks
+    PacksScreen(),     // 3: Packs
+    ProWallpapersScreen(), // 4: Pro Wallpapers
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _currentIndex,
+            children: _screens,
+          ),
+          // Bottom bar gradient
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 180,
+            child: IgnorePointer(
+              child: Image.asset(
+                'assets/images/newgradient_bottom.png',
+                fit: BoxFit.fill,
+                width: double.infinity,
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
