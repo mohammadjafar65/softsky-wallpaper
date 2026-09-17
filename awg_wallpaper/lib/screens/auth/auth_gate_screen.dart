@@ -73,6 +73,38 @@ class _AuthGateScreenState extends State<AuthGateScreen>
     }
   }
 
+  void _onCloseOrSkip() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+      return;
+    }
+    final settingsBox = Hive.box('settings');
+    final hasStarted =
+        settingsBox.get('has_started_app', defaultValue: false) as bool;
+
+    if (!hasStarted) {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const OnboardingStartScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    }
+  }
+
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
@@ -196,6 +228,36 @@ class _AuthGateScreenState extends State<AuthGateScreen>
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                    ),
+                    // Close (X) button on top right
+                    SafeArea(
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10, right: 16),
+                          child: GestureDetector(
+                            onTap: _onCloseOrSkip,
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -408,6 +470,21 @@ class _AuthGateScreenState extends State<AuthGateScreen>
                           side: BorderSide(
                             color: Colors.white.withValues(alpha: 0.15),
                           ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Explore as Guest / Skip
+                    TextButton(
+                      onPressed: _onCloseOrSkip,
+                      child: Text(
+                        'Explore as Guest',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.65),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),

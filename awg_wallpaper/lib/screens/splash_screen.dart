@@ -162,38 +162,14 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // App Icon
-                        Container(
-                          width: 88,
-                          height: 88,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.35),
-                                blurRadius: 24,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/app_logo.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 18),
-
                         // SoftSky Wordmark
                         Image.asset(
                           'assets/images/softsky_logo.png',
-                          width: size.width * 0.52,
+                          width: size.width * 0.58,
                           fit: BoxFit.contain,
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
 
                         Text(
                           'Curated Collection & Collective',

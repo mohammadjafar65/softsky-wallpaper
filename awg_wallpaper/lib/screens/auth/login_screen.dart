@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme.dart';
 import '../../services/auth_service.dart';
+import '../main_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,6 +25,17 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onClose() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    }
   }
 
   @override
@@ -76,32 +88,64 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Back Button (Safe Area)
+                  // Top Navigation Buttons (Back & Close)
                   SafeArea(
                     child: Align(
-                      alignment: Alignment.topLeft,
+                      alignment: Alignment.topCenter,
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 8),
-                        child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.15),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Back Button
+                            GestureDetector(
+                              onTap: _onClose,
+                              child: Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.15),
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.arrow_back_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
                               ),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.arrow_back_rounded,
-                                color: Colors.white,
-                                size: 20,
+
+                            // Close Button
+                            GestureDetector(
+                              onTap: _onClose,
+                              child: Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.15),
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
