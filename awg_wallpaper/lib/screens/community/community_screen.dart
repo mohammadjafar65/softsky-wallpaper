@@ -14,6 +14,7 @@ import 'post_detail_screen.dart';
 import 'upload_wallpaper_screen.dart';
 import 'community_profile_screen.dart';
 import '../../widgets/top_bar_profile_avatar.dart';
+import '../../widgets/auth_modal_sheet.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -216,12 +217,14 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _openUpload(BuildContext context) async {
     if (!AuthService().isLoggedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to share wallpapers')),
+      final loggedIn = await showAuthModal(
+        context,
+        message: 'Sign in to share your wallpapers with the collective',
       );
-      return;
+      if (loggedIn != true || !AuthService().isLoggedIn) return;
     }
 
+    if (!mounted) return;
     final result = await Navigator.push<CommunityPost>(
       context,
       MaterialPageRoute(builder: (_) => const UploadWallpaperScreen()),
@@ -567,7 +570,15 @@ class _PostCardState extends State<_PostCard>
                     top: 10,
                     right: 10,
                     child: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        if (!AuthService().isLoggedIn) {
+                          final loggedIn = await showAuthModal(
+                            context,
+                            message: 'Sign in to like and bookmark wallpapers',
+                          );
+                          if (loggedIn != true || !AuthService().isLoggedIn) return;
+                        }
+                        if (!mounted) return;
                         HapticFeedback.lightImpact();
                         final bookmarkProvider = context.read<BookmarkProvider>();
                         final willLike = !post.isLiked;

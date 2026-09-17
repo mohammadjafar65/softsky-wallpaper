@@ -181,42 +181,19 @@ class _AuthGateScreenState extends State<AuthGateScreen>
                       ),
                     ),
 
-                    // App Logo & Wordmark in the center
+                    // Wordmark in the center
                     SafeArea(
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // App Icon with glow shadow
-                            Container(
-                              width: 84,
-                              height: 84,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.35),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: ClipOval(
-                                child: Image.asset(
-                                  'assets/images/app_logo.png',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-
                             // SoftSky Wordmark
                             Image.asset(
                               'assets/images/softsky_logo.png',
-                              width: size.width * 0.46,
+                              width: size.width * 0.56,
                               fit: BoxFit.contain,
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 10),
 
                             Text(
                               'Curated Wallpapers & Collective',

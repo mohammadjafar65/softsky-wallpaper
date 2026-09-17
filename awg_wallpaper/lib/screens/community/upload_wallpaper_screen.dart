@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme.dart';
 import '../../models/community_post.dart';
 import '../../services/api_service.dart';
@@ -21,10 +23,12 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
   final _descController = TextEditingController();
 
   File? _selectedFile;
+  int? _imageWidth;
+  int? _imageHeight;
+  int? _fileSizeBytes;
   String? _validationError;
   bool _isValidating = false;
   bool _isUploading = false;
-  double _uploadProgress = 0;
 
   @override
   void dispose() {
@@ -34,6 +38,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
   }
 
   Future<void> _pickImage() async {
+    HapticFeedback.lightImpact();
     final picked = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 100,
@@ -41,46 +46,71 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
     if (picked == null) return;
 
     final file = File(picked.path);
+    final size = await file.length();
     setState(() {
       _selectedFile = file;
+      _fileSizeBytes = size;
       _validationError = null;
       _isValidating = true;
     });
 
     try {
-      await _uploadService.validateImage(file);
-      setState(() {
-        _isValidating = false;
-        _validationError = null;
-      });
+      final decoded = await _uploadService.validateImage(file);
+      if (mounted) {
+        setState(() {
+          _isValidating = false;
+          _validationError = null;
+          _imageWidth = decoded.width;
+          _imageHeight = decoded.height;
+        });
+      }
     } on UploadValidationException catch (e) {
-      setState(() {
-        _isValidating = false;
-        _validationError = e.message;
-        _selectedFile = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isValidating = false;
+          _validationError = e.message;
+          _selectedFile = null;
+          _imageWidth = null;
+          _imageHeight = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isValidating = false;
-        _validationError = 'Could not process this image. Try another.';
-        _selectedFile = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isValidating = false;
+          _validationError = 'Could not process this image. Try another.';
+          _selectedFile = null;
+          _imageWidth = null;
+          _imageHeight = null;
+        });
+      }
     }
+  }
+
+  void _clearSelection() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _selectedFile = null;
+      _imageWidth = null;
+      _imageHeight = null;
+      _fileSizeBytes = null;
+      _validationError = null;
+    });
   }
 
   Future<void> _upload() async {
     if (_selectedFile == null) {
-      _showError('Please select an image first.');
+      _showError('Please select a wallpaper image first.');
       return;
     }
 
+    HapticFeedback.mediumImpact();
     setState(() {
       _isUploading = true;
-      _uploadProgress = 0;
     });
 
     try {
-      // Re-validate and get decoded image
+      // Re-validate and get decoded dimensions
       final decoded = await _uploadService.validateImage(_selectedFile!);
 
       // Upload directly to custom hosting server
@@ -100,13 +130,28 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
           CommunityPost.fromJson(data['post'] as Map<String, dynamic>);
 
       if (mounted) {
+        HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Wallpaper uploaded successfully! 🎉'),
-            backgroundColor: Colors.green.shade700,
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.black, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Wallpaper shared with Collective!',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppTheme.primary,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
           ),
         );
         Navigator.pop(context, post);
@@ -123,12 +168,28 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
   }
 
   void _showError(String msg) {
+    HapticFeedback.vibrate();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
-        backgroundColor: Colors.red.shade700,
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline_rounded,
+                color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red.shade800,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       ),
     );
   }
@@ -139,256 +200,754 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackground(isDark),
-      appBar: AppBar(
-        backgroundColor: AppTheme.getBackground(isDark),
-        title: const Text('Upload Wallpaper'),
-        actions: [
-          if (_selectedFile != null && !_isUploading)
-            TextButton(
-              onPressed: _upload,
-              child: const Text(
-                'Share',
-                style: TextStyle(
-                    color: AppTheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16),
-              ),
-            ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        bottom: false,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image picker area
-            GestureDetector(
-              onTap: _isUploading ? null : _pickImage,
-              child: Container(
-                width: double.infinity,
-                height: 280,
-                decoration: BoxDecoration(
-                  color: AppTheme.getSurface(isDark),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: _validationError != null
-                        ? AppTheme.error
-                        : _selectedFile != null
-                            ? AppTheme.primary
-                            : Colors.grey.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: _buildImageArea(),
-              ),
-            ),
+            // ─── Header ───────────────────────────────────────────────────
+            _buildHeader(isDark),
 
-            // Validation error
-            if (_validationError != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.error_outline,
-                      size: 16, color: AppTheme.error),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      _validationError!,
-                      style: const TextStyle(
-                          color: AppTheme.error, fontSize: 13),
+            // ─── Scrollable Content ───────────────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image Picker & Preview Card
+                    _buildImagePickerCard(isDark),
+
+                    // Validation Error Banner
+                    if (_validationError != null) ...[
+                      const SizedBox(height: 12),
+                      _buildValidationErrorBanner(),
+                    ],
+
+                    const SizedBox(height: 24),
+
+                    // Wallpaper Title Input
+                    _buildSectionHeader(
+                      icon: Icons.title_rounded,
+                      title: 'Title',
+                      badge: 'Optional',
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(height: 8),
+                    _buildTextField(
+                      controller: _titleController,
+                      hint: 'Give your wallpaper an inspiring name...',
+                      icon: Icons.edit_rounded,
+                    ),
 
-            // Requirement hint
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.info_outline,
-                    size: 14, color: Colors.grey.withValues(alpha: 0.6)),
-                const SizedBox(width: 6),
-                Text(
-                  'Minimum resolution: 1080 × 1920 px • Max 20 MB',
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.withValues(alpha: 0.6)),
+                    const SizedBox(height: 20),
+
+                    // Description / Story Input
+                    _buildSectionHeader(
+                      icon: Icons.notes_rounded,
+                      title: 'Description',
+                      badge: 'Optional',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildTextField(
+                      controller: _descController,
+                      hint: 'Share details, inspiration, or how this art was created...',
+                      icon: Icons.short_text_rounded,
+                      maxLines: 3,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Guidelines / Quality Note
+                    _buildGuidelinesCard(isDark),
+
+                    const SizedBox(height: 28),
+
+                    // Primary Action Button
+                    _buildUploadButton(),
+                  ],
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Upload progress
-            if (_isUploading) ...[
-              Text(
-                'Uploading... ${(_uploadProgress * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: _uploadProgress,
-                backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                valueColor:
-                    const AlwaysStoppedAnimation(AppTheme.primary),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // Title field
-            _buildLabel('Title (optional)'),
-            const SizedBox(height: 8),
-            _buildTextField(
-              controller: _titleController,
-              hint: 'Give your wallpaper a title...',
-            ),
-
-            const SizedBox(height: 20),
-
-            // Description field
-            _buildLabel('Description (optional)'),
-            const SizedBox(height: 8),
-            _buildTextField(
-              controller: _descController,
-              hint: 'Share the story behind this wallpaper...',
-              maxLines: 4,
-            ),
-
-            const SizedBox(height: 32),
-
-            // Upload button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: (_isUploading || _selectedFile == null || _isValidating)
-                    ? null
-                    : _upload,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  disabledBackgroundColor:
-                      AppTheme.primary.withValues(alpha: 0.4),
-                ),
-                child: _isUploading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.black),
-                      )
-                    : const Text(
-                        'Share with Collective',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
               ),
             ),
-
-            const SizedBox(height: 100),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImageArea() {
+  // ─── Header ───────────────────────────────────────────────────────────────
+
+  Widget _buildHeader(bool isDark) {
+    final canShare = _selectedFile != null && !_isUploading && !_isValidating;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Back Button
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C2C2E),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+
+          // Title
+          Column(
+            children: [
+              Text(
+                'SHARE WALLPAPER',
+                style: GoogleFonts.poppins(
+                  color: AppTheme.textWhite,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'SoftSky Collective Studio',
+                style: TextStyle(
+                  color: AppTheme.textMuted.withValues(alpha: 0.8),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+
+          // Action Button on Top Right
+          if (canShare)
+            GestureDetector(
+              onTap: _upload,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Post',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            )
+          else
+            const SizedBox(width: 44),
+        ],
+      ),
+    );
+  }
+
+  // ─── Image Picker / Preview Card ──────────────────────────────────────────
+
+  Widget _buildImagePickerCard(bool isDark) {
     if (_isValidating) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(color: AppTheme.primary),
-            SizedBox(height: 12),
-            Text('Checking image quality...',
-                style: TextStyle(color: Colors.grey)),
-          ],
+      return Container(
+        width: double.infinity,
+        height: 360,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E22),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 38,
+                height: 38,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: AppTheme.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Checking Image Resolution...',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Ensuring 1080×1920 HD requirement',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     if (_selectedFile != null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.file(_selectedFile!, fit: BoxFit.cover),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: _pickImage,
+      final sizeMb = _fileSizeBytes != null
+          ? (_fileSizeBytes! / (1024 * 1024)).toStringAsFixed(1)
+          : null;
+
+      return Container(
+        width: double.infinity,
+        height: 400,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image Preview
+            Image.file(
+              _selectedFile!,
+              fit: BoxFit.cover,
+            ),
+
+            // Top vignette gradient
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 90,
               child: Container(
-                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.65),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
-                child: const Icon(Icons.edit_rounded,
-                    color: Colors.white, size: 16),
+              ),
+            ),
+
+            // Bottom vignette gradient
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 110,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Top controls: Quality Badge (Left) and Actions (Right)
+            Positioned(
+              top: 14,
+              left: 14,
+              right: 14,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Validated badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.greenAccent.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.verified_rounded,
+                          color: Colors.greenAccent,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _imageWidth != null && _imageHeight != null
+                              ? '$_imageWidth×$_imageHeight'
+                              : 'HD Ready',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Change & Delete buttons
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _isUploading ? null : _pickImage,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.edit_rounded,
+                                  color: Colors.white, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'Change',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _isUploading ? null : _clearSelection,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Bottom details
+            Positioned(
+              bottom: 14,
+              left: 16,
+              right: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    sizeMb != null ? 'File Size: $sizeMb MB' : 'Portrait Wallpaper',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: const Text(
+                      'Ready to Share',
+                      style: TextStyle(
+                        color: AppTheme.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default: Empty selection prompt
+    return GestureDetector(
+      onTap: _isUploading ? null : _pickImage,
+      child: Container(
+        width: double.infinity,
+        height: 340,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1B1B1E),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.12),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Elevated Icon
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primary.withValues(alpha: 0.25),
+                    AppTheme.primary.withValues(alpha: 0.08),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: AppTheme.primary.withValues(alpha: 0.35),
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.add_photo_alternate_rounded,
+                  color: AppTheme.primary,
+                  size: 34,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            Text(
+              'Select Portrait Wallpaper',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Tap to choose high resolution image from gallery',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 13,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Specs badges row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildSpecChip('1080×1920 min'),
+                const SizedBox(width: 8),
+                _buildSpecChip('Up to 20 MB'),
+                const SizedBox(width: 8),
+                _buildSpecChip('Portrait'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.65),
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  // ─── Validation Error Banner ──────────────────────────────────────────────
+
+  Widget _buildValidationErrorBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline_rounded,
+              color: Colors.redAccent, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _validationError!,
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontSize: 13,
+                height: 1.3,
               ),
             ),
           ),
         ],
-      );
-    }
+      ),
+    );
+  }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+  // ─── Section Header ───────────────────────────────────────────────────────
+
+  Widget _buildSectionHeader({
+    required IconData icon,
+    required String title,
+    required String badge,
+  }) {
+    return Row(
       children: [
-        Icon(Icons.add_photo_alternate_outlined,
-            size: 48, color: Colors.grey.withValues(alpha: 0.5)),
-        const SizedBox(height: 12),
-        const Text(
-          'Tap to select a wallpaper',
-          style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey),
-        ),
-        const SizedBox(height: 6),
+        Icon(icon, color: AppTheme.primary, size: 18),
+        const SizedBox(width: 8),
         Text(
-          'Gallery only',
-          style:
-              TextStyle(fontSize: 12, color: Colors.grey.withValues(alpha: 0.5)),
+          title,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            badge,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.45),
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-    );
-  }
+  // ─── Text Fields ──────────────────────────────────────────────────────────
 
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
+    required IconData icon,
     int maxLines = 1,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.getSurface(isDark),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFF1B1B1E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle:
-              TextStyle(color: Colors.grey.withValues(alpha: 0.5), fontSize: 14),
+          hintStyle: TextStyle(
+            color: Colors.white.withValues(alpha: 0.35),
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: Colors.white.withValues(alpha: 0.4),
+            size: 20,
+          ),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
+      ),
+    );
+  }
+
+  // ─── Guidelines Card ──────────────────────────────────────────────────────
+
+  Widget _buildGuidelinesCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.verified_outlined,
+              color: AppTheme.primary,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Creator Guidelines',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Please share high-resolution, original or royalty-free portrait art without watermarks. Wallpapers become instantly discoverable in the Collective.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.55),
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Upload Button ────────────────────────────────────────────────────────
+
+  Widget _buildUploadButton() {
+    final isReady = _selectedFile != null && !_isValidating && !_isUploading;
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: isReady ? _upload : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.primary,
+          disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.3),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          elevation: 0,
+        ),
+        child: _isUploading
+            ? const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Sharing to Collective...',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.cloud_upload_rounded,
+                    color: isReady ? Colors.black : Colors.black45,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Share with Collective',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: isReady ? Colors.black : Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

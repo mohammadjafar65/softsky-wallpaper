@@ -69,9 +69,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   void _toggleLike() async {
     if (!AuthService().isLoggedIn) {
-      _showMsg('Please sign in to like wallpapers');
-      return;
+      final loggedIn = await showAuthModal(
+        context,
+        message: 'Sign in to like wallpapers and save them to your profile',
+      );
+      if (loggedIn != true || !AuthService().isLoggedIn) return;
     }
+    if (!mounted) return;
     HapticFeedback.lightImpact();
     final post = _currentPost;
     final target = !post.isLiked;
@@ -120,9 +124,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   void _toggleSave() async {
     if (!AuthService().isLoggedIn) {
-      _showMsg('Please sign in to save wallpapers');
-      return;
+      final loggedIn = await showAuthModal(
+        context,
+        message: 'Sign in to bookmark wallpapers and sync across devices',
+      );
+      if (loggedIn != true || !AuthService().isLoggedIn) return;
     }
+    if (!mounted) return;
     HapticFeedback.lightImpact();
     final post = _currentPost;
     final target = !post.isSaved;

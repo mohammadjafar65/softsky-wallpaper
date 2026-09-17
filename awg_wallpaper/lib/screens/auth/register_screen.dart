@@ -154,41 +154,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
 
-                  // App Logo & Branding in the center
+                  // Branding in the center
                   SafeArea(
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // App Icon with subtle glow shadow
-                          Container(
-                            width: 76,
-                            height: 76,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/app_logo.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
                           // SoftSky Wordmark
                           Image.asset(
                             'assets/images/softsky_logo.png',
-                            width: 140,
+                            width: 170,
                             fit: BoxFit.contain,
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 10),
                           Text(
                             'Join the Creator Collective',
                             style: GoogleFonts.inter(
