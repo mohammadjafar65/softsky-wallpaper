@@ -400,6 +400,40 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+
+              // View All Plans & Special Offers Button
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SubscriptionScreen(),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: BorderSide(
+                    color: AppTheme.primary.withValues(alpha: 0.5),
+                    width: 1.2,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  minimumSize: const Size(double.infinity, 52),
+                ),
+                icon: const Icon(Icons.local_fire_department_rounded,
+                    color: Color(0xFFFB8500), size: 18),
+                label: Text(
+                  'View All Plans (50% Off Deals)',
+                  style: TextStyle(
+                    color: AppTheme.getTextPrimary(isDark),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
 
               const SizedBox(height: 12),
 
