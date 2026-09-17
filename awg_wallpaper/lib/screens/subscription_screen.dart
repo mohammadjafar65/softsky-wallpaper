@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -15,14 +16,36 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   SubscriptionPlan _selectedPlan = SubscriptionPlan.annual;
   bool _isProcessing = false;
+  Timer? _countdownTimer;
+  Duration _timeLeft = const Duration(hours: 11, minutes: 47, seconds: 35);
 
   @override
   void initState() {
     super.initState();
+    _startCountdown();
     // Clear any previous errors when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SubscriptionProvider>().clearError();
     });
+  }
+
+  void _startCountdown() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() {
+        if (_timeLeft.inSeconds > 0) {
+          _timeLeft = _timeLeft - const Duration(seconds: 1);
+        } else {
+          _timeLeft = const Duration(hours: 23, minutes: 59, seconds: 59);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -94,12 +117,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       // Header
                       _buildHeader(),
 
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 24),
+
+                      // Limited Time 50% Off Offer Banner
+                      _buildLimitedTimeOfferBanner(),
+
+                      const SizedBox(height: 28),
 
                       // Features
                       _buildFeaturesList(),
 
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 32),
 
                       // Plans
                       _buildPlanCards(),
@@ -236,6 +264,201 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
+  Widget _buildLimitedTimeOfferBanner() {
+    final hours = _timeLeft.inHours.toString().padLeft(2, '0');
+    final minutes = (_timeLeft.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (_timeLeft.inSeconds % 60).toString().padLeft(2, '0');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1B2CC1),
+            Color(0xFF2B5CE6),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFF93C5FD).withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2B5CE6).withValues(alpha: 0.3),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.local_fire_department_rounded,
+                        color: Color(0xFFFFB703), size: 16),
+                    SizedBox(width: 5),
+                    Text(
+                      'LIMITED TIME DEAL',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 50% OFF Pill
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFB703), Color(0xFFFB8500)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFB8500).withValues(alpha: 0.45),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  '50% OFF',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Special 50% Discount Offer',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Unlock all 4K wallpapers, exclusive packs & ad-free experience at half the price before this deal expires.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.88),
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Countdown Clock
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.28),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.15),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.timer_outlined, color: Color(0xFFFFB703), size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Offer ends in: ',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                _buildTimeUnit(hours, 'h'),
+                const Text(' : ',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13)),
+                _buildTimeUnit(minutes, 'm'),
+                const Text(' : ',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13)),
+                _buildTimeUnit(seconds, 's'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeUnit(String value, String unit) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        '$value$unit',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+      ),
+    );
+  }
+
+  String _getOriginalPrice(SubscriptionPlan plan, String currentPrice) {
+    if (plan != SubscriptionPlan.annual) return '';
+    final match =
+        RegExp(r'([\D\s]*)([\d,]+(?:\.\d+)?)').firstMatch(currentPrice);
+    if (match != null) {
+      final prefix = match.group(1) ?? '₹';
+      final numStr = match.group(2)?.replaceAll(',', '') ?? '';
+      final val = double.tryParse(numStr);
+      if (val != null) {
+        final origVal = val * 2;
+        final formatted = origVal == origVal.roundToDouble()
+            ? origVal.toStringAsFixed(0)
+            : origVal.toStringAsFixed(2);
+        return '$prefix$formatted';
+      }
+    }
+    return '₹159.99';
+  }
+
   Widget _buildPlanCards() {
     return Column(
       children: [
@@ -334,14 +557,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Unlock all features', // Or dynamic description
+                        isAnnual
+                            ? 'Special 50% discount included'
+                            : 'Unlock all features',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.color
-                              ?.withValues(alpha: 0.7),
+                          color: isAnnual
+                              ? const Color(0xFFFB8500)
+                              : Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withValues(alpha: 0.7),
+                          fontWeight:
+                              isAnnual ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -350,6 +579,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    if (isAnnual) ...[
+                      Text(
+                        _getOriginalPrice(plan, price),
+                        style: TextStyle(
+                          decoration: TextDecoration.lineThrough,
+                          decorationColor: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.color
+                              ?.withValues(alpha: 0.65),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.color
+                              ?.withValues(alpha: 0.65),
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                    ],
                     Text(
                       price,
                       style: TextStyle(
@@ -387,25 +637,33 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.primary, AppTheme.primaryVariant],
+                    colors: [Color(0xFFFB8500), Color(0xFFFFB703)],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
+                      color: const Color(0xFFFB8500).withValues(alpha: 0.4),
                       blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
-                child: const Text(
-                  'SAVE 50%',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    letterSpacing: 0.5,
-                  ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.local_fire_department_rounded,
+                        color: Colors.black, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      '50% OFF • LIMITED TIME',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -419,26 +677,58 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       onTap: _isProcessing ? null : () => _subscribe(provider),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: Theme.of(context).textTheme.bodyLarge?.color, // Adapt to theme
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF2B5CE6),
+              Color(0xFF1E45C8),
+            ],
+          ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF2B5CE6).withValues(alpha: 0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: Text(
-          'Start Subscription',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Theme.of(context).scaffoldBackgroundColor, // Inverse color
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.flash_on_rounded,
+                    color: Colors.white, size: 20),
+                const SizedBox(width: 6),
+                Text(
+                  _selectedPlan == SubscriptionPlan.annual
+                      ? 'Claim 50% OFF - Get Pro'
+                      : 'Start Subscription',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            if (_selectedPlan == SubscriptionPlan.annual) ...[
+              const SizedBox(height: 3),
+              Text(
+                '⚡ Limited time 50% discount automatically applied',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
