@@ -36,10 +36,14 @@ class CustomBottomNav extends StatelessWidget {
     // Keep within bounds of 4 tabs
     final safeIndex = currentIndex.clamp(0, 3);
 
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 22),
+        padding: EdgeInsets.only(
+          bottom: 28.0 + (bottomInset > 0 ? 6.0 : 0.0),
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(29),
           child: BackdropFilter(
