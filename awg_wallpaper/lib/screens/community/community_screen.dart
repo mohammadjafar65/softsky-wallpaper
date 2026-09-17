@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
+import '../../config/cached_image_config.dart';
 import '../../models/community_post.dart';
 import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
@@ -169,7 +171,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'COMMUNITY',
+                'COLLECTIVE',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       color: AppTheme.textWhite,
                       fontSize: 28,
@@ -188,7 +190,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           : 0);
                   return Text(
                     count > 0
-                        ? '${DateFormatter.format()} • $count Community Wallpapers'
+                        ? '${DateFormatter.format()} • $count Collective Wallpapers'
                         : DateFormatter.format(),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppTheme.textMuted,
@@ -313,7 +315,7 @@ class _FeedGrid extends StatelessWidget {
             controller: scrollController,
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 210),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 210),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
@@ -338,9 +340,9 @@ class _FeedGrid extends StatelessWidget {
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 9 / 16,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.65,
                   ),
                 ),
               ),
@@ -362,18 +364,18 @@ class _FeedGrid extends StatelessWidget {
 
   Widget _buildShimmer() {
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 210),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 9 / 16,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.65,
       ),
       itemCount: 6,
       itemBuilder: (_, __) => Container(
         decoration: BoxDecoration(
           color: Colors.grey.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(15),
         ),
       ),
     );
@@ -409,13 +411,12 @@ class _TrendingGrid extends StatelessWidget {
             controller: scrollController,
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 210),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 210),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
                       return _PostCard(
                           post: provider.trendingPosts[i],
-                          showLikes: true,
                           onTap: () =>
                               _openDetail(context, provider.trendingPosts, i));
                     },
@@ -424,9 +425,9 @@ class _TrendingGrid extends StatelessWidget {
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 9 / 16,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.65,
                   ),
                 ),
               ),
@@ -447,132 +448,235 @@ class _TrendingGrid extends StatelessWidget {
   }
 }
 
-// ─── Post Card ───────────────────────────────────────────────────────────────
+// ─── Post Card (Same UI & Size as HomeScreen WallpaperCard) ─────────────────
 
-class _PostCard extends StatelessWidget {
+class _PostCard extends StatefulWidget {
   final CommunityPost post;
   final VoidCallback onTap;
-  final bool showLikes;
 
   const _PostCard({
     required this.post,
     required this.onTap,
-    this.showLikes = false,
   });
 
   @override
+  State<_PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<_PostCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _scaleController.forward();
+    HapticFeedback.lightImpact();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _scaleController.reverse();
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    _scaleController.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Image
-            CachedNetworkImage(
-              imageUrl: post.thumbnailUrl ?? post.imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(
-                  color: Colors.grey.withValues(alpha: 0.15)),
-              errorWidget: (_, __, ___) =>
-                  const Icon(Icons.broken_image_rounded, color: Colors.grey),
-            ),
+    final post = widget.post;
 
-            // Gradient overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: child,
+            );
+          },
+          child: Hero(
+            tag: 'community_wallpaper_${post.id}',
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                ),
+                ],
               ),
-            ),
-
-            // Author + likes row
-            Positioned(
-              bottom: 8,
-              left: 8,
-              right: 8,
-              child: Row(
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  // Avatar
-                  GestureDetector(
-                    onTap: () {
-                      if (post.author != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => CommunityProfileScreen(
-                                userId: post.author!.id),
-                          ),
-                        );
-                      }
-                    },
-                    child: CircleAvatar(
-                      radius: 12,
-                      backgroundColor: AppTheme.primary,
-                      backgroundImage: post.author?.photoUrl != null
-                          ? CachedNetworkImageProvider(
-                              post.author!.photoUrl!)
-                          : null,
-                      child: post.author?.photoUrl == null
-                          ? Text(
-                              (post.author?.displayName ?? 'A')
-                                  .substring(0, 1)
-                                  .toUpperCase(),
-                              style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      post.author?.displayName ?? 'User',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                  // Image with cached image manager
+                  CachedNetworkImage(
+                    imageUrl: post.thumbnailUrl ?? post.imageUrl,
+                    cacheManager: CachedImageConfig.cacheManager,
+                    fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 300),
+                    fadeOutDuration: const Duration(milliseconds: 100),
+                    memCacheWidth: 400,
+                    placeholder: (_, __) => Container(
+                      color: AppTheme.surfaceVariant,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.primary,
+                        ),
                       ),
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      color: AppTheme.surfaceVariant,
+                      child: const Icon(
+                        Icons.broken_image_rounded,
+                        color: AppTheme.textMuted,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.download_rounded,
-                      size: 13, color: Colors.white70),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${post.downloadsCount}',
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+
+                  // Subtle gradient at bottom for text visibility
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 70,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.7),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.favorite_rounded,
-                      size: 12, color: Colors.white70),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${post.likesCount}',
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+
+                  // User photo, profile name and downloads counter
+                  Positioned(
+                    bottom: 10,
+                    left: 10,
+                    right: 10,
+                    child: Row(
+                      children: [
+                        // User Avatar
+                        GestureDetector(
+                          onTap: () {
+                            if (post.author != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CommunityProfileScreen(
+                                      userId: post.author!.id),
+                                ),
+                              );
+                            }
+                          },
+                          child: CircleAvatar(
+                            radius: 12,
+                            backgroundColor: AppTheme.primary,
+                            backgroundImage: post.author?.photoUrl != null
+                                ? CachedNetworkImageProvider(
+                                    post.author!.photoUrl!)
+                                : null,
+                            child: post.author?.photoUrl == null
+                                ? Text(
+                                    (post.author?.displayName ?? 'U')
+                                        .substring(0, 1)
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Profile Name
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              if (post.author != null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CommunityProfileScreen(
+                                        userId: post.author!.id),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Text(
+                              post.author?.displayName ?? 'User',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // Downloads Counter
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.download_rounded,
+                              size: 14,
+                              color: Colors.white70,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${post.downloadsCount}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

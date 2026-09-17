@@ -47,7 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Join our community of wallpaper enthusiasts.',
+                'Join our collective of wallpaper enthusiasts.',
                 style: TextStyle(
                   fontSize: 16,
                   color: AppTheme.textSecondary,

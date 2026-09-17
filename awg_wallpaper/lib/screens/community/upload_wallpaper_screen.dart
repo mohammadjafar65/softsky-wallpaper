@@ -282,7 +282,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                             strokeWidth: 2, color: Colors.black),
                       )
                     : const Text(
-                        'Share with Community',
+                        'Share with Collective',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

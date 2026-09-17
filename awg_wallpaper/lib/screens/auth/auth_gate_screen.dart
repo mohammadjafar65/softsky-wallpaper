@@ -97,7 +97,7 @@ class _AuthGateScreenState extends State<AuthGateScreen>
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Join the Community',
+                  'Join the Collective',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,

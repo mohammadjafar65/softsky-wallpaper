@@ -137,7 +137,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     try {
       await Share.share(
         'Check out this wallpaper by @${_currentPost.author?.username ?? "creator"}: ${_currentPost.imageUrl}',
-        subject: _currentPost.title ?? 'Community Wallpaper',
+        subject: _currentPost.title ?? 'Collective Wallpaper',
       );
     } catch (_) {
       _showMsg('Could not share wallpaper');
@@ -889,7 +889,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               const Text('Set Wallpaper',
                   style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 8),
-              const Text('Choose where to apply this community wallpaper',
+              const Text('Choose where to apply this collective wallpaper',
                   style: TextStyle(fontSize: 14, color: Colors.white70)),
               const SizedBox(height: 28),
               Row(
@@ -1049,7 +1049,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     builder: (dCtx) => AlertDialog(
                       backgroundColor: Colors.grey[900],
                       title: const Text('Delete Wallpaper', style: TextStyle(color: Colors.white)),
-                      content: const Text('Are you sure you want to delete this wallpaper from Community?',
+                      content: const Text('Are you sure you want to delete this wallpaper from Collective?',
                           style: TextStyle(color: Colors.white70)),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(dCtx, false), child: const Text('Cancel')),
@@ -1092,8 +1092,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               const SizedBox(height: 16),
               const Text('Wallpaper Details', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 16),
-              _infoRow('Title', post.title ?? 'Community Wallpaper'),
-              _infoRow('Creator', post.author?.displayName ?? 'Community Member'),
+              _infoRow('Title', post.title ?? 'Collective Wallpaper'),
+              _infoRow('Creator', post.author?.displayName ?? 'Collective Member'),
               _infoRow('Resolution', '${post.width ?? 1080} × ${post.height ?? 1920}'),
               _infoRow('Likes', '${post.likesCount}'),
               _infoRow('Downloads', '${post.downloadsCount}'),
