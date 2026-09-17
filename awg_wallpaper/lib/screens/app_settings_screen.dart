@@ -7,6 +7,7 @@ import '../providers/auto_wallpaper_provider.dart';
 import '../widgets/rating_dialog.dart';
 import 'auto_wallpaper_settings_screen.dart';
 import 'subscription_screen.dart';
+import 'manage_subscription_screen.dart';
 import 'contact_us_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
@@ -253,6 +254,99 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           color: Colors.white54,
                           size: 22,
                         ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Subscription Section
+                  _buildSectionHeader('Subscription'),
+                  _buildCard(
+                    isDark: isDark,
+                    children: [
+                      ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => subscriptionProvider.isPro
+                                  ? const ManageSubscriptionScreen()
+                                  : const SubscriptionScreen(),
+                            ),
+                          );
+                        },
+                        leading: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppTheme.gold.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.workspace_premium_rounded,
+                            color: AppTheme.gold,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          subscriptionProvider.isPro
+                              ? 'Manage Subscription'
+                              : 'Upgrade to Pro',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        subtitle: Text(
+                          subscriptionProvider.isPro
+                              ? () {
+                                  final plan = subscriptionProvider.getPlanName(subscriptionProvider.currentPlan);
+                                  final expiry = subscriptionProvider.expiryDate;
+                                  final isLifetime = subscriptionProvider.currentPlan == SubscriptionPlan.lifetime;
+                                  if (isLifetime) return '$plan · Lifetime access';
+                                  if (expiry != null) {
+                                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                    return '$plan · Renews ${expiry.day} ${months[expiry.month - 1]}';
+                                  }
+                                  return plan;
+                                }()
+                              : 'Unlock 1000+ wallpapers & features',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 12,
+                          ),
+                        ),
+                        trailing: subscriptionProvider.isPro
+                            ? const Icon(Icons.chevron_right_rounded, color: Colors.white54)
+                            : Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [AppTheme.gold, Color(0xFFFFB700)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.star_rounded, color: Colors.black, size: 12),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'PRO',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                       ),
                     ],
                   ),

@@ -252,54 +252,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   );
                                 },
                               ),
-
-                              // Logout Button
-                              if (isLoggedIn)
-                                _buildSettingsTile(
-                                  icon: Icons.logout_rounded,
-                                  title: 'Logout',
-                                  subtitle: 'Sign out of your account',
-                                  iconColor: Colors.redAccent,
-                                  isDark: isDark,
-                                  onTap: () async {
-                                    final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Logout'),
-                                        content: const Text(
-                                            'Are you sure you want to logout?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: const Text(
-                                              'Logout',
-                                              style:
-                                                  TextStyle(color: Colors.red),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-
-                                    if (confirm == true) {
-                                      await authService.signOut();
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'Logged out successfully')),
-                                        );
-                                      }
-                                    }
-                                  },
-                                ),
                             ],
                           ),
 
@@ -354,6 +306,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ],
                           ),
+
+                          const SizedBox(height: 32),
+
+                          // ACCOUNT section — logout
+                          if (isLoggedIn)
+                            _buildSettingsGroup(
+                              title: 'Account',
+                              isDark: isDark,
+                              children: [
+                                _buildSettingsTile(
+                                  icon: Icons.logout_rounded,
+                                  title: 'Logout',
+                                  subtitle: 'Sign out of your account',
+                                  iconColor: Colors.redAccent,
+                                  isDark: isDark,
+                                  onTap: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        backgroundColor: AppTheme.getSurface(isDark),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        title: Text(
+                                          'Logout',
+                                          style: TextStyle(
+                                            color: AppTheme.getTextPrimary(isDark),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        content: Text(
+                                          'Are you sure you want to sign out?',
+                                          style: TextStyle(
+                                            color: AppTheme.getTextSecondary(isDark),
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx, false),
+                                            child: Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                color: AppTheme.getTextMuted(isDark),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx, true),
+                                            child: const Text(
+                                              'Logout',
+                                              style: TextStyle(
+                                                color: Colors.redAccent,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirm == true) {
+                                      await authService.signOut();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                              content: Text('Logged out successfully')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
 
                           const SizedBox(height: 32),
 
