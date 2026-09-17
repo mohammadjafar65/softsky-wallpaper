@@ -108,6 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // Stats Cards
                           _buildStatsCards(
+                              context,
                               bookmarkProvider, subscriptionProvider, isDark),
 
                           const SizedBox(height: 24),
@@ -207,7 +208,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 _buildSettingsTile(
                                   icon: Icons.card_membership_rounded,
                                   title: 'Manage Subscription',
-                                  subtitle: 'Active',
+                                  subtitle: () {
+                                    final plan = subscriptionProvider.getPlanName(subscriptionProvider.currentPlan);
+                                    final expiry = subscriptionProvider.expiryDate;
+                                    final isLifetime = subscriptionProvider.currentPlan == SubscriptionPlan.lifetime;
+                                    if (isLifetime) return '$plan · Lifetime access';
+                                    if (expiry != null) {
+                                      return '$plan · Renews ${expiry.day} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][expiry.month - 1]}';
+                                    }
+                                    return plan;
+                                  }(),
                                   iconColor: AppTheme.gold,
                                   isDark: isDark,
                                   onTap: () => Navigator.push(
@@ -215,6 +225,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       MaterialPageRoute(
                                           builder: (_) =>
                                               const ManageSubscriptionScreen())),
+                                )
+                              else
+                                _buildSettingsTile(
+                                  icon: Icons.workspace_premium_rounded,
+                                  title: 'Upgrade to Pro',
+                                  subtitle: 'Unlock 1000+ wallpapers & features',
+                                  iconColor: AppTheme.gold,
+                                  isDark: isDark,
+                                  trailingBadge: 'PRO',
+                                  onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const SubscriptionScreen())),
                                 ),
                               _buildSettingsTile(
                                 icon: Icons.delete_outline_rounded,
@@ -491,21 +515,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
-                          .withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(999),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => provider.isPro
+                            ? const ManageSubscriptionScreen()
+                            : const SubscriptionScreen(),
+                      ),
                     ),
-                    child: Text(
-                      provider.isPro ? 'PRO MEMBER' : 'FREE PLAN',
-                      style: TextStyle(
-                        color: provider.isPro ? AppTheme.gold : AppTheme.primary,
-                        fontSize: 10,
-                        letterSpacing: 0.7,
-                        fontWeight: FontWeight.w700,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
+                            .withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
+                              .withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            provider.isPro ? 'PRO MEMBER' : 'FREE PLAN',
+                            style: TextStyle(
+                              color: provider.isPro ? AppTheme.gold : AppTheme.primary,
+                              fontSize: 10,
+                              letterSpacing: 0.7,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            provider.isPro
+                                ? Icons.manage_accounts_rounded
+                                : Icons.arrow_forward_ios_rounded,
+                            size: 10,
+                            color: provider.isPro ? AppTheme.gold : AppTheme.primary,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -530,7 +581,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsCards(BookmarkProvider bookmarkProvider,
+  Widget _buildStatsCards(BuildContext context, BookmarkProvider bookmarkProvider,
       SubscriptionProvider subscriptionProvider, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -551,23 +602,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: _buildStatCard(
-              'Plan',
-              subscriptionProvider.isPro ? 'PRO' : 'Free',
-              subscriptionProvider.isPro
-                  ? Icons.workspace_premium_rounded
-                  : Icons.account_circle_rounded,
-              subscriptionProvider.isPro
-                  ? [
-                      AppTheme.gold.withValues(alpha: 0.2),
-                      AppTheme.gold.withValues(alpha: 0.05),
-                    ]
-                  : [
-                      AppTheme.darkSurfaceVariant,
-                      AppTheme.darkSurface,
-                    ],
-              subscriptionProvider.isPro ? AppTheme.gold : AppTheme.textMuted,
-              isDark,
+            child: GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => subscriptionProvider.isPro
+                      ? const ManageSubscriptionScreen()
+                      : const SubscriptionScreen(),
+                ),
+              ),
+              child: _buildStatCard(
+                'Plan',
+                subscriptionProvider.isPro ? 'PRO' : 'Free',
+                subscriptionProvider.isPro
+                    ? Icons.workspace_premium_rounded
+                    : Icons.account_circle_rounded,
+                subscriptionProvider.isPro
+                    ? [
+                        AppTheme.gold.withValues(alpha: 0.2),
+                        AppTheme.gold.withValues(alpha: 0.05),
+                      ]
+                    : [
+                        AppTheme.darkSurfaceVariant,
+                        AppTheme.darkSurface,
+                      ],
+                subscriptionProvider.isPro ? AppTheme.gold : AppTheme.textMuted,
+                isDark,
+              ),
             ),
           ),
         ],
@@ -829,6 +890,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     String? subtitle,
     Widget? trailing,
+    String? trailingBadge,
     VoidCallback? onTap,
     Color? iconColor,
     bool isDark = false,
@@ -875,11 +937,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
             )
           : null,
         trailing: trailing ??
-          Icon(
-            Icons.chevron_right_rounded,
-            color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.5),
-            size: 20,
-          ),
+          (trailingBadge != null
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.gold, Color(0xFFFFB700)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.gold.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Colors.black,
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      trailingBadge,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Icon(
+                Icons.chevron_right_rounded,
+                color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.5),
+                size: 20,
+              )),
       ),
     );
   }

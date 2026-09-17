@@ -7,6 +7,7 @@ import '../widgets/category_chip.dart';
 import '../widgets/shimmer_loading.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
+import 'subscription_screen.dart';
 import '../utils/date_formatter.dart';
 import '../widgets/top_bar_profile_avatar.dart';
 import '../widgets/native_ad_widget.dart';
@@ -76,6 +77,11 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     child: _buildHeader(context),
                   ),
 
+                  // Upgrade Banner (free users only)
+                  SliverToBoxAdapter(
+                    child: _buildUpgradeBanner(context),
+                  ),
+
                   // Categories
                   SliverToBoxAdapter(
                     child: _buildCategories(context, provider),
@@ -112,6 +118,97 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpgradeBanner(BuildContext context) {
+    final isPro = context.watch<SubscriptionProvider>().isPro;
+    if (isPro) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppTheme.gold, Color(0xFFFFB700)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.gold.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.black,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Unlock Pro Wallpapers',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Get unlimited access to 1000+ exclusive wallpapers',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  'Upgrade →',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
