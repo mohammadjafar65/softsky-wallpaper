@@ -154,6 +154,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (mounted) {
         Navigator.pop(context); // Close progress dialog
         if (result == true) {
+          final newDownloads = await context
+              .read<CommunityProvider>()
+              .trackDownload(_currentPost.id);
+          if (mounted) {
+            setState(() {
+              if (newDownloads != null) {
+                _currentPost.downloadsCount = newDownloads;
+              } else {
+                _currentPost.downloadsCount += 1;
+              }
+            });
+          }
           _showSuccessMsg('Downloaded to Gallery successfully');
         } else {
           _showMsg('Download failed');
@@ -1084,6 +1096,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               _infoRow('Creator', post.author?.displayName ?? 'Community Member'),
               _infoRow('Resolution', '${post.width ?? 1080} × ${post.height ?? 1920}'),
               _infoRow('Likes', '${post.likesCount}'),
+              _infoRow('Downloads', '${post.downloadsCount}'),
               _infoRow('Comments', '${post.commentsCount}'),
               _infoRow('Uploaded', post.createdAt.toIso8601String().split('T')[0]),
             ],

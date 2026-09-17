@@ -7,6 +7,7 @@ class CommunityUser {
   final int followersCount;
   final int followingCount;
   final int postsCount;
+  final int totalDownloads;
   final bool isFollowing;
 
   const CommunityUser({
@@ -18,6 +19,7 @@ class CommunityUser {
     required this.followersCount,
     required this.followingCount,
     required this.postsCount,
+    this.totalDownloads = 0,
     required this.isFollowing,
   });
 
@@ -31,11 +33,16 @@ class CommunityUser {
       followersCount: json['followersCount'] as int? ?? 0,
       followingCount: json['followingCount'] as int? ?? 0,
       postsCount: json['postsCount'] as int? ?? 0,
+      totalDownloads: json['totalDownloads'] as int? ?? 0,
       isFollowing: json['isFollowing'] as bool? ?? false,
     );
   }
 
-  CommunityUser copyWith({bool? isFollowing, int? followersCount}) {
+  CommunityUser copyWith({
+    bool? isFollowing,
+    int? followersCount,
+    int? totalDownloads,
+  }) {
     return CommunityUser(
       id: id,
       displayName: displayName,
@@ -45,6 +52,7 @@ class CommunityUser {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount,
       postsCount: postsCount,
+      totalDownloads: totalDownloads ?? this.totalDownloads,
       isFollowing: isFollowing ?? this.isFollowing,
     );
   }

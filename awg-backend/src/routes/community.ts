@@ -46,6 +46,7 @@ async function serializePost(post: CommunityPost, viewerId: number | null) {
         likesCount: post.likesCount || 0,
         commentsCount: post.commentsCount || 0,
         savesCount: post.savesCount || 0,
+        downloadsCount: post.downloadsCount || 0,
         isLiked: !!isLiked,
         isSaved: !!isSaved,
         createdAt: post.createdAt,
@@ -154,14 +155,15 @@ router.post(
 router.get("/feed", optionalAuth, async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user?.id ? parseInt((req as any).user.id, 10) : null;
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        const totalCount = await postRepo.count({ where: { isApproved: true } });
         if (!userId) {
-            return res.json({ posts: [], page: 1, hasMore: false });
+            return res.json({ posts: [], page: 1, hasMore: false, totalCount });
         }
         const page = parseInt((req.query.page as string) || "1", 10);
         const limit = parseInt((req.query.limit as string) || "20", 10);
         const skip = (page - 1) * limit;
 
-        const postRepo = AppDataSource.getRepository(CommunityPost);
         const followRepo = AppDataSource.getRepository(Follow);
 
         // Get IDs of people the user follows
@@ -185,7 +187,7 @@ router.get("/feed", optionalAuth, async (req: Request, res: Response) => {
         }
 
         const serialized = await Promise.all(posts.map((p) => serializePost(p, userId)));
-        return res.json({ posts: serialized, page, hasMore: posts.length === limit });
+        return res.json({ posts: serialized, page, hasMore: posts.length === limit, totalCount });
     } catch (err: any) {
         console.error("GET /community/feed error:", err);
         return res.status(500).json({ error: "Internal server error" });
@@ -203,6 +205,7 @@ router.get("/trending", optionalAuth, async (req: Request, res: Response) => {
         const skip = (page - 1) * limit;
 
         const postRepo = AppDataSource.getRepository(CommunityPost);
+        const totalCount = await postRepo.count({ where: { isApproved: true } });
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -217,7 +220,7 @@ router.get("/trending", optionalAuth, async (req: Request, res: Response) => {
             .getMany();
 
         const serialized = await Promise.all(posts.map((p) => serializePost(p, userId)));
-        return res.json({ posts: serialized, page, hasMore: posts.length === limit });
+        return res.json({ posts: serialized, page, hasMore: posts.length === limit, totalCount });
     } catch (err: any) {
         console.error("GET /community/trending error:", err);
         return res.status(500).json({ error: "Internal server error" });
@@ -476,6 +479,29 @@ router.get("/saved", authenticate, async (req: Request, res: Response) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// POST /api/community/posts/:id/download — track download
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/posts/:id/download", optionalAuth, async (req: Request, res: Response) => {
+    try {
+        const postId = parseInt(req.params.id, 10);
+        if (isNaN(postId)) {
+            return res.status(400).json({ error: "Invalid post ID" });
+        }
+
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post) return res.status(404).json({ error: "Post not found" });
+
+        await postRepo.increment({ id: postId }, "downloadsCount", 1);
+        const newDownloads = (post.downloadsCount || 0) + 1;
+        return res.json({ success: true, downloads: newDownloads });
+    } catch (err: any) {
+        console.error("POST /community/posts/:id/download error:", err);
+        return res.status(500).json({ error: "Failed to track download" });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // POST /api/community/posts/:id/report — report a post
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/posts/:id/report", authenticate, async (req: Request, res: Response) => {
@@ -594,32 +620,47 @@ router.delete("/follow/:userId", authenticate, async (req: Request, res: Respons
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/users/:userId — public profile
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/users/:userId", authenticate, async (req: Request, res: Response) => {
+router.get("/users/:userId", optionalAuth, async (req: Request, res: Response) => {
     try {
-        const viewerId = (req as any).user?.id;
-        const targetId = parseInt(req.params.userId);
+        const viewerId = (req as any).user?.id ? parseInt((req as any).user.id, 10) : null;
+        const targetId = parseInt(req.params.userId, 10);
+        if (isNaN(targetId)) return res.status(400).json({ error: "Invalid user ID" });
 
         const userRepo = AppDataSource.getRepository(User);
         const followRepo = AppDataSource.getRepository(Follow);
+        const postRepo = AppDataSource.getRepository(CommunityPost);
 
         const user = await userRepo.findOne({ where: { id: targetId, isActive: true } });
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const isFollowing = viewerId
-            ? !!(await followRepo.findOne({ where: { followerId: viewerId, followingId: targetId } }))
-            : false;
+        const [isFollowing, totalDownloadsResult] = await Promise.all([
+            viewerId
+                ? followRepo.findOne({ where: { followerId: viewerId, followingId: targetId } })
+                : null,
+            postRepo
+                .createQueryBuilder("post")
+                .select("COALESCE(SUM(post.downloadsCount), 0)", "totalDownloads")
+                .where("post.userId = :userId AND post.isApproved = true", { userId: targetId })
+                .getRawOne(),
+        ]);
+
+        const totalDownloads = parseInt(totalDownloadsResult?.totalDownloads || "0", 10);
+        const authorUsername = user.username || (user.displayName
+            ? user.displayName.toLowerCase().replace(/[^a-z0-9_]/g, '')
+            : 'user');
 
         return res.json({
             user: {
                 id: user.id,
-                displayName: user.displayName,
+                displayName: user.displayName || "Community Member",
                 photoUrl: user.photoUrl,
-                username: user.username,
+                username: authorUsername,
                 bio: user.bio,
-                followersCount: user.followersCount,
-                followingCount: user.followingCount,
-                postsCount: user.postsCount,
-                isFollowing,
+                followersCount: user.followersCount || 0,
+                followingCount: user.followingCount || 0,
+                postsCount: user.postsCount || 0,
+                totalDownloads,
+                isFollowing: !!isFollowing,
             },
         });
     } catch (err: any) {
@@ -631,12 +672,14 @@ router.get("/users/:userId", authenticate, async (req: Request, res: Response) =
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/users/:userId/posts — user's posts
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/users/:userId/posts", authenticate, async (req: Request, res: Response) => {
+router.get("/users/:userId/posts", optionalAuth, async (req: Request, res: Response) => {
     try {
-        const viewerId = (req as any).user?.id;
-        const targetId = parseInt(req.params.userId);
-        const page = parseInt((req.query.page as string) || "1");
-        const limit = parseInt((req.query.limit as string) || "20");
+        const viewerId = (req as any).user?.id ? parseInt((req as any).user.id, 10) : null;
+        const targetId = parseInt(req.params.userId, 10);
+        if (isNaN(targetId)) return res.status(400).json({ error: "Invalid user ID" });
+
+        const page = parseInt((req.query.page as string) || "1", 10);
+        const limit = parseInt((req.query.limit as string) || "20", 10);
         const skip = (page - 1) * limit;
 
         const postRepo = AppDataSource.getRepository(CommunityPost);
@@ -660,11 +703,13 @@ router.get("/users/:userId/posts", authenticate, async (req: Request, res: Respo
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/users/:userId/followers
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/users/:userId/followers", authenticate, async (req: Request, res: Response) => {
+router.get("/users/:userId/followers", optionalAuth, async (req: Request, res: Response) => {
     try {
-        const targetId = parseInt(req.params.userId);
-        const page = parseInt((req.query.page as string) || "1");
-        const limit = parseInt((req.query.limit as string) || "30");
+        const targetId = parseInt(req.params.userId, 10);
+        if (isNaN(targetId)) return res.status(400).json({ error: "Invalid user ID" });
+
+        const page = parseInt((req.query.page as string) || "1", 10);
+        const limit = parseInt((req.query.limit as string) || "30", 10);
         const skip = (page - 1) * limit;
 
         const followRepo = AppDataSource.getRepository(Follow);
@@ -696,7 +741,7 @@ router.get("/users/:userId/followers", authenticate, async (req: Request, res: R
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/community/users/:userId/following
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/users/:userId/following", authenticate, async (req: Request, res: Response) => {
+router.get("/users/:userId/following", optionalAuth, async (req: Request, res: Response) => {
     try {
         const targetId = parseInt(req.params.userId);
         const page = parseInt((req.query.page as string) || "1");

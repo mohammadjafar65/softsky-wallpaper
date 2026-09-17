@@ -6,6 +6,9 @@ import '../../config/theme.dart';
 import '../../models/community_post.dart';
 import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
+import '../../utils/date_formatter.dart';
+import '../profile_screen.dart';
+import '../auth/login_screen.dart';
 import 'post_detail_screen.dart';
 import 'upload_wallpaper_screen.dart';
 import 'community_profile_screen.dart';
@@ -74,38 +77,8 @@ class _CommunityScreenState extends State<CommunityScreen>
             bottom: false,
             child: Column(
               children: [
-                // App bar
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Community',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.getTextPrimary(isDark),
-                        ),
-                      ),
-                      const Spacer(),
-                      // Upload button
-                      if (AuthService().isLoggedIn)
-                        GestureDetector(
-                          onTap: () => _openUpload(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.add_photo_alternate_outlined,
-                                color: AppTheme.primary, size: 22),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                // Top Bar with Date & Wallpaper Counter
+                _buildHeader(context),
 
                 // Tab content
                 Expanded(
@@ -186,7 +159,121 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'COMMUNITY',
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      color: AppTheme.textWhite,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Consumer<CommunityProvider>(
+                builder: (context, provider, _) {
+                  final count = provider.totalPosts > 0
+                      ? provider.totalPosts
+                      : (provider.feedPosts.length + provider.trendingPosts.length > 0
+                          ? (provider.feedPosts.length > provider.trendingPosts.length
+                              ? provider.feedPosts.length
+                              : provider.trendingPosts.length)
+                          : 0);
+                  return Text(
+                    count > 0
+                        ? '${DateFormatter.format()} • $count Community Wallpapers'
+                        : DateFormatter.format(),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textMuted,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  );
+                },
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              // Upload Button
+              GestureDetector(
+                onTap: () => _openUpload(context),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
+                      ),
+                      child: const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Profile Button
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15)),
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openUpload(BuildContext context) async {
+    if (!AuthService().isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to upload wallpapers')),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
     final provider = context.read<CommunityProvider>();
     final newPost = await Navigator.push(
       context,
@@ -464,16 +551,24 @@ class _PostCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (showLikes) ...[
-                    const Icon(Icons.favorite_rounded,
-                        size: 12, color: Colors.white),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${post.likesCount}',
-                      style: const TextStyle(
-                          fontSize: 11, color: Colors.white),
-                    ),
-                  ],
+                  const SizedBox(width: 4),
+                  const Icon(Icons.download_rounded,
+                      size: 13, color: Colors.white70),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${post.downloadsCount}',
+                    style: const TextStyle(
+                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.favorite_rounded,
+                      size: 12, color: Colors.white70),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${post.likesCount}',
+                    style: const TextStyle(
+                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),

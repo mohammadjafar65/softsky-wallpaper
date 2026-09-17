@@ -644,6 +644,29 @@ extension CommunityApiExtension on ApiService {
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load saved posts');
     return data;
   }
+
+  /// Track community wallpaper download
+  Future<int?> trackCommunityDownload(int postId) async {
+    try {
+      final response = await _executeWithRetry(
+        () => http
+            .post(
+              Uri.parse('$_communityBase/posts/$postId/download'),
+              headers: headers,
+            )
+            .timeout(const Duration(seconds: 20)),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return int.tryParse(data['downloads']?.toString() ?? '');
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error tracking community download: $e');
+      return null;
+    }
+  }
 }
 
 class UserSyncResponse {

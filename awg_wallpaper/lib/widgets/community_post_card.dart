@@ -108,16 +108,24 @@ class CommunityPostCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (showLikes) ...[
-                    const Icon(Icons.favorite_rounded,
-                        size: 12, color: Colors.white),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${post.likesCount}',
-                      style: const TextStyle(
-                          fontSize: 11, color: Colors.white),
-                    ),
-                  ],
+                  const SizedBox(width: 4),
+                  const Icon(Icons.download_rounded,
+                      size: 13, color: Colors.white70),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${post.downloadsCount}',
+                    style: const TextStyle(
+                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.favorite_rounded,
+                      size: 12, color: Colors.white70),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${post.likesCount}',
+                    style: const TextStyle(
+                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),

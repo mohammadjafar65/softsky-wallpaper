@@ -12,6 +12,7 @@ export declare class CommunityPost {
     likesCount: number;
     commentsCount: number;
     savesCount: number;
+    downloadsCount: number;
     isApproved: boolean;
     isReported: boolean;
     createdAt: Date;

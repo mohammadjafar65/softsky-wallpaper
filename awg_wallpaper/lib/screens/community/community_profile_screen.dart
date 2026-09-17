@@ -81,6 +81,52 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.getBackground(isDark),
         title: Text(_user?.displayName ?? 'Profile'),
+        actions: [
+          if (_user != null && !isOwnProfile)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: GestureDetector(
+                  onTap: _followLoading ? null : _toggleFollow,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _user!.isFollowing ? Colors.white12 : AppTheme.primary,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _user!.isFollowing ? Colors.white24 : AppTheme.primary,
+                      ),
+                    ),
+                    child: _followLoading
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _user!.isFollowing ? Icons.check : Icons.add,
+                                size: 14,
+                                color: _user!.isFollowing ? Colors.white : Colors.black,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _user!.isFollowing ? 'Following' : 'Follow',
+                                style: TextStyle(
+                                  color: _user!.isFollowing ? Colors.white : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: _loading
           ? const Center(
@@ -152,7 +198,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
 
                             const SizedBox(height: 20),
 
-                            // Stats row
+                            // Stats row: Posts | Downloads | Followers | Following
                             Row(
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceEvenly,
@@ -160,6 +206,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                                 _StatColumn(
                                     count: _user!.postsCount,
                                     label: 'Posts'),
+                                Container(
+                                    width: 1,
+                                    height: 32,
+                                    color: Colors.grey
+                                        .withValues(alpha: 0.3)),
+                                _StatColumn(
+                                    count: _user!.totalDownloads,
+                                    label: 'Downloads'),
                                 Container(
                                     width: 1,
                                     height: 32,
@@ -181,8 +235,34 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
 
                             const SizedBox(height: 20),
 
-                            // Follow button (hide for own profile)
-                            if (!isOwnProfile)
+                            // Follow button (or Your Profile chip)
+                            if (isOwnProfile)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.person_rounded, size: 18, color: AppTheme.primary),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Your Profile',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
@@ -210,13 +290,28 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                                           width: 18,
                                           child: CircularProgressIndicator(
                                               strokeWidth: 2))
-                                      : Text(
-                                          _user!.isFollowing
-                                              ? 'Following'
-                                              : 'Follow',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15),
+                                      : Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              _user!.isFollowing
+                                                  ? Icons.check_rounded
+                                                  : Icons.person_add_rounded,
+                                              size: 18,
+                                              color: _user!.isFollowing
+                                                  ? AppTheme.getTextPrimary(isDark)
+                                                  : Colors.black,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              _user!.isFollowing
+                                                  ? 'Following'
+                                                  : 'Follow',
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15),
+                                            ),
+                                          ],
                                         ),
                                 ),
                               ),

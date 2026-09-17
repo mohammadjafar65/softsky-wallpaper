@@ -23,6 +23,7 @@ class CommunityProvider extends ChangeNotifier {
   int _feedPage = 1;
   int _trendingPage = 1;
   int _myPostsPage = 1;
+  int _totalPosts = 0;
 
   String? _error;
 
@@ -35,6 +36,7 @@ class CommunityProvider extends ChangeNotifier {
   bool get myPostsLoading => _myPostsLoading;
   bool get feedHasMore => _feedHasMore;
   bool get trendingHasMore => _trendingHasMore;
+  int get totalPosts => _totalPosts;
   String? get error => _error;
 
   // ─── Feed ─────────────────────────────────────────────────────────────────
@@ -60,6 +62,9 @@ class CommunityProvider extends ChangeNotifier {
 
       _feedPosts = refresh ? posts : [..._feedPosts, ...posts];
       _feedHasMore = data['hasMore'] as bool? ?? false;
+      if (data['totalCount'] != null) {
+        _totalPosts = (data['totalCount'] as num).toInt();
+      }
       _feedPage++;
     } catch (e) {
       _error = e.toString();
@@ -93,6 +98,9 @@ class CommunityProvider extends ChangeNotifier {
 
       _trendingPosts = refresh ? posts : [..._trendingPosts, ...posts];
       _trendingHasMore = data['hasMore'] as bool? ?? false;
+      if (data['totalCount'] != null) {
+        _totalPosts = (data['totalCount'] as num).toInt();
+      }
       _trendingPage++;
     } catch (e) {
       _error = e.toString();
@@ -333,6 +341,29 @@ class CommunityProvider extends ChangeNotifier {
       debugPrint('getUserPosts error: $e');
       return [];
     }
+  }
+
+  Future<int?> trackDownload(int postId) async {
+    try {
+      final downloads = await _api.trackCommunityDownload(postId);
+      if (downloads != null) {
+        _replacePostDownloadCount(postId, downloads);
+      }
+      return downloads;
+    } catch (e) {
+      debugPrint('trackDownload error: $e');
+      return null;
+    }
+  }
+
+  void _replacePostDownloadCount(int postId, int downloads) {
+    for (final list in [_feedPosts, _trendingPosts, _myPosts]) {
+      final index = list.indexWhere((p) => p.id == postId);
+      if (index != -1) {
+        list[index].downloadsCount = downloads;
+      }
+    }
+    notifyListeners();
   }
 
   void clearError() {

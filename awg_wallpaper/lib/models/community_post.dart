@@ -11,6 +11,7 @@ class CommunityPost {
   int likesCount;
   int commentsCount;
   int savesCount;
+  int downloadsCount;
   bool isLiked;
   bool isSaved;
   final CommunityUser? author;
@@ -27,6 +28,7 @@ class CommunityPost {
     required this.likesCount,
     required this.commentsCount,
     required this.savesCount,
+    this.downloadsCount = 0,
     required this.isLiked,
     required this.isSaved,
     this.author,
@@ -45,6 +47,7 @@ class CommunityPost {
       likesCount: json['likesCount'] as int? ?? 0,
       commentsCount: json['commentsCount'] as int? ?? 0,
       savesCount: json['savesCount'] as int? ?? 0,
+      downloadsCount: json['downloadsCount'] as int? ?? 0,
       isLiked: json['isLiked'] as bool? ?? false,
       isSaved: json['isSaved'] as bool? ?? false,
       author: json['author'] != null
