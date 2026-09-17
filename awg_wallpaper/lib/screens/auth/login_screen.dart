@@ -43,10 +43,21 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Splash Background Image
-                  Image.asset(
-                    'assets/images/splash_bg.png',
-                    fit: BoxFit.cover,
+                  // Splash Gradient Background
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFF1B2FBF),
+                          Color(0xFF2649B0),
+                          Color(0xFF2E59A8),
+                          Color(0xFF3266A1),
+                        ],
+                        stops: [0.0, 0.45, 0.75, 1.0],
+                      ),
+                    ),
                   ),
 
                   // Gradient overlay to fade smoothly into the dark bottom card
@@ -56,12 +67,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withValues(alpha: 0.15),
                           Colors.transparent,
-                          const Color(0xFF121214).withValues(alpha: 0.8),
+                          const Color(0xFF121214).withValues(alpha: 0.6),
                           const Color(0xFF121214),
                         ],
-                        stops: const [0.0, 0.4, 0.82, 1.0],
+                        stops: const [0.5, 0.88, 1.0],
                       ),
                     ),
                   ),

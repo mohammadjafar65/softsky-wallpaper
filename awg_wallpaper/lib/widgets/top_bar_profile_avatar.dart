@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../services/auth_service.dart';
 import '../providers/community_provider.dart';
 import '../models/community_user.dart';
 import '../screens/community/community_profile_screen.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/onboarding_start_screen.dart';
 
 class TopBarProfileAvatar extends StatelessWidget {
   final double radius;
@@ -28,11 +30,23 @@ class TopBarProfileAvatar extends StatelessWidget {
         // Show account icon styled identically to other topbar circular buttons
         if (!isLoggedIn) {
           return GestureDetector(
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
               );
+              if (result == true && context.mounted) {
+                final settingsBox = Hive.box('settings');
+                final hasStarted = settingsBox.get('has_started_app',
+                    defaultValue: false) as bool;
+                if (!hasStarted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const OnboardingStartScreen()),
+                  );
+                }
+              }
             },
             child: Container(
               width: size,

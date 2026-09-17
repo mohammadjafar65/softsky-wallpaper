@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/theme.dart';
 import '../../services/auth_service.dart';
-import '../../screens/main_screen.dart';
+import '../main_screen.dart';
+import '../onboarding_start_screen.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 
-/// Mandatory auth gate — shown on first launch, no way to skip.
+/// Mandatory auth gate — shown on first launch when user is not logged in.
 class AuthGateScreen extends StatefulWidget {
   const AuthGateScreen({super.key});
 
@@ -26,7 +29,7 @@ class _AuthGateScreenState extends State<AuthGateScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 700),
     );
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _controller.forward();
@@ -38,17 +41,36 @@ class _AuthGateScreenState extends State<AuthGateScreen>
     super.dispose();
   }
 
-  void _navigateToMain() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const MainScreen(),
-        transitionsBuilder: (_, anim, __, child) =>
-            FadeTransition(opacity: anim, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-      (route) => false,
-    );
+  void _onAuthSuccess() {
+    final settingsBox = Hive.box('settings');
+    final hasStarted =
+        settingsBox.get('has_started_app', defaultValue: false) as bool;
+
+    if (!hasStarted) {
+      // First time install: show "Swipe to get started" welcome screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const OnboardingStartScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+        (route) => false,
+      );
+    } else {
+      // Returning user: go straight to MainScreen
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _signInWithGoogle() async {
@@ -56,7 +78,7 @@ class _AuthGateScreenState extends State<AuthGateScreen>
     try {
       final result = await _authService.signInWithGoogle();
       if (result == null) return; // user cancelled
-      if (mounted) _navigateToMain();
+      if (mounted) _onAuthSuccess();
     } catch (e) {
       if (mounted) _showError(e.toString());
     } finally {
@@ -77,254 +99,366 @@ class _AuthGateScreenState extends State<AuthGateScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final topHeight = (size.height * 0.38).clamp(260.0, 340.0);
+
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnim,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(flex: 3),
-
-                // Logo / branding
-                Image.asset(
-                  'assets/images/softsky_logo.png',
-                  width: 170,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Join the Collective',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textWhite,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Create an account to share your wallpapers,\nfollow creators, and discover new art.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: AppTheme.textWhite.withValues(alpha: 0.7),
-                    height: 1.5,
-                  ),
-                ),
-
-                const Spacer(flex: 2),
-
-                // Feature highlights
-                _FeatureRow(
-                  icon: Icons.upload_rounded,
-                  text: 'Upload your own wallpapers',
-                ),
-                const SizedBox(height: 14),
-                _FeatureRow(
-                  icon: Icons.people_alt_rounded,
-                  text: 'Follow & connect with creators',
-                ),
-                const SizedBox(height: 14),
-                _FeatureRow(
-                  icon: Icons.favorite_rounded,
-                  text: 'Like, save & comment on posts',
-                ),
-
-                const Spacer(flex: 2),
-
-                // Create Account button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () async {
-                            final result = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const RegisterScreen()),
-                            );
-                            if (result == true && mounted) _navigateToMain();
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      elevation: 4,
-                      shadowColor: AppTheme.primary.withValues(alpha: 0.4),
-                    ),
-                    child: const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Sign In button
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () async {
-                            final result = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const LoginScreen()),
-                            );
-                            if (result == true && mounted) _navigateToMain();
-                          },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      foregroundColor: AppTheme.textWhite,
-                      side:
-                          BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                    ),
-                    child: const Text(
-                      'Sign In',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Divider
-                Row(
+      backgroundColor: const Color(0xFF121214),
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // ─── First Half: Splash Gradient Background + Logo ─────────────
+              SizedBox(
+                height: topHeight,
+                width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Expanded(
-                        child: Divider(
-                            color: Colors.white.withValues(alpha: 0.15))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.4),
-                            fontSize: 12),
+                    // Splash screen background gradient
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF1B2FBF),
+                            Color(0xFF2649B0),
+                            Color(0xFF2E59A8),
+                            Color(0xFF3266A1),
+                          ],
+                          stops: [0.0, 0.45, 0.75, 1.0],
+                        ),
                       ),
                     ),
-                    Expanded(
-                        child: Divider(
-                            color: Colors.white.withValues(alpha: 0.15))),
+
+                    // Subtle bottom fade into the dark surface
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFF121214).withValues(alpha: 0.6),
+                            const Color(0xFF121214),
+                          ],
+                          stops: const [0.5, 0.88, 1.0],
+                        ),
+                      ),
+                    ),
+
+                    // App Logo & Wordmark in the center
+                    SafeArea(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // App Icon with glow shadow
+                            Container(
+                              width: 84,
+                              height: 84,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.35),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/app_logo.png',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // SoftSky Wordmark
+                            Image.asset(
+                              'assets/images/softsky_logo.png',
+                              width: size.width * 0.46,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(height: 6),
+
+                            Text(
+                              'Curated Wallpapers & Collective',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white.withValues(alpha: 0.85),
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+              ),
 
-                const SizedBox(height: 20),
-
-                // Google Sign In
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : _signInWithGoogle,
-                    icon: _isLoading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : const FaIcon(FontAwesomeIcons.google, size: 18),
-                    label: const Text('Continue with Google'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      foregroundColor: AppTheme.textWhite,
-                      side:
-                          BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+              // ─── Second Half: Actions & Features ───────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
+                color: const Color(0xFF121214),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Join the Collective',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
                     ),
-                  ),
-                ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Sign up or log in to sync your favorite wallpapers, follow creators, and share your art.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.65),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                const SizedBox(height: 24),
+                    // Feature highlights row
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08)),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildFeatureItem(
+                            icon: Icons.hd_rounded,
+                            title: 'Ultra HD & 4K Wallpapers',
+                            subtitle: 'Curated daily by artists worldwide',
+                          ),
+                          const Divider(
+                              color: Colors.white10, height: 18),
+                          _buildFeatureItem(
+                            icon: Icons.people_alt_rounded,
+                            title: 'Creator Community',
+                            subtitle: 'Follow creators and share your art',
+                          ),
+                          const Divider(
+                              color: Colors.white10, height: 18),
+                          _buildFeatureItem(
+                            icon: Icons.cloud_sync_rounded,
+                            title: 'Sync Across Devices',
+                            subtitle: 'Never lose your saved collections',
+                          ),
+                        ],
+                      ),
+                    ),
 
-                // ToS notice
-                Text.rich(
-                  TextSpan(
-                    text: 'By continuing you agree to our ',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontSize: 12),
-                    children: [
-                      WidgetSpan(
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: const Text(
-                            'Terms of Service',
-                            style: TextStyle(
-                                color: AppTheme.primary,
-                                fontSize: 12,
-                                decoration: TextDecoration.underline),
+                    const SizedBox(height: 28),
+
+                    // Create Account Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                final result = await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ),
+                                );
+                                if (result == true && mounted) {
+                                  _onAuthSuccess();
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Create Account',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                       ),
-                      const TextSpan(text: ' and '),
-                      WidgetSpan(
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: const Text(
-                            'Privacy Policy',
-                            style: TextStyle(
-                                color: AppTheme.primary,
-                                fontSize: 12,
-                                decoration: TextDecoration.underline),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Sign In Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                final result = await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
+                                );
+                                if (result == true && mounted) {
+                                  _onAuthSuccess();
+                                }
+                              },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                    ),
 
-                const SizedBox(height: 20),
-              ],
-            ),
+                    const SizedBox(height: 20),
+
+                    // Divider
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.4),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Google Sign In
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isLoading ? null : _signInWithGoogle,
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const FaIcon(FontAwesomeIcons.google,
+                                size: 16, color: Colors.white),
+                        label: const Text(
+                          'Continue with Google',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
-class _FeatureRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const _FeatureRow({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
             color: AppTheme.primary.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            shape: BoxShape.circle,
           ),
           child: Icon(icon, color: AppTheme.primary, size: 20),
         ),
         const SizedBox(width: 14),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 15,
-            color: AppTheme.textWhite,
-            fontWeight: FontWeight.w500,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ),
         ),
       ],
