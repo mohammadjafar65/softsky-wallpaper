@@ -12,6 +12,7 @@ import '../app_settings_screen.dart';
 import '../subscription_screen.dart';
 import '../manage_subscription_screen.dart';
 import '../../providers/subscription_provider.dart';
+import '../../widgets/auth_modal_sheet.dart';
 
 class CommunityProfileScreen extends StatefulWidget {
   final int userId;
@@ -91,11 +92,15 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
 
   Future<void> _toggleFollow() async {
     if (!AuthService().isLoggedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to follow users')),
+      final loggedIn = await showAuthModal(
+        context,
+        message: 'Sign in to follow creators and see their latest wallpapers.',
       );
-      return;
+      if (loggedIn != true || !AuthService().isLoggedIn) {
+        return;
+      }
     }
+    if (!mounted) return;
     if (_user == null) return;
     setState(() => _followLoading = true);
     final provider = context.read<CommunityProvider>();

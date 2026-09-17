@@ -13,6 +13,7 @@ import '../../models/community_comment.dart';
 import '../../providers/community_provider.dart';
 import '../../providers/bookmark_provider.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/auth_modal_sheet.dart';
 import 'community_profile_screen.dart';
 import 'report_bottom_sheet.dart';
 
@@ -443,19 +444,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               icon: isLiked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
               iconColor: isLiked ? AppTheme.error : Colors.white,
               onTap: _toggleLike,
-            );
-          },
-        ),
-        const SizedBox(width: 8),
-        // Save Button
-        Consumer<BookmarkProvider>(
-          builder: (context, bookmarkProvider, _) {
-            final isSaved = _currentPost.isSaved ||
-                bookmarkProvider.isBookmarked('community_${_currentPost.id}');
-            return _buildIconBtn(
-              icon: isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-              iconColor: isSaved ? AppTheme.primary : Colors.white,
-              onTap: _toggleSave,
             );
           },
         ),
@@ -1084,6 +1072,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 Navigator.pop(ctx);
                 _showInfoSheet();
               }),
+              Consumer<BookmarkProvider>(
+                builder: (context, bookmarkProvider, _) {
+                  final isSaved = _currentPost.isSaved ||
+                      bookmarkProvider.isBookmarked('community_${_currentPost.id}');
+                  return _sheetItem(
+                    isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                    isSaved ? 'Remove from Saved' : 'Save to Favorites',
+                    () {
+                      Navigator.pop(ctx);
+                      _toggleSave();
+                    },
+                  );
+                },
+              ),
               _sheetItem(Icons.flag_outlined, 'Report Inappropriate', () {
                 Navigator.pop(ctx);
                 _showReportSheet();
@@ -1203,9 +1205,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         if (!AuthService().isLoggedIn) {
-          _showMsg('Please sign in to follow creators');
-          return;
+          final loggedIn = await showAuthModal(
+            context,
+            message: 'Sign in to follow creators and see their latest wallpapers.',
+          );
+          if (loggedIn != true || !AuthService().isLoggedIn) {
+            // User closed the modal or didn't sign in -> do not follow
+            return;
+          }
         }
+        if (!mounted) return;
         HapticFeedback.lightImpact();
         final before = isFollowing;
         setState(() {
