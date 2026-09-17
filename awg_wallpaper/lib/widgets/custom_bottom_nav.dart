@@ -12,136 +12,127 @@ class CustomBottomNav extends StatelessWidget {
     required this.onTap,
   });
 
+  static const double _barWidth = 256.0;
+  static const double _barHeight = 58.0;
+  static const double _itemWidth = _barWidth / 4.0; // 64.0
+  static const double _circleSize = 48.0;
+
+  static const List<IconData> _icons = [
+    Icons.groups_outlined,
+    Icons.photo_library_outlined,
+    Icons.bookmark_outline_rounded,
+    Icons.folder_outlined,
+  ];
+
+  static const List<IconData> _activeIcons = [
+    Icons.groups_rounded,
+    Icons.photo_library_rounded,
+    Icons.bookmark_rounded,
+    Icons.folder_rounded,
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // Keep within bounds of 4 tabs
+    final safeIndex = currentIndex.clamp(0, 3);
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.only(bottom: 22),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(44),
+          borderRadius: BorderRadius.circular(29),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: Container(
-              height: 64,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              width: _barWidth,
+              height: _barHeight,
               decoration: BoxDecoration(
-                color: const Color(0xFF222226).withValues(alpha: 0.74),
-                borderRadius: BorderRadius.circular(44),
+                color: const Color(0xFF202024).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(29),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  width: 1,
+                  color: Colors.white.withValues(alpha: 0.09),
+                  width: 0.8,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.35),
                     blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    offset: const Offset(0, 6),
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Stack(
+                alignment: Alignment.centerLeft,
                 children: [
-                  // 0: Collective
-                  _NavButton(
-                    icon: Icons.groups_outlined,
-                    activeIcon: Icons.groups_rounded,
-                    isSelected: currentIndex == 0,
-                    onTap: () => onTap(0),
+                  // Animated sliding blue circular indicator
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeOutCubic,
+                    left: safeIndex * _itemWidth + (_itemWidth - _circleSize) / 2.0,
+                    top: (_barHeight - _circleSize) / 2.0,
+                    width: _circleSize,
+                    height: _circleSize,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF2B5CE6),
+                            Color(0xFF1E45C8),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2B5CE6).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: Offset.zero,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 14),
 
-                  // 1: Home / Wallpapers
-                  _NavButton(
-                    icon: Icons.photo_library_outlined,
-                    activeIcon: Icons.photo_library_rounded,
-                    isSelected: currentIndex == 1,
-                    onTap: () => onTap(1),
-                  ),
-                  const SizedBox(width: 14),
-
-                  // 2: Bookmarks
-                  _NavButton(
-                    icon: Icons.bookmark_outline_rounded,
-                    activeIcon: Icons.bookmark_rounded,
-                    isSelected: currentIndex == 2,
-                    onTap: () => onTap(2),
-                  ),
-                  const SizedBox(width: 14),
-
-                  // 3: Packs / Collections
-                  _NavButton(
-                    icon: Icons.folder_outlined,
-                    activeIcon: Icons.folder_rounded,
-                    isSelected: currentIndex == 3,
-                    onTap: () => onTap(3),
+                  // 4 Equally Spaced Interactive Slots
+                  Row(
+                    children: List.generate(4, (index) {
+                      final isSelected = safeIndex == index;
+                      return SizedBox(
+                        width: _itemWidth,
+                        height: _barHeight,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              onTap(index);
+                            },
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            child: Center(
+                              child: AnimatedScale(
+                                scale: isSelected ? 1.05 : 1.0,
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOutCubic,
+                                child: Icon(
+                                  isSelected ? _activeIcons[index] : _icons[index],
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white.withValues(alpha: 0.88),
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                   ),
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavButton extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _NavButton({
-    required this.icon,
-    required this.activeIcon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: isSelected
-              ? const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF2B5CE6),
-                    Color(0xFF1E45C8),
-                  ],
-                )
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF2558E6).withValues(alpha: 0.45),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Icon(
-            isSelected ? activeIcon : icon,
-            color: isSelected
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.85),
-            size: 25,
           ),
         ),
       ),
