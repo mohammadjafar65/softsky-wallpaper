@@ -14,7 +14,6 @@ class CustomBottomNav extends StatelessWidget {
 
   static const double _barWidth = 256.0;
   static const double _barHeight = 60.0;
-  static const double _itemWidth = _barWidth / 4.0; // 64.0
   static const double _circleSize = 48.0;
 
   static const List<IconData> _icons = [
@@ -66,75 +65,83 @@ class CustomBottomNav extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  // Animated sliding blue circular indicator
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 240),
-                    curve: Curves.easeOutCubic,
-                    left: safeIndex * _itemWidth + (_itemWidth - _circleSize) / 2.0,
-                    top: (_barHeight - _circleSize) / 2.0,
-                    width: _circleSize,
-                    height: _circleSize,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0xFF2B5CE6),
-                            Color(0xFF1E45C8),
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF2B5CE6).withValues(alpha: 0.35),
-                            blurRadius: 8,
-                            offset: Offset.zero,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth = constraints.maxWidth;
+                  final itemWidth = availableWidth / 4.0;
 
-                  // 4 Equally Spaced Interactive Slots
-                  Row(
-                    children: List.generate(4, (index) {
-                      final isSelected = safeIndex == index;
-                      return SizedBox(
-                        width: _itemWidth,
-                        height: _barHeight,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              onTap(index);
-                            },
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            child: Center(
-                              child: AnimatedScale(
-                                scale: isSelected ? 1.05 : 1.0,
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOutCubic,
-                                child: Icon(
-                                  isSelected ? _activeIcons[index] : _icons[index],
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.white.withValues(alpha: 0.88),
-                                  size: 24,
+                  return Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      // Animated sliding blue circular indicator
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeOutCubic,
+                        left: safeIndex * itemWidth + (itemWidth - _circleSize) / 2.0,
+                        top: (_barHeight - _circleSize) / 2.0,
+                        width: _circleSize,
+                        height: _circleSize,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFF2B5CE6),
+                                Color(0xFF1E45C8),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2B5CE6).withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: Offset.zero,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // 4 Equally Spaced Interactive Slots using Expanded to prevent any overflow
+                      Row(
+                        children: List.generate(4, (index) {
+                          final isSelected = safeIndex == index;
+                          return Expanded(
+                            child: SizedBox(
+                              height: _barHeight,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    onTap(index);
+                                  },
+                                  splashColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+                                  child: Center(
+                                    child: AnimatedScale(
+                                      scale: isSelected ? 1.05 : 1.0,
+                                      duration: const Duration(milliseconds: 200),
+                                      curve: Curves.easeOutCubic,
+                                      child: Icon(
+                                        isSelected ? _activeIcons[index] : _icons[index],
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.white.withValues(alpha: 0.88),
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ],
+                          );
+                        }),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
