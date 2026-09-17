@@ -14,73 +14,70 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
+    return Align(
+      alignment: Alignment.bottomCenter,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 24),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(36),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                height: 64,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF222226).withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(36),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    width: 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(40),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF222226).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 0: Collective (Default)
-                    _NavButton(
-                      icon: Icons.groups_outlined,
-                      activeIcon: Icons.groups_rounded,
-                      isSelected: currentIndex == 0,
-                      onTap: () => onTap(0),
-                    ),
-                    const SizedBox(width: 6),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 0: Collective
+                  _NavButton(
+                    icon: Icons.groups_outlined,
+                    activeIcon: Icons.groups_rounded,
+                    isSelected: currentIndex == 0,
+                    onTap: () => onTap(0),
+                  ),
+                  const SizedBox(width: 8),
 
-                    // 1: Home / Wallpapers
-                    _NavButton(
-                      icon: Icons.photo_library_outlined,
-                      activeIcon: Icons.photo_library_rounded,
-                      isSelected: currentIndex == 1,
-                      onTap: () => onTap(1),
-                    ),
-                    const SizedBox(width: 6),
+                  // 1: Home / Wallpapers
+                  _NavButton(
+                    icon: Icons.photo_library_outlined,
+                    activeIcon: Icons.photo_library_rounded,
+                    isSelected: currentIndex == 1,
+                    onTap: () => onTap(1),
+                  ),
+                  const SizedBox(width: 8),
 
-                    // 2: Bookmarks
-                    _NavButton(
-                      icon: Icons.bookmark_outline_rounded,
-                      activeIcon: Icons.bookmark_rounded,
-                      isSelected: currentIndex == 2,
-                      onTap: () => onTap(2),
-                    ),
-                    const SizedBox(width: 6),
+                  // 2: Bookmarks
+                  _NavButton(
+                    icon: Icons.bookmark_outline_rounded,
+                    activeIcon: Icons.bookmark_rounded,
+                    isSelected: currentIndex == 2,
+                    onTap: () => onTap(2),
+                  ),
+                  const SizedBox(width: 8),
 
-                    // 3: Packs / Collections
-                    _NavButton(
-                      icon: Icons.folder_outlined,
-                      activeIcon: Icons.folder_rounded,
-                      isSelected: currentIndex == 3,
-                      onTap: () => onTap(3),
-                    ),
-                  ],
-                ),
+                  // 3: Packs / Collections
+                  _NavButton(
+                    icon: Icons.folder_outlined,
+                    activeIcon: Icons.folder_rounded,
+                    isSelected: currentIndex == 3,
+                    onTap: () => onTap(3),
+                  ),
+                ],
               ),
             ),
           ),
@@ -114,8 +111,8 @@ class _NavButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        width: 50,
-        height: 50,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: isSelected

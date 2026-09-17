@@ -9,6 +9,7 @@ import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/date_formatter.dart';
 import '../profile_screen.dart';
+import '../../widgets/pill_tab_bar.dart';
 import 'post_detail_screen.dart';
 import 'upload_wallpaper_screen.dart';
 import 'community_profile_screen.dart';
@@ -20,21 +21,50 @@ class CommunityScreen extends StatefulWidget {
   State<CommunityScreen> createState() => _CommunityScreenState();
 }
 
-class _CommunityScreenState extends State<CommunityScreen> {
-  final _scrollController = ScrollController();
+class _CommunityScreenState extends State<CommunityScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final _feedScrollController = ScrollController();
+  final _trendingScrollController = ScrollController();
+  int _selectedTabIndex = 1; // Default to Trending so wallpapers show immediately
 
   @override
   void initState() {
     super.initState();
+    _tabController =
+        TabController(length: 2, vsync: this, initialIndex: _selectedTabIndex);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _selectedTabIndex = _tabController.index;
+        });
+      }
+    });
+    _tabController.animation?.addListener(() {
+      final newIndex = _tabController.animation!.value.round();
+      if (newIndex != _selectedTabIndex && mounted) {
+        setState(() {
+          _selectedTabIndex = newIndex;
+        });
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<CommunityProvider>();
       provider.loadTrending(refresh: true);
       provider.loadFeed(refresh: true);
     });
 
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
+    _feedScrollController.addListener(() {
+      if (_feedScrollController.position.pixels >=
+          _feedScrollController.position.maxScrollExtent - 200) {
+        context.read<CommunityProvider>().loadFeed();
+      }
+    });
+
+    _trendingScrollController.addListener(() {
+      if (_trendingScrollController.position.pixels >=
+          _trendingScrollController.position.maxScrollExtent - 200) {
         context.read<CommunityProvider>().loadTrending();
       }
     });
@@ -42,7 +72,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _tabController.dispose();
+    _feedScrollController.dispose();
+    _trendingScrollController.dispose();
     super.dispose();
   }
 
@@ -52,19 +84,53 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackground(isDark),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // Top Bar with Collective title, date, wallpaper count, upload & profile
-            _buildHeader(context),
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // Top Bar with Collective title, date, wallpaper count, upload & profile
+                _buildHeader(context),
 
-            // Main Wallpapers Grid
-            Expanded(
-              child: _CollectiveGrid(scrollController: _scrollController),
+                // Tabs content: Following & Trending
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _FeedGrid(
+                        scrollController: _feedScrollController,
+                        onExploreTrending: () {
+                          _tabController.animateTo(1);
+                          setState(() => _selectedTabIndex = 1);
+                        },
+                      ),
+                      _TrendingGrid(
+                          scrollController: _trendingScrollController),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // Floating Pill Tab Bar for Following & Trending above bottom nav (with generous spacing)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 100,
+            child: Center(
+              child: PillTabBar(
+                tabs: const ['Following', 'Trending'],
+                selectedIndex: _selectedTabIndex,
+                onTabSelected: (index) {
+                  _tabController.animateTo(index);
+                  setState(() => _selectedTabIndex = index);
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -141,21 +207,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
               // Profile Button (User photo)
               GestureDetector(
                 onTap: () {
-                  final auth = AuthService();
-                  if (auth.isLoggedIn && auth.backendUserId != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CommunityProfileScreen(
-                            userId: auth.backendUserId!),
-                      ),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                    );
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
                 },
                 child: CircleAvatar(
                   radius: 22,
@@ -200,25 +255,137 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 }
 
-// ─── Collective Grid ──────────────────────────────────────────────────────────
+// ─── Feed Grid (Following) ──────────────────────────────────────────────────
 
-class _CollectiveGrid extends StatelessWidget {
+class _FeedGrid extends StatelessWidget {
   final ScrollController scrollController;
-  const _CollectiveGrid({required this.scrollController});
+  final VoidCallback? onExploreTrending;
+  const _FeedGrid({
+    required this.scrollController,
+    this.onExploreTrending,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!AuthService().isLoggedIn) {
+      return _EmptyFeed(
+        message: 'Sign in to see wallpapers from\ncreators you follow',
+        icon: Icons.people_outline_rounded,
+        actionLabel: 'Explore Trending',
+        onAction: onExploreTrending,
+      );
+    }
+
+    return Consumer<CommunityProvider>(
+      builder: (context, provider, _) {
+        if (provider.feedLoading && provider.feedPosts.isEmpty) {
+          return _buildShimmer();
+        }
+
+        if (provider.feedPosts.isEmpty) {
+          return _EmptyFeed(
+            message:
+                'No wallpapers from creators you follow yet.\nExplore trending to find creators!',
+            icon: Icons.people_outline_rounded,
+            actionLabel: 'Explore Trending',
+            onAction: onExploreTrending,
+          );
+        }
+
+        return RefreshIndicator(
+          color: AppTheme.primary,
+          onRefresh: () => provider.loadFeed(refresh: true),
+          child: CustomScrollView(
+            controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      if (i == provider.feedPosts.length) {
+                        return provider.feedLoading
+                            ? const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: CircularProgressIndicator(
+                                      color: AppTheme.primary),
+                                ),
+                              )
+                            : const SizedBox.shrink();
+                      }
+                      return _PostCard(
+                        post: provider.feedPosts[i],
+                        onTap: () => _openDetail(
+                            context, provider.feedPosts, i),
+                      );
+                    },
+                    childCount: provider.feedPosts.length +
+                        (provider.feedHasMore ? 1 : 0),
+                  ),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.65,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _openDetail(
+      BuildContext context, List<CommunityPost> posts, int initialIndex) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            PostDetailScreen(posts: posts, initialIndex: initialIndex),
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.65,
+      ),
+      itemCount: 6,
+      itemBuilder: (_, __) => Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(22),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Trending Grid ────────────────────────────────────────────────────────────
+
+class _TrendingGrid extends StatelessWidget {
+  final ScrollController scrollController;
+  const _TrendingGrid({required this.scrollController});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<CommunityProvider>(
       builder: (context, provider, _) {
-        final posts = provider.trendingPosts.isNotEmpty
-            ? provider.trendingPosts
-            : provider.feedPosts;
-
-        if (provider.trendingLoading && posts.isEmpty) {
+        if (provider.trendingLoading && provider.trendingPosts.isEmpty) {
           return _buildShimmer();
         }
 
-        if (posts.isEmpty) {
+        if (provider.trendingPosts.isEmpty) {
           return const _EmptyFeed(
             message: 'No collective wallpapers yet.\nBe the first to upload!',
             icon: Icons.auto_awesome_rounded,
@@ -227,22 +394,17 @@ class _CollectiveGrid extends StatelessWidget {
 
         return RefreshIndicator(
           color: AppTheme.primary,
-          onRefresh: () async {
-            await Future.wait([
-              provider.loadTrending(refresh: true),
-              provider.loadFeed(refresh: true),
-            ]);
-          },
+          onRefresh: () => provider.loadTrending(refresh: true),
           child: CustomScrollView(
             controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 140),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      if (i == posts.length) {
+                      if (i == provider.trendingPosts.length) {
                         return provider.trendingLoading
                             ? const Center(
                                 child: Padding(
@@ -254,11 +416,12 @@ class _CollectiveGrid extends StatelessWidget {
                             : const SizedBox.shrink();
                       }
                       return _PostCard(
-                        post: posts[i],
-                        onTap: () => _openDetail(context, posts, i),
+                        post: provider.trendingPosts[i],
+                        onTap: () => _openDetail(
+                            context, provider.trendingPosts, i),
                       );
                     },
-                    childCount: posts.length +
+                    childCount: provider.trendingPosts.length +
                         (provider.trendingHasMore ? 1 : 0),
                   ),
                   gridDelegate:
@@ -277,18 +440,20 @@ class _CollectiveGrid extends StatelessWidget {
     );
   }
 
-  void _openDetail(BuildContext context, List<CommunityPost> posts, int initialIndex) {
+  void _openDetail(
+      BuildContext context, List<CommunityPost> posts, int initialIndex) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PostDetailScreen(posts: posts, initialIndex: initialIndex),
+        builder: (_) =>
+            PostDetailScreen(posts: posts, initialIndex: initialIndex),
       ),
     );
   }
 
   Widget _buildShimmer() {
     return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 140),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -485,7 +650,9 @@ class _PostCardState extends State<_PostCard>
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => CommunityProfileScreen(
-                                      userId: post.author!.id),
+                                    userId: post.author!.id,
+                                    initialUser: post.author,
+                                  ),
                                 ),
                               );
                             }
@@ -522,7 +689,9 @@ class _PostCardState extends State<_PostCard>
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => CommunityProfileScreen(
-                                        userId: post.author!.id),
+                                      userId: post.author!.id,
+                                      initialUser: post.author,
+                                    ),
                                   ),
                                 );
                               }
@@ -580,23 +749,56 @@ class _PostCardState extends State<_PostCard>
 class _EmptyFeed extends StatelessWidget {
   final String message;
   final IconData icon;
-  const _EmptyFeed({required this.message, required this.icon});
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _EmptyFeed({
+    required this.message,
+    required this.icon,
+    this.actionLabel,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 56, color: Colors.grey.withValues(alpha: 0.4)),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: Colors.grey.withValues(alpha: 0.6), fontSize: 15),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 56, color: Colors.grey.withValues(alpha: 0.4)),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.withValues(alpha: 0.7),
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: onAction,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  actionLabel!,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

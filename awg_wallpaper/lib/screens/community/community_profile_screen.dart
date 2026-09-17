@@ -10,7 +10,12 @@ import 'post_detail_screen.dart';
 
 class CommunityProfileScreen extends StatefulWidget {
   final int userId;
-  const CommunityProfileScreen({super.key, required this.userId});
+  final CommunityUser? initialUser;
+  const CommunityProfileScreen({
+    super.key,
+    required this.userId,
+    this.initialUser,
+  });
 
   @override
   State<CommunityProfileScreen> createState() =>
@@ -26,20 +31,55 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _user = widget.initialUser;
+    if (_user != null) {
+      _loading = false;
+    }
     _loadData();
   }
 
   Future<void> _loadData() async {
     final provider = context.read<CommunityProvider>();
-    final [user, posts] = await Future.wait([
-      provider.getCommunityUser(widget.userId),
-      provider.getUserPosts(widget.userId),
-    ]);
+    CommunityUser? user = _user ?? widget.initialUser;
+    final List<CommunityPost> localPosts = [];
+
+    // Find any matching posts and author in locally loaded community posts
+    for (final p in [...provider.trendingPosts, ...provider.feedPosts]) {
+      if (p.author != null && p.author!.id == widget.userId) {
+        user ??= p.author;
+        if (!localPosts.any((existing) => existing.id == p.id)) {
+          localPosts.add(p);
+        }
+      }
+    }
+
+    if (mounted && (user != null || localPosts.isNotEmpty)) {
+      setState(() {
+        if (user != null) _user = user;
+        if (localPosts.isNotEmpty && _posts.isEmpty) _posts = localPosts;
+        _loading = false;
+      });
+    }
+
+    try {
+      final results = await Future.wait([
+        provider.getCommunityUser(widget.userId),
+        provider.getUserPosts(widget.userId),
+      ]);
+      if (results[0] != null) user = results[0] as CommunityUser;
+      final serverPosts = results[1] as List<CommunityPost>;
+      if (serverPosts.isNotEmpty) {
+        localPosts.clear();
+        localPosts.addAll(serverPosts);
+      }
+    } catch (e) {
+      debugPrint('getCommunityUser error (using fallback): $e');
+    }
 
     if (mounted) {
       setState(() {
-        _user = user as CommunityUser?;
-        _posts = posts as List<CommunityPost>;
+        _user = user ?? _user ?? widget.initialUser;
+        if (localPosts.isNotEmpty) _posts = localPosts;
         _loading = false;
       });
     }

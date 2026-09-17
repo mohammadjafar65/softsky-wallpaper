@@ -175,7 +175,9 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                               context,
                               MaterialPageRoute(
                                 builder: (_) => CommunityProfileScreen(
-                                    userId: post.author!.id),
+                                  userId: post.author!.id,
+                                  initialUser: post.author,
+                                ),
                               ),
                             );
                           }
@@ -212,7 +214,9 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => CommunityProfileScreen(
-                                      userId: post.author!.id),
+                                    userId: post.author!.id,
+                                    initialUser: post.author,
+                                  ),
                                 ),
                               );
                             }

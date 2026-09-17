@@ -16,11 +16,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0; // 0: Collective by default
+  int _currentIndex = 1; // 1: Wallpapers / Home by default
 
   final List<Widget> _screens = const [
-    CommunityScreen(), // 0: Collective (Default)
-    HomeScreen(),      // 1: Home
+    CommunityScreen(), // 0: Collective
+    HomeScreen(),      // 1: Wallpapers (Default)
     BookmarksScreen(), // 2: Bookmarks
     PacksScreen(),     // 3: Packs
     ProWallpapersScreen(), // 4: Pro Wallpapers

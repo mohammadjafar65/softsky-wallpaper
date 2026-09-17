@@ -8,6 +8,7 @@ import '../config/theme.dart';
 import '../providers/wallpaper_provider.dart';
 import '../widgets/wallpaper_card.dart';
 import '../widgets/shimmer_loading.dart';
+import '../widgets/pill_tab_bar.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
@@ -241,63 +242,18 @@ class _HomeScreenState extends State<HomeScreen> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 142,
+            bottom: 100,
             child: Center(
-              child: _buildFilterTabBar(),
+              child: PillTabBar(
+                tabs: const ['Free', 'Pro'],
+                selectedIndex: _filterIndex,
+                onTabSelected: (index) {
+                  setState(() => _filterIndex = index);
+                },
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterTabBar() {
-    final labels = ['Free', 'Pro'];
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(50),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          height: 46,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(50),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-          ),
-          padding: const EdgeInsets.all(4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(labels.length, (i) {
-              final isSelected = _filterIndex == i;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _filterIndex = i);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 64,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? (i == 1 ? AppTheme.gold : AppTheme.primary)
-                            .withValues(alpha: isSelected ? 1.0 : 0.0)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Text(
-                    labels[i],
-                    style: TextStyle(
-                      color: isSelected ? Colors.black : AppTheme.textSecondary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
       ),
     );
   }

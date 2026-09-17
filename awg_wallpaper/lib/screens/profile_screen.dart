@@ -13,6 +13,7 @@ import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
 import 'manage_subscription_screen.dart';
 import 'auto_wallpaper_settings_screen.dart';
+import 'app_settings_screen.dart';
 
 import '../services/auth_service.dart';
 import '../providers/auto_wallpaper_provider.dart';
@@ -190,6 +191,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             title: 'Preferences',
                             isDark: isDark,
                             children: [
+                              _buildSettingsTile(
+                                icon: Icons.settings_outlined,
+                                title: 'App Settings',
+                                subtitle: 'Theme, notifications & preferences',
+                                isDark: isDark,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const AppSettingsScreen()),
+                                ),
+                              ),
                               if (subscriptionProvider.isPro)
                                 _buildSettingsTile(
                                   icon: Icons.card_membership_rounded,
@@ -368,7 +381,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   size: 20,
                 ),
               ),
-            ),
+            )
+          else
+            const SizedBox(width: 40),
           const Spacer(),
           Text(
             'Account',
@@ -379,7 +394,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontSize: 21,
                 ),
           ),
-          const Spacer(flex: 2),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.getSurface(isDark).withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.5),
+                ),
+              ),
+              child: Icon(
+                Icons.settings_outlined,
+                color: AppTheme.getTextPrimary(isDark),
+                size: 20,
+              ),
+            ),
+          ),
         ],
       ),
     );
