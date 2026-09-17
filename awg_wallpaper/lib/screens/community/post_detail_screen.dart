@@ -11,6 +11,7 @@ import '../../models/community_post.dart';
 import '../../models/community_user.dart';
 import '../../models/community_comment.dart';
 import '../../providers/community_provider.dart';
+import '../../providers/bookmark_provider.dart';
 import '../../services/auth_service.dart';
 import 'community_profile_screen.dart';
 import 'report_bottom_sheet.dart';
@@ -73,6 +74,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     HapticFeedback.lightImpact();
     final post = _currentPost;
     final target = !post.isLiked;
+    final bookmarkProvider = context.read<BookmarkProvider>();
 
     setState(() {
       post.isLiked = target;
@@ -80,12 +82,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (post.likesCount < 0) post.likesCount = 0;
     });
 
+    if (target) {
+      bookmarkProvider.addBookmark(post.toWallpaper());
+    } else {
+      bookmarkProvider.removeBookmark('community_${post.id}');
+    }
+
     try {
       final actual = await context.read<CommunityProvider>().toggleLike(post.id, targetState: target);
       if (mounted && post.isLiked != actual) {
         setState(() {
           post.isLiked = actual;
         });
+        if (actual) {
+          bookmarkProvider.addBookmark(post.toWallpaper());
+        } else {
+          bookmarkProvider.removeBookmark('community_${post.id}');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -94,6 +107,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           post.likesCount += (!target) ? 1 : -1;
           if (post.likesCount < 0) post.likesCount = 0;
         });
+        if (!target) {
+          bookmarkProvider.addBookmark(post.toWallpaper());
+        } else {
+          bookmarkProvider.removeBookmark('community_${post.id}');
+        }
         _showMsg('Failed to update like');
       }
     }
@@ -107,6 +125,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     HapticFeedback.lightImpact();
     final post = _currentPost;
     final target = !post.isSaved;
+    final bookmarkProvider = context.read<BookmarkProvider>();
 
     setState(() {
       post.isSaved = target;
@@ -114,12 +133,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (post.savesCount < 0) post.savesCount = 0;
     });
 
+    if (target) {
+      bookmarkProvider.addBookmark(post.toWallpaper());
+    } else {
+      bookmarkProvider.removeBookmark('community_${post.id}');
+    }
+
     try {
       final actual = await context.read<CommunityProvider>().toggleSave(post.id, targetState: target);
       if (mounted && post.isSaved != actual) {
         setState(() {
           post.isSaved = actual;
         });
+        if (actual) {
+          bookmarkProvider.addBookmark(post.toWallpaper());
+        } else {
+          bookmarkProvider.removeBookmark('community_${post.id}');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -128,6 +158,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           post.savesCount += (!target) ? 1 : -1;
           if (post.savesCount < 0) post.savesCount = 0;
         });
+        if (!target) {
+          bookmarkProvider.addBookmark(post.toWallpaper());
+        } else {
+          bookmarkProvider.removeBookmark('community_${post.id}');
+        }
         _showMsg('Failed to update bookmark');
       }
     }
@@ -400,17 +435,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ),
         const SizedBox(width: 8),
         // Like Button
-        _buildIconBtn(
-          icon: _currentPost.isLiked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-          iconColor: _currentPost.isLiked ? AppTheme.error : Colors.white,
-          onTap: _toggleLike,
+        Consumer<BookmarkProvider>(
+          builder: (context, bookmarkProvider, _) {
+            final isLiked = _currentPost.isLiked ||
+                bookmarkProvider.isBookmarked('community_${_currentPost.id}');
+            return _buildIconBtn(
+              icon: isLiked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+              iconColor: isLiked ? AppTheme.error : Colors.white,
+              onTap: _toggleLike,
+            );
+          },
         ),
         const SizedBox(width: 8),
         // Save Button
-        _buildIconBtn(
-          icon: _currentPost.isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-          iconColor: _currentPost.isSaved ? AppTheme.primary : Colors.white,
-          onTap: _toggleSave,
+        Consumer<BookmarkProvider>(
+          builder: (context, bookmarkProvider, _) {
+            final isSaved = _currentPost.isSaved ||
+                bookmarkProvider.isBookmarked('community_${_currentPost.id}');
+            return _buildIconBtn(
+              icon: isSaved ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+              iconColor: isSaved ? AppTheme.primary : Colors.white,
+              onTap: _toggleSave,
+            );
+          },
         ),
         const SizedBox(width: 8),
         // Options Sheet

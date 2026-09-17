@@ -6,6 +6,7 @@ import '../../config/theme.dart';
 import '../../config/cached_image_config.dart';
 import '../../models/community_post.dart';
 import '../../providers/community_provider.dart';
+import '../../providers/bookmark_provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/date_formatter.dart';
 import '../../widgets/pill_tab_bar.dart';
@@ -137,7 +138,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -146,10 +147,10 @@ class _CommunityScreenState extends State<CommunityScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Collective',
+                'COLLECTIVE',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
+                  color: AppTheme.textWhite,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
                 ),
@@ -166,8 +167,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                     count > 0
                         ? '${DateFormatter.format()} • $count Wallpapers'
                         : DateFormatter.format(),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.65),
+                    style: const TextStyle(
+                      color: AppTheme.textMuted,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -568,7 +569,14 @@ class _PostCardState extends State<_PostCard>
                     child: GestureDetector(
                       onTap: () {
                         HapticFeedback.lightImpact();
+                        final bookmarkProvider = context.read<BookmarkProvider>();
+                        final willLike = !post.isLiked;
                         context.read<CommunityProvider>().toggleLike(post.id);
+                        if (willLike) {
+                          bookmarkProvider.addBookmark(post.toWallpaper());
+                        } else {
+                          bookmarkProvider.removeBookmark('community_${post.id}');
+                        }
                       },
                       behavior: HitTestBehavior.opaque,
                       child: Container(
@@ -579,14 +587,20 @@ class _PostCardState extends State<_PostCard>
                           color: Colors.black.withValues(alpha: 0.35),
                         ),
                         child: Center(
-                          child: Icon(
-                            post.isLiked
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            color: post.isLiked
-                                ? Colors.red
-                                : Colors.white.withValues(alpha: 0.9),
-                            size: 17,
+                          child: Consumer<BookmarkProvider>(
+                            builder: (context, bookmarkProvider, _) {
+                              final isLikedOrBookmarked = post.isLiked ||
+                                  bookmarkProvider.isBookmarked('community_${post.id}');
+                              return Icon(
+                                isLikedOrBookmarked
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                color: isLikedOrBookmarked
+                                    ? Colors.red
+                                    : Colors.white.withValues(alpha: 0.9),
+                                size: 17,
+                              );
+                            },
                           ),
                         ),
                       ),

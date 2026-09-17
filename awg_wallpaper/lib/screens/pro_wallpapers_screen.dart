@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -121,7 +119,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -130,40 +128,34 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
             children: [
               Row(children: const [
                 Text(
-                  'EXCLUSIVE',
+                  'PRO',
                   style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    fontFamily:
-                        'Outfit', // Assuming font family, otherwise uses theme
+                    letterSpacing: -0.5,
                   ),
                 ),
                 SizedBox(width: 8),
                 Icon(
                   Icons.star_rounded,
-                  size: 30,
+                  size: 28,
                   color: Colors.amberAccent,
                 ),
               ]),
               const SizedBox(height: 4),
-              // Use total count from provider if available, or just list length
-              // For Pro wallpapers, we might not have a separate total count variable updated by loadProWallpapers yet
-              // But provider has totalProWallpapers from initial sync (which is just limit:1).
-              // Let's use the list length or "Loading..."
               Text(
                 Provider.of<WallpaperProvider>(context).totalProWallpapers > 0
                     ? '${DateFormatter.format()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Pro Wallpapers'
                     : DateFormatter.format(),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textMuted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
-          // const SizedBox(width: 43),
           Row(
             children: [
               GestureDetector(
@@ -173,23 +165,21 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     MaterialPageRoute(builder: (_) => const SearchScreen()),
                   );
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: const Icon(
-                        Icons.search_rounded,
-                        color: Colors.white,
-                        size: 23,
-                      ),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C2C2E),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
                   ),
                 ),

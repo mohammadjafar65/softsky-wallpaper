@@ -1,4 +1,5 @@
 import 'community_user.dart';
+import 'wallpaper.dart';
 
 class CommunityPost {
   final int id;
@@ -55,6 +56,26 @@ class CommunityPost {
           : null,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.now(),
+    );
+  }
+}
+
+extension CommunityPostToWallpaper on CommunityPost {
+  Wallpaper toWallpaper() {
+    return Wallpaper(
+      id: 'community_$id',
+      title: (title != null && title!.trim().isNotEmpty)
+          ? title!.trim()
+          : ((author?.displayName != null && author!.displayName.trim().isNotEmpty)
+              ? author!.displayName.trim()
+              : 'Collective Wallpaper'),
+      imageUrl: imageUrl,
+      thumbnailUrl: (thumbnailUrl != null && thumbnailUrl!.isNotEmpty) ? thumbnailUrl! : imageUrl,
+      category: 'Collective',
+      isPro: false,
+      isWide: false,
+      downloads: downloadsCount,
+      createdAt: createdAt,
     );
   }
 }

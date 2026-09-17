@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -252,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
             bottom: 88,
             child: Center(
               child: PillTabBar(
-                tabs: const ['Wallpapers', 'Exclusive'],
+                tabs: const ['Free', 'Pro'],
                 selectedIndex: _filterIndex,
                 onTabSelected: (index) {
                   setState(() => _filterIndex = index);
@@ -291,60 +290,63 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final isExclusive = _filterIndex == 1;
+    final isPro = _filterIndex == 1;
     final provider = Provider.of<WallpaperProvider>(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (isExclusive)
+              if (isPro)
                 Row(
                   children: [
-                    Text(
-                      'EXCLUSIVE',
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color: AppTheme.textWhite,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    const Text(
+                      'PRO',
+                      style: TextStyle(
+                        color: AppTheme.textWhite,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     const Icon(
                       Icons.star_rounded,
-                      size: 30,
+                      size: 28,
                       color: Colors.amberAccent,
                     ),
                   ],
                 )
               else
-                Text(
+                const Text(
                   'TODAY',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        color: AppTheme.textWhite,
-                        fontSize: 28,
-                      ),
+                  style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
                 ),
               const SizedBox(height: 4),
               Text(
-                isExclusive
+                isPro
                     ? (provider.totalProWallpapers > 0
-                        ? '${_getFormattedDate()} • ${provider.totalProWallpapers} Exclusive Wallpapers'
+                        ? '${_getFormattedDate()} • ${provider.totalProWallpapers} Pro Wallpapers'
                         : (provider.proWallpapersList.isNotEmpty
-                            ? '${_getFormattedDate()} • ${provider.proWallpapersList.length} Exclusive Wallpapers'
+                            ? '${_getFormattedDate()} • ${provider.proWallpapersList.length} Pro Wallpapers'
                             : _getFormattedDate()))
                     : (provider.totalFreeWallpapers > 0
                         ? '${_getFormattedDate()} • ${provider.totalFreeWallpapers} Free Wallpapers'
                         : _getFormattedDate()),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textMuted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -357,23 +359,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const SearchScreen()),
                   );
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: const Icon(
-                        Icons.search_rounded,
-                        color: Colors.white,
-                        size: 23,
-                      ),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C2C2E),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
                   ),
                 ),

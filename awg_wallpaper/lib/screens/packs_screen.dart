@@ -56,35 +56,30 @@ class _PacksScreenState extends State<PacksScreen> {
                   // Custom Header Matching Home Screen
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 20),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'BUNDLES',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineLarge
-                                    ?.copyWith(
-                                      color: AppTheme.textWhite,
-                                      fontSize: 28,
-                                    ),
+                                style: TextStyle(
+                                  color: AppTheme.textWhite,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '${DateFormatter.format()} • ${provider.packs.length} Packs',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: AppTheme.textMuted,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                style: const TextStyle(
+                                  color: AppTheme.textMuted,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
                           ),

@@ -107,28 +107,30 @@ class BookmarksScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context, BookmarkProvider provider) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'FAVORITES',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textWhite,
-                      fontSize: 28,
-                    ),
+                style: TextStyle(
+                  color: AppTheme.textWhite,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 '${DateFormatter.format()} • ${provider.bookmarkCount} Saved',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textMuted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -136,15 +138,21 @@ class BookmarksScreen extends StatelessWidget {
             GestureDetector(
               onTap: () => _showClearConfirmation(context, provider),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: AppTheme.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  color: const Color(0xFF2C2C2E),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: AppTheme.error,
-                  size: 22,
+                child: const Center(
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ),
