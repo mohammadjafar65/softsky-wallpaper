@@ -8,6 +8,9 @@ import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import 'post_detail_screen.dart';
 import '../app_settings_screen.dart';
+import '../subscription_screen.dart';
+import '../manage_subscription_screen.dart';
+import '../../providers/subscription_provider.dart';
 
 class CommunityProfileScreen extends StatefulWidget {
   final int userId;
@@ -170,9 +173,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                 ),
               ),
             ),
-          if (isOwnProfile)
+          if (isOwnProfile) ...[
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: 4),
               child: IconButton(
                 icon: const Icon(Icons.settings_outlined, color: Colors.white),
                 tooltip: 'Settings',
@@ -186,6 +189,64 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                 },
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                tooltip: 'Logout',
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: AppTheme.getBackground(isDark),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      title: Text(
+                        'Logout',
+                        style: TextStyle(
+                          color: AppTheme.getTextPrimary(isDark),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      content: Text(
+                        'Are you sure you want to sign out?',
+                        style: TextStyle(color: AppTheme.getTextSecondary(isDark)),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(color: AppTheme.getTextMuted(isDark)),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true && context.mounted) {
+                    await AuthService().signOut();
+                    if (context.mounted) {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Logged out successfully')),
+                      );
+                    }
+                  }
+                },
+              ),
+            ),
+          ],
         ],
       ),
       body: _loading
@@ -297,26 +358,117 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
 
                             // Follow button (or Your Profile chip)
                             if (isOwnProfile)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                              Consumer<SubscriptionProvider>(
+                                builder: (context, subProvider, _) => Column(
                                   children: [
-                                    Icon(Icons.person_rounded, size: 18, color: AppTheme.primary),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Your Profile',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
+                                    // Subscription quick-access
+                                    GestureDetector(
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => subProvider.isPro
+                                              ? const ManageSubscriptionScreen()
+                                              : const SubscriptionScreen(),
+                                        ),
+                                      ),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          gradient: subProvider.isPro
+                                              ? const LinearGradient(
+                                                  colors: [AppTheme.gold, Color(0xFFFFB700)],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                )
+                                              : null,
+                                          color: subProvider.isPro ? null : Colors.white.withValues(alpha: 0.08),
+                                          borderRadius: BorderRadius.circular(14),
+                                          border: Border.all(
+                                            color: subProvider.isPro
+                                                ? Colors.transparent
+                                                : Colors.white.withValues(alpha: 0.1),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              subProvider.isPro
+                                                  ? Icons.workspace_premium_rounded
+                                                  : Icons.star_border_rounded,
+                                              size: 18,
+                                              color: subProvider.isPro ? Colors.black : AppTheme.gold,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              subProvider.isPro ? 'Manage Pro Subscription' : 'Upgrade to Pro',
+                                              style: TextStyle(
+                                                color: subProvider.isPro ? Colors.black : Colors.white70,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    // Logout button
+                                    GestureDetector(
+                                      onTap: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            backgroundColor: AppTheme.getBackground(isDark),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                            title: Text('Logout', style: TextStyle(color: AppTheme.getTextPrimary(isDark), fontWeight: FontWeight.w700)),
+                                            content: Text('Are you sure you want to sign out?', style: TextStyle(color: AppTheme.getTextSecondary(isDark))),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(ctx, false),
+                                                child: Text('Cancel', style: TextStyle(color: AppTheme.getTextMuted(isDark))),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(ctx, true),
+                                                child: const Text('Logout', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700)),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirm == true && context.mounted) {
+                                          await AuthService().signOut();
+                                          if (context.mounted) {
+                                            Navigator.of(context).popUntil((route) => route.isFirst);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Logged out successfully')),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(14),
+                                          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                                        ),
+                                        child: const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.logout_rounded, size: 18, color: Colors.redAccent),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'Logout',
+                                              style: TextStyle(
+                                                color: Colors.redAccent,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
