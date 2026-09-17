@@ -91,8 +91,8 @@ class _AuthGateScreenState extends State<AuthGateScreen>
 
                 // Logo / branding
                 Image.asset(
-                  'assets/images/splash_text.png',
-                  width: 120,
+                  'assets/images/softsky_logo.png',
+                  width: 170,
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 16),
