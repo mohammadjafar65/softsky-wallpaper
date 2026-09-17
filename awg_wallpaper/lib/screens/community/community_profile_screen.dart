@@ -11,10 +11,12 @@ import 'post_detail_screen.dart';
 class CommunityProfileScreen extends StatefulWidget {
   final int userId;
   final CommunityUser? initialUser;
+  final bool isCurrentUser;
   const CommunityProfileScreen({
     super.key,
     required this.userId,
     this.initialUser,
+    this.isCurrentUser = false,
   });
 
   @override
@@ -113,8 +115,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isOwnProfile = AuthService().backendUserId != null &&
-        AuthService().backendUserId == widget.userId;
+    final isOwnProfile = widget.isCurrentUser ||
+        (AuthService().backendUserId != null &&
+            AuthService().backendUserId == widget.userId);
 
     return Scaffold(
       backgroundColor: AppTheme.getBackground(isDark),

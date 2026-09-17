@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/cached_image_config.dart';
 import '../../models/community_post.dart';
+import '../../models/community_user.dart';
 import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/date_formatter.dart';
-import '../profile_screen.dart';
 import '../../widgets/pill_tab_bar.dart';
 import 'post_detail_screen.dart';
 import 'upload_wallpaper_screen.dart';
@@ -114,11 +114,11 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
           ),
 
-          // Floating Pill Tab Bar for Following & Trending above bottom nav (with generous spacing)
+          // Floating Pill Tab Bar for Following & Trending above bottom nav (decreased spacing)
           Positioned(
             left: 0,
             right: 0,
-            bottom: 104,
+            bottom: 88,
             child: Center(
               child: PillTabBar(
                 tabs: const ['Following', 'Trending'],
@@ -204,12 +204,54 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
               const SizedBox(width: 12),
 
-              // Profile Button (User photo)
+              // Profile Button (User photo) -> Navigate to that user's collective profile
               GestureDetector(
                 onTap: () {
+                  final authUser = AuthService().currentUser;
+                  final communityProvider = context.read<CommunityProvider>();
+                  CommunityUser? myUser;
+                  for (final p in [
+                    ...communityProvider.myPosts,
+                    ...communityProvider.trendingPosts,
+                    ...communityProvider.feedPosts
+                  ]) {
+                    if (authUser != null &&
+                        (p.author?.displayName == authUser.displayName ||
+                            p.author?.photoUrl == authUser.photoURL)) {
+                      myUser = p.author;
+                      break;
+                    }
+                  }
+                  myUser ??= communityProvider.myPosts.isNotEmpty
+                      ? communityProvider.myPosts.first.author
+                      : (communityProvider.trendingPosts.isNotEmpty
+                          ? communityProvider.trendingPosts.first.author
+                          : null);
+
+                  final int targetUserId =
+                      myUser?.id ?? AuthService().backendUserId ?? 1;
+                  final initialUser = myUser ??
+                      CommunityUser(
+                        id: targetUserId,
+                        displayName: authUser?.displayName ?? 'My Profile',
+                        photoUrl: authUser?.photoURL,
+                        bio: 'Wallpaper Creator',
+                        followersCount: 0,
+                        followingCount: 0,
+                        postsCount: 0,
+                        totalDownloads: 0,
+                        isFollowing: false,
+                      );
+
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => CommunityProfileScreen(
+                        userId: targetUserId,
+                        initialUser: initialUser,
+                        isCurrentUser: true,
+                      ),
+                    ),
                   );
                 },
                 child: CircleAvatar(

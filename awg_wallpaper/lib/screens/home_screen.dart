@@ -9,6 +9,7 @@ import '../providers/wallpaper_provider.dart';
 import '../widgets/wallpaper_card.dart';
 import '../widgets/shimmer_loading.dart';
 import '../widgets/pill_tab_bar.dart';
+import '../widgets/category_chip.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
@@ -156,6 +157,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _buildHeader(context),
                         ),
 
+                        // Categories Filter Chips
+                        SliverToBoxAdapter(
+                          child: _buildCategories(context, provider),
+                        ),
+
                         // Mixed Content Grid (Wallpapers + Collections)
                         if ((_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
                             (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.allWallpapers.isEmpty))
@@ -238,17 +244,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-          // Floating filter tab bar above bottom nav
+          // Floating filter tab bar above bottom nav (decreased spacing)
           Positioned(
             left: 0,
             right: 0,
-            bottom: 104,
+            bottom: 88,
             child: Center(
               child: PillTabBar(
-                tabs: const ['Free', 'Pro'],
+                tabs: const ['Wallpapers', 'Exclusive'],
                 selectedIndex: _filterIndex,
                 onTabSelected: (index) {
                   setState(() => _filterIndex = index);
+                  if (index == 1) {
+                    final provider = context.read<WallpaperProvider>();
+                    if (provider.proWallpapersList.isEmpty && !provider.isProLoading) {
+                      provider.loadProWallpapers(refresh: true, force: true);
+                    }
+                  }
                 },
               ),
             ),
@@ -278,6 +290,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isExclusive = _filterIndex == 1;
+    final provider = Provider.of<WallpaperProvider>(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
@@ -286,20 +301,44 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'TODAY',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textWhite,
-                      fontSize: 28,
+              if (isExclusive)
+                Row(
+                  children: [
+                    Text(
+                      'EXCLUSIVE',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            color: AppTheme.textWhite,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-              ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 30,
+                      color: Colors.amberAccent,
+                    ),
+                  ],
+                )
+              else
+                Text(
+                  'TODAY',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        color: AppTheme.textWhite,
+                        fontSize: 28,
+                      ),
+                ),
               const SizedBox(height: 4),
               Text(
-                Provider.of<WallpaperProvider>(context).totalFreeWallpapers > 0
-                    ? _filterIndex == 1
-                        ? '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalProWallpapers} Pro Wallpapers'
-                        : '${_getFormattedDate()} • ${Provider.of<WallpaperProvider>(context).totalFreeWallpapers} Free Wallpapers'
-                    : _getFormattedDate(),
+                isExclusive
+                    ? (provider.totalProWallpapers > 0
+                        ? '${_getFormattedDate()} • ${provider.totalProWallpapers} Exclusive Wallpapers'
+                        : (provider.proWallpapersList.isNotEmpty
+                            ? '${_getFormattedDate()} • ${provider.proWallpapersList.length} Exclusive Wallpapers'
+                            : _getFormattedDate()))
+                    : (provider.totalFreeWallpapers > 0
+                        ? '${_getFormattedDate()} • ${provider.totalFreeWallpapers} Free Wallpapers'
+                        : _getFormattedDate()),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppTheme.textMuted,
                       fontSize: 13,
@@ -374,6 +413,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCategories(BuildContext context, WallpaperProvider provider) {
+    if (provider.categories.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(5, 0, 0, 16),
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: provider.categories.length,
+        itemBuilder: (context, index) {
+          final category = provider.categories[index];
+          final slugKey = category.slug ?? category.id;
+          final isSelected = _filterIndex == 1
+              ? provider.selectedProCategory == slugKey
+              : provider.selectedCategory == slugKey;
+
+          return CategoryChip(
+            category: category,
+            isSelected: isSelected,
+            onTap: () {
+              if (_filterIndex == 1) {
+                provider.setSelectedProCategory(slugKey, reload: true);
+              } else {
+                provider.setSelectedCategory(slugKey);
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+
   // Widget _buildTrendingCarousel(
   //     BuildContext context, WallpaperProvider provider) {
   //   if (provider.wallpapers.isEmpty) return const SizedBox.shrink();
@@ -444,8 +515,8 @@ class _HomeScreenState extends State<HomeScreen> {
         mixedItems.add('native_ad');
       }
 
-      // Every 7 wallpapers, insert a pack if available
-      if ((i + 1) % 7 == 0 && packIndex < packs.length) {
+      // Every 7 wallpapers, insert a pack if available (only on regular Wallpapers tab)
+      if (_filterIndex == 0 && (i + 1) % 7 == 0 && packIndex < packs.length) {
         mixedItems.add(packs[packIndex]);
         packIndex++;
       }
