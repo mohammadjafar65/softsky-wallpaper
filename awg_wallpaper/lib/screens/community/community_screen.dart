@@ -15,6 +15,9 @@ import 'upload_wallpaper_screen.dart';
 import 'community_profile_screen.dart';
 import '../../widgets/top_bar_profile_avatar.dart';
 import '../../widgets/auth_modal_sheet.dart';
+import '../../widgets/native_ad_widget.dart';
+import '../../providers/subscription_provider.dart';
+import '../../utils/ad_helper.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -120,7 +123,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           Positioned(
             left: 0,
             right: 0,
-            bottom: 88,
+            bottom: 130,
             child: Center(
               child: PillTabBar(
                 tabs: const ['Following', 'Trending'],
@@ -239,6 +242,19 @@ class _CommunityScreenState extends State<CommunityScreen>
 
 // ─── Feed Grid (Following) ──────────────────────────────────────────────────
 
+List<dynamic> _buildMixedPosts(List<CommunityPost> posts, bool isPro) {
+  if (isPro) return posts;
+  final List<dynamic> mixed = [];
+  for (int i = 0; i < posts.length; i++) {
+    mixed.add(posts[i]);
+    // Every 5 items, insert a native ad (ONLY FOR NON-PRO)
+    if ((i + 1) % 5 == 0) {
+      mixed.add('native_ad');
+    }
+  }
+  return mixed;
+}
+
 class _FeedGrid extends StatelessWidget {
   final ScrollController scrollController;
   final VoidCallback? onExploreTrending;
@@ -258,6 +274,8 @@ class _FeedGrid extends StatelessWidget {
       );
     }
 
+    final isPro = context.watch<SubscriptionProvider>().isPro;
+
     return Consumer<CommunityProvider>(
       builder: (context, provider, _) {
         if (provider.feedLoading && provider.feedPosts.isEmpty) {
@@ -274,6 +292,8 @@ class _FeedGrid extends StatelessWidget {
           );
         }
 
+        final mixedItems = _buildMixedPosts(provider.feedPosts, isPro);
+
         return RefreshIndicator(
           color: AppTheme.primary,
           onRefresh: () => provider.loadFeed(refresh: true),
@@ -286,7 +306,7 @@ class _FeedGrid extends StatelessWidget {
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      if (i == provider.feedPosts.length) {
+                      if (i == mixedItems.length) {
                         return provider.feedLoading
                             ? const Center(
                                 child: Padding(
@@ -297,13 +317,27 @@ class _FeedGrid extends StatelessWidget {
                               )
                             : const SizedBox.shrink();
                       }
+                      final item = mixedItems[i];
+                      if (item == 'native_ad') {
+                        return AspectRatio(
+                          aspectRatio: 0.65,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: const NativeAdWidget(height: double.infinity),
+                          ),
+                        );
+                      }
+                      final post = item as CommunityPost;
+                      final originalIndex = provider.feedPosts.indexOf(post);
                       return _PostCard(
-                        post: provider.feedPosts[i],
+                        post: post,
                         onTap: () => _openDetail(
-                            context, provider.feedPosts, i),
+                            context,
+                            provider.feedPosts,
+                            originalIndex != -1 ? originalIndex : 0),
                       );
                     },
-                    childCount: provider.feedPosts.length +
+                    childCount: mixedItems.length +
                         (provider.feedHasMore ? 1 : 0),
                   ),
                   gridDelegate:
@@ -324,13 +358,28 @@ class _FeedGrid extends StatelessWidget {
 
   void _openDetail(
       BuildContext context, List<CommunityPost> posts, int initialIndex) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            PostDetailScreen(posts: posts, initialIndex: initialIndex),
-      ),
-    );
+    final isPro = context.read<SubscriptionProvider>().isPro;
+    if (!isPro) {
+      AdHelper.showInterstitialAd(
+        onAdClosed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  PostDetailScreen(posts: posts, initialIndex: initialIndex),
+            ),
+          );
+        },
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              PostDetailScreen(posts: posts, initialIndex: initialIndex),
+        ),
+      );
+    }
   }
 
   Widget _buildShimmer() {
@@ -361,6 +410,8 @@ class _TrendingGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPro = context.watch<SubscriptionProvider>().isPro;
+
     return Consumer<CommunityProvider>(
       builder: (context, provider, _) {
         if (provider.trendingLoading && provider.trendingPosts.isEmpty) {
@@ -374,6 +425,8 @@ class _TrendingGrid extends StatelessWidget {
           );
         }
 
+        final mixedItems = _buildMixedPosts(provider.trendingPosts, isPro);
+
         return RefreshIndicator(
           color: AppTheme.primary,
           onRefresh: () => provider.loadTrending(refresh: true),
@@ -386,7 +439,7 @@ class _TrendingGrid extends StatelessWidget {
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
                     (context, i) {
-                      if (i == provider.trendingPosts.length) {
+                      if (i == mixedItems.length) {
                         return provider.trendingLoading
                             ? const Center(
                                 child: Padding(
@@ -397,13 +450,27 @@ class _TrendingGrid extends StatelessWidget {
                               )
                             : const SizedBox.shrink();
                       }
+                      final item = mixedItems[i];
+                      if (item == 'native_ad') {
+                        return AspectRatio(
+                          aspectRatio: 0.65,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: const NativeAdWidget(height: double.infinity),
+                          ),
+                        );
+                      }
+                      final post = item as CommunityPost;
+                      final originalIndex = provider.trendingPosts.indexOf(post);
                       return _PostCard(
-                        post: provider.trendingPosts[i],
+                        post: post,
                         onTap: () => _openDetail(
-                            context, provider.trendingPosts, i),
+                            context,
+                            provider.trendingPosts,
+                            originalIndex != -1 ? originalIndex : 0),
                       );
                     },
-                    childCount: provider.trendingPosts.length +
+                    childCount: mixedItems.length +
                         (provider.trendingHasMore ? 1 : 0),
                   ),
                   gridDelegate:
@@ -424,13 +491,28 @@ class _TrendingGrid extends StatelessWidget {
 
   void _openDetail(
       BuildContext context, List<CommunityPost> posts, int initialIndex) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            PostDetailScreen(posts: posts, initialIndex: initialIndex),
-      ),
-    );
+    final isPro = context.read<SubscriptionProvider>().isPro;
+    if (!isPro) {
+      AdHelper.showInterstitialAd(
+        onAdClosed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  PostDetailScreen(posts: posts, initialIndex: initialIndex),
+            ),
+          );
+        },
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              PostDetailScreen(posts: posts, initialIndex: initialIndex),
+        ),
+      );
+    }
   }
 
   Widget _buildShimmer() {

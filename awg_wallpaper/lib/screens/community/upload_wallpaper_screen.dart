@@ -915,7 +915,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      color: Colors.black,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(width: 12),
@@ -924,7 +924,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -934,7 +934,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                 children: [
                   Icon(
                     Icons.cloud_upload_rounded,
-                    color: isReady ? Colors.black : Colors.black45,
+                    color: isReady ? Colors.white : Colors.white54,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -943,7 +943,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: isReady ? Colors.black : Colors.black45,
+                      color: isReady ? Colors.white : Colors.white54,
                     ),
                   ),
                 ],

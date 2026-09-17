@@ -723,14 +723,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppTheme.gold, Color(0xFFFFB700)],
+              colors: [AppTheme.primary, AppTheme.primaryVariant],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.gold.withValues(alpha: 0.4),
+                color: AppTheme.primary.withValues(alpha: 0.4),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -740,12 +740,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               Icon(Icons.workspace_premium_rounded,
-                  color: Colors.black, size: 24),
+                  color: Colors.white, size: 24),
               SizedBox(width: 12),
               Text(
                 'Upgrade to PRO',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                   letterSpacing: 0.4,
@@ -1071,8 +1071,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _openSubscription(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.gold,
-              foregroundColor: Colors.black,
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

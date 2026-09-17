@@ -1432,7 +1432,7 @@ class _AutoWallpaperSettingsScreenState
                       'Save Times',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Colors.white,
                         fontSize: 16,
                       ),
                     ),

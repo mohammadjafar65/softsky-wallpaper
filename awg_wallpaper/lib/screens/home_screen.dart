@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     label: const Text('Retry'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.primary,
-                                      foregroundColor: Colors.black,
+                                      foregroundColor: Colors.white,
                                     ),
                                   ),
                                 ],
@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 88,
+            bottom: 130,
             child: Center(
               child: PillTabBar(
                 tabs: const ['Free', 'Pro'],

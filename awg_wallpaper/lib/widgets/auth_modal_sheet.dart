@@ -203,7 +203,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                   borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Send Reset Link',
-                style: TextStyle(color: Colors.black)),
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -481,7 +481,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: Colors.black,
+                            color: Colors.white,
                             strokeWidth: 2,
                           ),
                         )
@@ -490,7 +490,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                 ),

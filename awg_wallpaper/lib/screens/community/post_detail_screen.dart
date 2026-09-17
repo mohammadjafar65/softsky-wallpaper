@@ -14,6 +14,8 @@ import '../../providers/community_provider.dart';
 import '../../providers/bookmark_provider.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/auth_modal_sheet.dart';
+import '../../providers/subscription_provider.dart';
+import '../../utils/ad_helper.dart';
 import 'community_profile_screen.dart';
 import 'report_bottom_sheet.dart';
 
@@ -211,6 +213,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             });
           }
           _showSuccessMsg('Downloaded to Gallery successfully');
+          if (mounted && !context.read<SubscriptionProvider>().isPro) {
+            AdHelper.showInterstitialAd(onAdClosed: () {});
+          }
         } else {
           _showMsg('Download failed');
         }
@@ -234,6 +239,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         Navigator.pop(context);
         if (result == true) {
           _showSuccessMsg('Wallpaper applied successfully');
+          if (mounted && !context.read<SubscriptionProvider>().isPro) {
+            AdHelper.showInterstitialAd(onAdClosed: () {});
+          }
         } else {
           _showMsg('Could not apply wallpaper');
         }

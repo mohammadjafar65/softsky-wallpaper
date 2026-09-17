@@ -138,14 +138,14 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppTheme.gold, Color(0xFFFFB700)],
+              colors: [AppTheme.primary, AppTheme.primaryVariant],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.gold.withValues(alpha: 0.35),
+                color: AppTheme.primary.withValues(alpha: 0.35),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -156,12 +156,12 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.workspace_premium_rounded,
-                  color: Colors.black,
+                  color: Colors.white,
                   size: 20,
                 ),
               ),
@@ -173,7 +173,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     Text(
                       'Unlock Pro Wallpapers',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.1,
@@ -183,7 +183,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                     Text(
                       'Get unlimited access to 1000+ exclusive wallpapers',
                       style: TextStyle(
-                        color: Colors.black87,
+                        color: Colors.white70,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -195,13 +195,13 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Text(
                   'Upgrade →',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),

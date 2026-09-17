@@ -13,6 +13,7 @@ import '../subscription_screen.dart';
 import '../manage_subscription_screen.dart';
 import '../../providers/subscription_provider.dart';
 import '../../widgets/auth_modal_sheet.dart';
+import '../../utils/ad_helper.dart';
 
 class CommunityProfileScreen extends StatefulWidget {
   final int userId;
@@ -269,14 +270,31 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                                 delegate: SliverChildBuilderDelegate(
                                   (context, i) {
                                     final post = _posts[i];
-                                    return GestureDetector(
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => PostDetailScreen(
-                                              posts: _posts, initialIndex: i),
-                                        ),
-                                      ),
+                                      return GestureDetector(
+                                        onTap: () {
+                                          final isPro = context.read<SubscriptionProvider>().isPro;
+                                          if (!isPro) {
+                                            AdHelper.showInterstitialAd(
+                                              onAdClosed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => PostDetailScreen(
+                                                        posts: _posts, initialIndex: i),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          } else {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => PostDetailScreen(
+                                                    posts: _posts, initialIndex: i),
+                                              ),
+                                            );
+                                          }
+                                        },
                                       child: Stack(
                                         fit: StackFit.expand,
                                         children: [
@@ -716,7 +734,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
               decoration: BoxDecoration(
                 gradient: sub.isPro
                     ? const LinearGradient(
-                        colors: [AppTheme.gold, Color(0xFFFFB700)],
+                        colors: [AppTheme.primary, AppTheme.primaryVariant],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
@@ -726,12 +744,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                 border: sub.isPro
                     ? null
                     : Border.all(
-                        color: AppTheme.gold.withValues(alpha: 0.5),
+                        color: AppTheme.primary.withValues(alpha: 0.5),
                       ),
                 boxShadow: sub.isPro
                     ? [
                         BoxShadow(
-                          color: AppTheme.gold.withValues(alpha: 0.3),
+                          color: AppTheme.primary.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -744,13 +762,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                   Icon(
                     sub.isPro ? Icons.workspace_premium_rounded : Icons.star_rounded,
                     size: 18,
-                    color: sub.isPro ? Colors.black : AppTheme.gold,
+                    color: sub.isPro ? Colors.white : AppTheme.primary,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     sub.isPro ? 'Manage Pro Subscription' : 'Upgrade to Pro',
                     style: TextStyle(
-                      color: sub.isPro ? Colors.black : AppTheme.gold,
+                      color: sub.isPro ? Colors.white : AppTheme.primary,
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
                     ),

@@ -299,14 +299,12 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
           child: Padding(
             padding: const EdgeInsets.only(left: 16),
             child: Container(
-              width: 38,
-              height: 38,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: AppTheme.getSurface(isDark).withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.5),
-                ),
+                color: AppTheme.getSurface(isDark).withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Icon(
                 Icons.arrow_back_rounded,
@@ -385,7 +383,7 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
                 onPressed: _openPlayStoreSubscriptions,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primary,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 54),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -435,14 +433,14 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.gold, Color(0xFFFFB700)],
+                    colors: [AppTheme.primary, AppTheme.primaryVariant],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.gold.withValues(alpha: 0.35),
+                      color: AppTheme.primary.withValues(alpha: 0.35),
                       blurRadius: 18,
                       offset: const Offset(0, 6),
                     ),
@@ -459,7 +457,7 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.black,
+                    foregroundColor: Colors.white,
                     shadowColor: Colors.transparent,
                     minimumSize: const Size(double.infinity, 54),
                     shape: RoundedRectangleBorder(

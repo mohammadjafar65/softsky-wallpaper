@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ==================== LIGHT THEME COLORS ====================
-  static const primary = Color(0xFFF4C430); // Primary Blue
-  static const primaryVariant = Color(0xFFF4C430); // Light Pink
-  static const accent = Color(0xFFF4C430); // Pastel Blue
+  static const primary = Color(0xFF2B5CE6); // Main Primary Blue (matches bottom bar active)
+  static const primaryVariant = Color(0xFF1E45C8); // Gradient Accent Blue
+  static const accent = Color(0xFF2B5CE6); // Accent Blue
   static const background = Color(0xFFFFFFFF); // Pure White
   static const surface = Color(0xFFF8F9FA); // Very Light Grey
   static const surfaceVariant = Color(0xFFEDF2F7); // Light Grey

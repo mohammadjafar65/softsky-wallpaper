@@ -13,7 +13,7 @@ class CustomBottomNav extends StatelessWidget {
   });
 
   static const double _barWidth = 256.0;
-  static const double _barHeight = 58.0;
+  static const double _barHeight = 60.0;
   static const double _itemWidth = _barWidth / 4.0; // 64.0
   static const double _circleSize = 48.0;
 
@@ -42,7 +42,7 @@ class CustomBottomNav extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: 28.0 + (bottomInset > 0 ? 6.0 : 0.0),
+          bottom: 50.0 + (bottomInset > 0 ? 6.0 : 0.0),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(29),

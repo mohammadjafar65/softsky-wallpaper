@@ -401,7 +401,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 child: const Text(
                   'SAVE 50%',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     letterSpacing: 0.5,
