@@ -15,6 +15,8 @@ class CommunityPost {
   int downloadsCount;
   bool isLiked;
   bool isSaved;
+  final bool isApproved;
+  final bool isReported;
   final CommunityUser? author;
   final DateTime createdAt;
 
@@ -32,6 +34,8 @@ class CommunityPost {
     this.downloadsCount = 0,
     required this.isLiked,
     required this.isSaved,
+    this.isApproved = true,
+    this.isReported = false,
     this.author,
     required this.createdAt,
   });
@@ -51,6 +55,8 @@ class CommunityPost {
       downloadsCount: json['downloadsCount'] as int? ?? 0,
       isLiked: json['isLiked'] as bool? ?? false,
       isSaved: json['isSaved'] as bool? ?? false,
+      isApproved: json['isApproved'] as bool? ?? true,
+      isReported: json['isReported'] as bool? ?? false,
       author: json['author'] != null
           ? CommunityUser.fromJson(json['author'] as Map<String, dynamic>)
           : null,

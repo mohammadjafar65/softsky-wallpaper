@@ -10,6 +10,7 @@ class MainShell extends StatelessWidget {
   static const _navItems = [
     _NavItem('/dashboard', Icons.dashboard_outlined, Icons.dashboard_rounded, 'Dashboard'),
     _NavItem('/wallpapers', Icons.wallpaper_outlined, Icons.wallpaper_rounded, 'Wallpapers'),
+    _NavItem('/community', Icons.people_outline, Icons.people_rounded, 'Community'),
     _NavItem('/categories', Icons.category_outlined, Icons.category_rounded, 'Categories'),
     _NavItem('/packs', Icons.collections_outlined, Icons.collections_rounded, 'Packs'),
     _NavItem('/users', Icons.people_outline, Icons.people_rounded, 'Users'),

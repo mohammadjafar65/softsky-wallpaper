@@ -55,6 +55,16 @@ class ApiService {
     );
   }
 
+  static Future<dynamic> patch(String path, [Map<String, dynamic>? body]) async {
+    return _send(
+      () async => http.patch(
+        _uri(path),
+        headers: await _headers(),
+        body: body != null ? jsonEncode(body) : null,
+      ),
+    );
+  }
+
   static Future<dynamic> delete(String path) async {
     return _send(() async => http.delete(_uri(path), headers: await _headers()));
   }

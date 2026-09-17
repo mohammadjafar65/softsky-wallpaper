@@ -48,6 +48,8 @@ async function serializePost(post, viewerId) {
         downloadsCount: post.downloadsCount || 0,
         isLiked: !!isLiked,
         isSaved: !!isSaved,
+        isApproved: post.isApproved ?? false,
+        isReported: post.isReported ?? false,
         createdAt: post.createdAt,
         author: post.author
             ? {
@@ -116,6 +118,8 @@ router.post("/posts", auth_1.authenticate, upload_1.upload.fields([
             description,
             width: width ? parseInt(width) : undefined,
             height: height ? parseInt(height) : undefined,
+            isApproved: false,
+            isReported: false,
         });
         await postRepo.save(post);
         // Increment user posts count
@@ -213,11 +217,15 @@ router.get("/posts/:id", auth_1.optionalAuth, async (req, res) => {
         const postId = parseInt(req.params.id, 10);
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
         const post = await postRepo.findOne({
-            where: { id: postId, isApproved: true },
+            where: { id: postId },
             relations: ["author"],
         });
         if (!post)
             return res.status(404).json({ error: "Post not found" });
+        const userRole = req.user?.role;
+        if (!post.isApproved && post.userId !== userId && userRole !== "admin") {
+            return res.status(404).json({ error: "Post not found" });
+        }
         return res.json({ post: await serializePost(post, userId) });
     }
     catch (err) {
@@ -618,11 +626,15 @@ router.get("/users/:userId/posts", auth_1.optionalAuth, async (req, res) => {
         const limit = parseInt(req.query.limit || "20", 10);
         const skip = (page - 1) * limit;
         const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
-        const posts = await postRepo
+        let qb = postRepo
             .createQueryBuilder("post")
             .leftJoinAndSelect("post.author", "author")
-            .where("post.userId = :userId AND post.isApproved = true", { userId: targetId })
-            .orderBy("post.createdAt", "DESC")
+            .where("post.userId = :userId", { userId: targetId })
+            .orderBy("post.createdAt", "DESC");
+        if (viewerId !== targetId) {
+            qb = qb.andWhere("post.isApproved = true");
+        }
+        const posts = await qb
             .skip(skip)
             .take(limit)
             .getMany();
@@ -799,8 +811,11 @@ router.get("/admin/posts", auth_1.authenticate, auth_1.requireAdmin, async (req,
         if (filter === "reported") {
             qb = qb.andWhere("post.isReported = true");
         }
-        else if (filter === "unapproved") {
+        else if (filter === "unapproved" || filter === "pending") {
             qb = qb.andWhere("post.isApproved = false");
+        }
+        else if (filter === "approved" || filter === "live") {
+            qb = qb.andWhere("post.isApproved = true");
         }
         if (search) {
             qb = qb.andWhere("(post.title LIKE :search OR post.description LIKE :search OR author.displayName LIKE :search OR author.username LIKE :search OR author.email LIKE :search)", { search: `%${search}%` });
@@ -873,6 +888,40 @@ router.patch("/admin/posts/:id/toggle-approve", auth_1.authenticate, auth_1.requ
     }
     catch (err) {
         console.error("PATCH /community/admin/posts/:id/toggle-approve error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// PATCH /api/community/admin/posts/:id/approve — explicitly approve creator wallpaper
+router.patch("/admin/posts/:id/approve", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
+    try {
+        const postId = parseInt(req.params.id, 10);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post)
+            return res.status(404).json({ error: "Post not found" });
+        post.isApproved = true;
+        await postRepo.save(post);
+        return res.json({ success: true, message: "Wallpaper approved for live app", isApproved: true });
+    }
+    catch (err) {
+        console.error("PATCH /community/admin/posts/:id/approve error:", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+// PATCH /api/community/admin/posts/:id/reject — unapprove / reject creator wallpaper
+router.patch("/admin/posts/:id/reject", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
+    try {
+        const postId = parseInt(req.params.id, 10);
+        const postRepo = data_source_1.AppDataSource.getRepository(CommunityPost_1.CommunityPost);
+        const post = await postRepo.findOne({ where: { id: postId } });
+        if (!post)
+            return res.status(404).json({ error: "Post not found" });
+        post.isApproved = false;
+        await postRepo.save(post);
+        return res.json({ success: true, message: "Wallpaper hidden from live app", isApproved: false });
+    }
+    catch (err) {
+        console.error("PATCH /community/admin/posts/:id/reject error:", err);
         return res.status(500).json({ error: "Internal server error" });
     }
 });

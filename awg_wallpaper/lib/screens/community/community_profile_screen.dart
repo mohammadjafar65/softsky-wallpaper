@@ -267,22 +267,72 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                               padding: const EdgeInsets.fromLTRB(12, 0, 12, 120),
                               sliver: SliverGrid(
                                 delegate: SliverChildBuilderDelegate(
-                                  (context, i) => GestureDetector(
-                                    onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => PostDetailScreen(
-                                            posts: _posts, initialIndex: i),
+                                  (context, i) {
+                                    final post = _posts[i];
+                                    return GestureDetector(
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => PostDetailScreen(
+                                              posts: _posts, initialIndex: i),
+                                        ),
                                       ),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: CachedNetworkImage(
-                                        imageUrl: _posts[i].thumbnailUrl ?? _posts[i].imageUrl,
-                                        fit: BoxFit.cover,
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: CachedNetworkImage(
+                                              imageUrl: post.thumbnailUrl ?? post.imageUrl,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          if (isOwnProfile)
+                                            Positioned(
+                                              top: 6,
+                                              left: 6,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: post.isApproved
+                                                      ? Colors.green.withValues(alpha: 0.85)
+                                                      : Colors.amber.shade900.withValues(alpha: 0.9),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black.withValues(alpha: 0.3),
+                                                      blurRadius: 4,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      post.isApproved
+                                                          ? Icons.check_circle_rounded
+                                                          : Icons.schedule_rounded,
+                                                      size: 10,
+                                                      color: Colors.white,
+                                                    ),
+                                                    const SizedBox(width: 3),
+                                                    Text(
+                                                      post.isApproved ? 'LIVE' : 'PENDING',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 8.5,
+                                                        fontWeight: FontWeight.w800,
+                                                        letterSpacing: 0.4,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                   childCount: _posts.length,
                                 ),
                                 gridDelegate:

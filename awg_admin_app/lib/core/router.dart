@@ -8,6 +8,7 @@ import '../screens/categories_screen.dart';
 import '../screens/users_screen.dart';
 import '../screens/packs_screen.dart';
 import '../screens/notifications_screen.dart';
+import '../screens/community_screen.dart';
 import '../screens/subscriptions_screen.dart';
 import '../services/auth_service.dart';
 
@@ -38,6 +39,7 @@ final appRouter = GoRouter(
       routes: [
         GoRoute(path: '/dashboard', builder: (_, state) => const DashboardScreen()),
         GoRoute(path: '/wallpapers', builder: (_, state) => const WallpapersScreen()),
+        GoRoute(path: '/community', builder: (_, state) => const CommunityScreen()),
         GoRoute(path: '/categories', builder: (_, state) => const CategoriesScreen()),
         GoRoute(path: '/users', builder: (_, state) => const UsersScreen()),
         GoRoute(path: '/packs', builder: (_, state) => const PacksScreen()),

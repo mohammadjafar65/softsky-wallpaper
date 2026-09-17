@@ -70,7 +70,7 @@ __decorate([
     __metadata("design:type", Number)
 ], CommunityPost.prototype, "downloadsCount", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "is_approved", default: true }),
+    (0, typeorm_1.Column)({ name: "is_approved", default: false }),
     __metadata("design:type", Boolean)
 ], CommunityPost.prototype, "isApproved", void 0);
 __decorate([

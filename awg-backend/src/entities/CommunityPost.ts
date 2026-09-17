@@ -53,7 +53,7 @@ export class CommunityPost {
     @Column({ name: "downloads_count", default: 0 })
     downloadsCount!: number;
 
-    @Column({ name: "is_approved", default: true })
+    @Column({ name: "is_approved", default: false })
     isApproved!: boolean;
 
     @Column({ name: "is_reported", default: false })

@@ -377,6 +377,47 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ),
 
+          // Pending Moderation Banner
+          if (!_currentPost.isApproved)
+            Positioned(
+              top: topPadding + 62,
+              left: 20,
+              right: 20,
+              child: AnimatedOpacity(
+                opacity: _showControls && !_showPreview ? 1.0 : 0.0,
+                duration: AppDurations.fast,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade900.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.schedule_rounded, color: Colors.white, size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Pending Review · Visible only to you until approved by admin',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
           // Bottom Floating Island
           Positioned(
             bottom: bottomPadding + 20,

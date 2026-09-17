@@ -71,7 +71,7 @@ interface ReportItem {
 
 export default function Community() {
   const [activeTab, setActiveTab] = useState<'posts' | 'reports'>('posts');
-  const [filter, setFilter] = useState<'all' | 'reported' | 'unapproved'>('all');
+  const [filter, setFilter] = useState<'all' | 'unapproved' | 'approved' | 'reported'>('unapproved');
   const [posts, setPosts] = useState<CommunityPostItem[]>([]);
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [stats, setStats] = useState({
@@ -84,8 +84,9 @@ export default function Community() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewPost, setPreviewPost] = useState<CommunityPostItem | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
   useEffect(() => {
     void fetchStats();
@@ -153,16 +154,42 @@ export default function Community() {
     }
   };
 
-  const handleToggleApprove = async (id: number) => {
+
+  const handleApprove = async (id: number) => {
     try {
-      const res = await communityApi.toggleApprove(id);
+      setActionLoadingId(id);
+      await communityApi.approvePost(id);
       setPosts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, isApproved: res.data.isApproved } : p))
+        prev.map((p) => (p.id === id ? { ...p, isApproved: true } : p))
       );
-      toast.success(res.data.isApproved ? 'Wallpaper approved' : 'Wallpaper hidden');
+      if (previewPost?.id === id) {
+        setPreviewPost((p) => p ? { ...p, isApproved: true } : null);
+      }
+      toast.success('Creator wallpaper approved & live on app!');
       void fetchStats();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to update status');
+      toast.error(err.response?.data?.error || 'Failed to approve wallpaper');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    try {
+      setActionLoadingId(id);
+      await communityApi.rejectPost(id);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isApproved: false } : p))
+      );
+      if (previewPost?.id === id) {
+        setPreviewPost((p) => p ? { ...p, isApproved: false } : null);
+      }
+      toast.success('Creator wallpaper hidden from live app');
+      void fetchStats();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to reject wallpaper');
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -287,19 +314,22 @@ export default function Community() {
           {activeTab === 'posts' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ display: 'flex', gap: '4px' }}>
-                {(['all', 'reported', 'unapproved'] as const).map((f) => (
+                {[
+                  { key: 'unapproved' as const, label: `Pending Review (${stats.unapprovedPosts})` },
+                  { key: 'approved' as const, label: `Live (${Math.max(0, stats.totalPosts - stats.unapprovedPosts)})` },
+                  { key: 'reported' as const, label: `Reported (${stats.reportedPosts})` },
+                  { key: 'all' as const, label: `All (${stats.totalPosts})` },
+                ].map(({ key, label }) => (
                   <Button
-                    key={f}
-                    variant={filter === f ? 'default' : 'ghost'}
+                    key={key}
+                    variant={filter === key ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => {
-                      setFilter(f);
+                      setFilter(key);
                       setPage(1);
                     }}
                   >
-                    {f === 'all' && 'All'}
-                    {f === 'reported' && `Reported (${stats.reportedPosts})`}
-                    {f === 'unapproved' && `Unapproved (${stats.unapprovedPosts})`}
+                    {label}
                   </Button>
                 ))}
               </div>
@@ -383,7 +413,7 @@ export default function Community() {
                         overflow: 'hidden',
                         cursor: 'pointer',
                       }}
-                      onClick={() => setPreviewImage(post.imageUrl)}
+                      onClick={() => setPreviewPost(post)}
                     >
                       <img
                         src={post.thumbnailUrl || post.imageUrl}
@@ -408,8 +438,8 @@ export default function Community() {
                           gap: '6px',
                         }}
                       >
-                        <StatusTag type={post.isApproved ? 'green' : 'gray'}>
-                          {post.isApproved ? 'Live' : 'Hidden'}
+                        <StatusTag type={post.isApproved ? 'green' : 'warm-gray'}>
+                          {post.isApproved ? 'Live' : 'Pending Review'}
                         </StatusTag>
                         {post.isReported && (
                           <StatusTag type="red">
@@ -515,26 +545,46 @@ export default function Community() {
                           borderTop: '1px solid #f1f5f9',
                         }}
                       >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleApprove(post.id)}
-                          title={post.isApproved ? 'Hide from community' : 'Approve wallpaper'}
-                        >
-                          {post.isApproved ? (
-                            <>
-                              <EyeOff size={14} style={{ marginRight: '4px', color: '#f59e0b' }} />
-                              Hide
-                            </>
-                          ) : (
-                            <>
-                              <Eye size={14} style={{ marginRight: '4px', color: '#10b981' }} />
-                              Approve
-                            </>
-                          )}
-                        </Button>
+                        {post.isApproved ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={actionLoadingId === post.id}
+                            onClick={() => handleReject(post.id)}
+                            title="Hide from community"
+                            style={{ color: '#f59e0b', fontSize: '12px' }}
+                          >
+                            <EyeOff size={14} style={{ marginRight: '4px' }} />
+                            Hide
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            disabled={actionLoadingId === post.id}
+                            onClick={() => handleApprove(post.id)}
+                            title="Approve wallpaper for live app"
+                            style={{
+                              backgroundColor: '#10b981',
+                              color: '#ffffff',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            <CheckCircle2 size={14} style={{ marginRight: '4px' }} />
+                            Approve
+                          </Button>
+                        )}
 
                         <div style={{ display: 'flex', gap: '4px' }}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setPreviewPost(post)}
+                            title="Preview & inspect"
+                          >
+                            <Eye size={14} color="#64748b" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -621,7 +671,7 @@ export default function Community() {
                         <img
                           src={report.post.thumbnailUrl || report.post.imageUrl}
                           alt=""
-                          onClick={() => report.post && setPreviewImage(report.post.imageUrl)}
+                          onClick={() => report.post && window.open(report.post.imageUrl, '_blank')}
                           style={{
                             width: '48px',
                             height: '64px',
@@ -699,30 +749,82 @@ export default function Community() {
         )}
       </AdminPanel>
 
-      {/* ── Image Preview Modal ──────────────────────────── */}
-      {previewImage && (
+      {/* ── Image Preview & Moderation Modal ──────────────────────────── */}
+      {previewPost && (
         <AdminModal
-          open={!!previewImage}
-          onClose={() => setPreviewImage(null)}
-          title="Community Wallpaper Preview"
+          open={!!previewPost}
+          onClose={() => setPreviewPost(null)}
+          title={previewPost.title || 'Community Wallpaper Preview'}
           noFooter
         >
           <div style={{ textAlign: 'center', maxHeight: '80vh', overflow: 'auto' }}>
             <img
-              src={previewImage}
-              alt="Preview"
+              src={previewPost.imageUrl}
+              alt={previewPost.title || 'Preview'}
               style={{
                 maxWidth: '100%',
-                maxHeight: '70vh',
+                maxHeight: '55vh',
                 objectFit: 'contain',
                 borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
               }}
             />
-            <div style={{ marginTop: '14px' }}>
-              <Button onClick={() => window.open(previewImage, '_blank')}>
-                <ExternalLink size={14} style={{ marginRight: '6px' }} />
-                Open Full Resolution
-              </Button>
+
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                margin: '16px auto 0',
+                padding: '12px 16px',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                textAlign: 'left',
+                gap: '12px',
+              }}
+            >
+              <div>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: '14px', color: '#1e293b' }}>
+                  Creator: {previewPost.author?.displayName || previewPost.author?.username || 'Community Member'}
+                </p>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+                  {previewPost.width && previewPost.height ? `${previewPost.width} × ${previewPost.height} px · ` : ''}
+                  Status: {previewPost.isApproved ? 'Live on App' : 'Pending Moderation'}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {!previewPost.isApproved ? (
+                  <Button
+                    size="sm"
+                    disabled={actionLoadingId === previewPost.id}
+                    style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 600 }}
+                    onClick={() => handleApprove(previewPost.id)}
+                  >
+                    <CheckCircle2 size={14} style={{ marginRight: '6px' }} />
+                    Approve Now
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={actionLoadingId === previewPost.id}
+                    onClick={() => handleReject(previewPost.id)}
+                  >
+                    <EyeOff size={14} style={{ marginRight: '6px' }} />
+                    Hide / Reject
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => window.open(previewPost.imageUrl, '_blank')}
+                >
+                  <ExternalLink size={14} style={{ marginRight: '4px' }} />
+                  Full Res
+                </Button>
+              </div>
             </div>
           </div>
         </AdminModal>

@@ -151,6 +151,8 @@ export const communityApi = {
         api.get('/community/admin/posts', { params }),
     deletePost: (id: number | string) => api.delete(`/community/admin/posts/${id}`),
     toggleApprove: (id: number | string) => api.patch(`/community/admin/posts/${id}/toggle-approve`),
+    approvePost: (id: number | string) => api.patch(`/community/admin/posts/${id}/approve`),
+    rejectPost: (id: number | string) => api.patch(`/community/admin/posts/${id}/reject`),
     getReports: () => api.get('/community/admin/reports'),
     dismissReport: (id: number | string) => api.delete(`/community/admin/reports/${id}`),
 };
