@@ -12,7 +12,7 @@ import '../widgets/pill_tab_bar.dart';
 import '../widgets/category_chip.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
-import 'profile_screen.dart';
+import '../widgets/top_bar_profile_avatar.dart';
 import 'pack_detail_screen.dart';
 import '../providers/pack_provider.dart';
 import '../widgets/pack_card.dart';
@@ -157,10 +157,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _buildHeader(context),
                         ),
 
-                        // Categories Filter Chips
-                        SliverToBoxAdapter(
-                          child: _buildCategories(context, provider),
-                        ),
+                        // Categories Filter Chips (Only on Exclusive tab)
+                        if (_filterIndex == 1)
+                          SliverToBoxAdapter(
+                            child: _buildCategories(context, provider),
+                          ),
 
                         // Mixed Content Grid (Wallpapers + Collections)
                         if ((_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
@@ -378,34 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                  );
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
-                        size: 23,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              const TopBarProfileAvatar(),
             ],
           ),
         ],

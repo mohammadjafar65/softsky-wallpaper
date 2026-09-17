@@ -7,6 +7,7 @@ import '../../models/community_user.dart';
 import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import 'post_detail_screen.dart';
+import '../app_settings_screen.dart';
 
 class CommunityProfileScreen extends StatefulWidget {
   final int userId;
@@ -167,6 +168,22 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                           ),
                   ),
                 ),
+              ),
+            ),
+          if (isOwnProfile)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                tooltip: 'Settings',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AppSettingsScreen(),
+                    ),
+                  );
+                },
               ),
             ),
         ],

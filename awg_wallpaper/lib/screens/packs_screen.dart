@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -8,7 +6,7 @@ import '../providers/wallpaper_provider.dart';
 import '../widgets/pack_card.dart';
 import 'pack_detail_screen.dart';
 import '../utils/date_formatter.dart';
-import 'profile_screen.dart';
+import '../widgets/top_bar_profile_avatar.dart';
 import '../widgets/native_ad_widget.dart';
 import '../providers/subscription_provider.dart';
 
@@ -91,37 +89,7 @@ class _PacksScreenState extends State<PacksScreen> {
                             ],
                           ),
                           const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const ProfileScreen()),
-                              );
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: BackdropFilter(
-                                filter:
-                                    ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.15)),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person_rounded,
-                                    color: Colors.white,
-                                    size: 23,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          const TopBarProfileAvatar(),
                         ],
                       ),
                     ),

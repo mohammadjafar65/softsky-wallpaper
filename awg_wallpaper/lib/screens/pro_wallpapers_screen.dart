@@ -10,7 +10,7 @@ import '../widgets/shimmer_loading.dart';
 import 'wallpaper_detail_screen.dart';
 import 'search_screen.dart';
 import '../utils/date_formatter.dart';
-import 'profile_screen.dart';
+import '../widgets/top_bar_profile_avatar.dart';
 import '../widgets/native_ad_widget.dart';
 import '../utils/ad_helper.dart';
 import '../providers/subscription_provider.dart';
@@ -195,34 +195,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                  );
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15)),
-                      ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
-                        size: 23,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              const TopBarProfileAvatar(),
             ],
           ),
         ],

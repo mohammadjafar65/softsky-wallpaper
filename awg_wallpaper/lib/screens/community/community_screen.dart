@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../config/cached_image_config.dart';
 import '../../models/community_post.dart';
-import '../../models/community_user.dart';
 import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import '../../utils/date_formatter.dart';
@@ -13,6 +12,7 @@ import '../../widgets/pill_tab_bar.dart';
 import 'post_detail_screen.dart';
 import 'upload_wallpaper_screen.dart';
 import 'community_profile_screen.dart';
+import '../../widgets/top_bar_profile_avatar.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -205,71 +205,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               const SizedBox(width: 12),
 
               // Profile Button (User photo) -> Navigate to that user's collective profile
-              GestureDetector(
-                onTap: () {
-                  final authUser = AuthService().currentUser;
-                  final communityProvider = context.read<CommunityProvider>();
-                  CommunityUser? myUser;
-                  for (final p in [
-                    ...communityProvider.myPosts,
-                    ...communityProvider.trendingPosts,
-                    ...communityProvider.feedPosts
-                  ]) {
-                    if (authUser != null &&
-                        (p.author?.displayName == authUser.displayName ||
-                            p.author?.photoUrl == authUser.photoURL)) {
-                      myUser = p.author;
-                      break;
-                    }
-                  }
-                  myUser ??= communityProvider.myPosts.isNotEmpty
-                      ? communityProvider.myPosts.first.author
-                      : (communityProvider.trendingPosts.isNotEmpty
-                          ? communityProvider.trendingPosts.first.author
-                          : null);
-
-                  final int targetUserId =
-                      myUser?.id ?? AuthService().backendUserId ?? 1;
-                  final initialUser = myUser ??
-                      CommunityUser(
-                        id: targetUserId,
-                        displayName: authUser?.displayName ?? 'My Profile',
-                        photoUrl: authUser?.photoURL,
-                        bio: 'Wallpaper Creator',
-                        followersCount: 0,
-                        followingCount: 0,
-                        postsCount: 0,
-                        totalDownloads: 0,
-                        isFollowing: false,
-                      );
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CommunityProfileScreen(
-                        userId: targetUserId,
-                        initialUser: initialUser,
-                        isCurrentUser: true,
-                      ),
-                    ),
-                  );
-                },
-                child: CircleAvatar(
-                  radius: 22,
-                  backgroundColor: const Color(0xFF2C2C2E),
-                  backgroundImage: AuthService().currentUser?.photoURL != null
-                      ? CachedNetworkImageProvider(
-                          AuthService().currentUser!.photoURL!)
-                      : null,
-                  child: AuthService().currentUser?.photoURL == null
-                      ? const Icon(
-                          Icons.person_rounded,
-                          color: Colors.white,
-                          size: 22,
-                        )
-                      : null,
-                ),
-              ),
+              const TopBarProfileAvatar(),
             ],
           ),
         ],
