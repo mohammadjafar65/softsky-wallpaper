@@ -7,40 +7,43 @@ class ContactUsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.getBackground(isDark),
       appBar: AppBar(
-        title: const Text('Contact Us',
-            style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Contact Us',
+            style: TextStyle(color: AppTheme.getTextPrimary(isDark))),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textWhite),
+        iconTheme: IconThemeData(color: AppTheme.getTextPrimary(isDark)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'We\'d love to hear from you!',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textWhite,
+                color: AppTheme.getTextPrimary(isDark),
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Have a question, suggestion, or found a bug? Let us know.',
               style: TextStyle(
                 fontSize: 16,
-                color: AppTheme.textSecondary,
+                color: AppTheme.getTextSecondary(isDark),
                 height: 1.5,
               ),
             ),
             const SizedBox(height: 32),
             _buildContactMethod(
               context,
+              isDark: isDark,
               icon: Icons.email_rounded,
               title: 'Email Support',
               subtitle: 'support@softskywallpaper.studio', // Placeholder
@@ -49,6 +52,7 @@ class ContactUsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildContactMethod(
               context,
+              isDark: isDark,
               icon: Icons.web_rounded,
               title: 'Visit Website',
               subtitle: 'www.softsky.studio', // Placeholder
@@ -61,7 +65,8 @@ class ContactUsScreen extends StatelessWidget {
   }
 
   Widget _buildContactMethod(BuildContext context,
-      {required IconData icon,
+      {required bool isDark,
+      required IconData icon,
       required String title,
       required String subtitle,
       required VoidCallback onTap}) {
@@ -70,11 +75,14 @@ class ContactUsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.darkSurface,
+          color: AppTheme.getSurface(isDark),
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.transparent : Colors.black.withValues(alpha: 0.05),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -97,25 +105,25 @@ class ContactUsScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: AppTheme.textWhite,
+                      color: AppTheme.getTextPrimary(isDark),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
+                    style: TextStyle(
+                      color: AppTheme.getTextSecondary(isDark),
                       fontSize: 14,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                color: AppTheme.textMuted, size: 16),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: AppTheme.getTextMuted(isDark), size: 16),
           ],
         ),
       ),

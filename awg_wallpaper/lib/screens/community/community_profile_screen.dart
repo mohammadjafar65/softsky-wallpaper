@@ -8,9 +8,9 @@ import '../../providers/community_provider.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/glass_container.dart';
 import 'post_detail_screen.dart';
+import 'upload_wallpaper_screen.dart';
+import '../profile_screen.dart';
 import '../app_settings_screen.dart';
-import '../subscription_screen.dart';
-import '../manage_subscription_screen.dart';
 import '../../providers/subscription_provider.dart';
 import '../../widgets/auth_modal_sheet.dart';
 import '../../utils/ad_helper.dart';
@@ -383,7 +383,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
               decoration: BoxDecoration(
                 color: AppTheme.getSurface(isDark).withValues(alpha: 0.6),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.08),
+                ),
               ),
               child: Center(
                 child: Icon(
@@ -419,10 +423,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                 decoration: BoxDecoration(
-                  color: _user!.isFollowing ? Colors.white.withValues(alpha: 0.1) : AppTheme.primary,
+                  color: _user!.isFollowing
+                      ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.06))
+                      : AppTheme.primary,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: _user!.isFollowing ? Colors.white24 : AppTheme.primary,
+                    color: _user!.isFollowing
+                        ? (isDark ? Colors.white24 : Colors.black12)
+                        : AppTheme.primary,
                   ),
                 ),
                 child: _followLoading
@@ -437,13 +445,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                           Icon(
                             _user!.isFollowing ? Icons.check_rounded : Icons.person_add_rounded,
                             size: 14,
-                            color: _user!.isFollowing ? Colors.white70 : Colors.black,
+                            color: _user!.isFollowing ? AppTheme.getTextPrimary(isDark) : Colors.white,
                           ),
                           const SizedBox(width: 5),
                           Text(
                             _user!.isFollowing ? 'Following' : 'Follow',
                             style: TextStyle(
-                              color: _user!.isFollowing ? Colors.white70 : Colors.black,
+                              color: _user!.isFollowing ? AppTheme.getTextPrimary(isDark) : Colors.white,
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
                             ),
@@ -455,6 +463,31 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
           ],
 
           if (isOwnProfile) ...[
+            // User / Account profile button
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              ),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.getSurface(isDark).withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Center(
+                  child: Icon(Icons.person_outline_rounded,
+                      color: AppTheme.getTextPrimary(isDark), size: 20),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             // Settings
             GestureDetector(
               onTap: () => Navigator.push(
@@ -467,7 +500,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.getSurface(isDark).withValues(alpha: 0.6),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.08),
+                  ),
                 ),
                 child: Center(
                   child: Icon(Icons.settings_outlined,
@@ -475,7 +512,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             // Logout
             GestureDetector(
               onTap: () => _showLogoutDialog(context, isDark),
@@ -713,70 +750,75 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
     return '$count';
   }
 
-  // ── Action Button (Follow / Subscription) ───────────────────────────────────
+  // ── Action Button (Follow / Creator Actions) ───────────────────────────────
   Widget _buildActionButton(BuildContext context, bool isDark, bool isOwnProfile) {
     if (isOwnProfile) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-        child: Consumer<SubscriptionProvider>(
-          builder: (context, sub, _) => GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => sub.isPro
-                    ? const ManageSubscriptionScreen()
-                    : const SubscriptionScreen(),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const UploadWallpaperScreen(),
+                  ),
+                ).then((_) => _loadData()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                icon: const Icon(Icons.add_photo_alternate_rounded,
+                    size: 18, color: Colors.white),
+                label: const Text(
+                  'Upload Art',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                gradient: sub.isPro
-                    ? const LinearGradient(
-                        colors: [AppTheme.primary, AppTheme.primaryVariant],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: sub.isPro ? null : AppTheme.getSurface(isDark),
-                borderRadius: BorderRadius.circular(16),
-                border: sub.isPro
-                    ? null
-                    : Border.all(
-                        color: AppTheme.primary.withValues(alpha: 0.5),
-                      ),
-                boxShadow: sub.isPro
-                    ? [
-                        BoxShadow(
-                          color: AppTheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    sub.isPro ? Icons.workspace_premium_rounded : Icons.star_rounded,
-                    size: 18,
-                    color: sub.isPro ? Colors.white : AppTheme.primary,
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileScreen(),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    sub.isPro ? 'Manage Pro Subscription' : 'Upgrade to Pro',
-                    style: TextStyle(
-                      color: sub.isPro ? Colors.white : AppTheme.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.getTextPrimary(isDark),
+                  side: BorderSide(
+                    color: AppTheme.getSurfaceVariant(isDark)
+                        .withValues(alpha: 0.8),
                   ),
-                ],
+                  backgroundColor:
+                      AppTheme.getSurface(isDark).withValues(alpha: 0.5),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                icon: Icon(Icons.person_outline_rounded,
+                    size: 18, color: AppTheme.getTextPrimary(isDark)),
+                label: const Text(
+                  'User Profile',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       );
     }
@@ -824,7 +866,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                         size: 18,
                         color: _user!.isFollowing
                             ? AppTheme.getTextPrimary(isDark)
-                            : Colors.black,
+                            : Colors.white,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -832,7 +874,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                         style: TextStyle(
                           color: _user!.isFollowing
                               ? AppTheme.getTextPrimary(isDark)
-                              : Colors.black,
+                              : Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),

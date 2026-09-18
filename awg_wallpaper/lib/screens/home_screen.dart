@@ -20,6 +20,8 @@ import '../models/wallpaper_pack.dart';
 import '../widgets/native_ad_widget.dart';
 import '../utils/ad_helper.dart';
 import '../providers/subscription_provider.dart';
+import '../widgets/subscription_plan_popup.dart';
+import 'package:hive/hive.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,6 +32,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static bool _hasCheckedDealsPopupThisSession = false;
   final ScrollController _scrollController = ScrollController();
   bool _isOffline = false;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
@@ -58,6 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // Provider automatically loads data on initialization
     // Only refresh if there's an actual error
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowDealsPopup();
+
       final provider = context.read<WallpaperProvider>();
 
       // Only refresh if there's an error and no data
@@ -71,6 +76,49 @@ class _HomeScreenState extends State<HomeScreen> {
         packProvider.setPacksFromProvider(provider.packs);
       }
     });
+  }
+
+  void _checkAndShowDealsPopup() {
+    if (_hasCheckedDealsPopupThisSession) return;
+    _hasCheckedDealsPopupThisSession = true;
+
+    if (!mounted) return;
+    final subProvider = context.read<SubscriptionProvider>();
+
+    // Show only for free users and monthly users (Annual and Lifetime are excluded)
+    final isEligible =
+        !subProvider.isPro || subProvider.currentPlan == SubscriptionPlan.monthly;
+    if (!isEligible) return;
+
+    try {
+      final settingsBox = Hive.box('settings');
+      final lastShownMs =
+          settingsBox.get('last_plan_deals_popup_shown') as int?;
+      final now = DateTime.now();
+
+      bool shouldShow = false;
+      if (lastShownMs == null) {
+        shouldShow = true;
+      } else {
+        final lastShown = DateTime.fromMillisecondsSinceEpoch(lastShownMs);
+        // 2-3 day gap (48 hours)
+        if (now.difference(lastShown).inHours >= 48) {
+          shouldShow = true;
+        }
+      }
+
+      if (shouldShow && mounted) {
+        settingsBox.put(
+            'last_plan_deals_popup_shown', now.millisecondsSinceEpoch);
+        Future.delayed(const Duration(milliseconds: 900), () {
+          if (mounted) {
+            SubscriptionPlanPopup.show(context);
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error checking deals popup: $e');
+    }
   }
 
   @override
@@ -98,8 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.getBackground(isDark),
       body: Stack(
         children: [
           Column(
@@ -147,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   return RefreshIndicator(
                     onRefresh: provider.refresh,
                     color: AppTheme.primary,
-                    backgroundColor: AppTheme.darkSurface,
+                    backgroundColor: AppTheme.getSurface(isDark),
                     child: CustomScrollView(
                       controller: _scrollController,
                       slivers: [
@@ -190,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .textTheme
                                         .titleMedium
                                         ?.copyWith(
-                                            color: AppTheme.darkTextPrimary),
+                                            color: AppTheme.getTextPrimary(isDark)),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -244,6 +294,37 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+          // Bottom fade gradient behind tabs and bottom nav
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 230,
+            child: IgnorePointer(
+              child: isDark
+                  ? Image.asset(
+                      'assets/images/newgradient_bottom.png',
+                      fit: BoxFit.fill,
+                      width: double.infinity,
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppTheme.getBackground(isDark).withValues(alpha: 0.0),
+                            AppTheme.getBackground(isDark).withValues(alpha: 0.45),
+                            AppTheme.getBackground(isDark).withValues(alpha: 0.85),
+                            AppTheme.getBackground(isDark),
+                          ],
+                          stops: const [0.0, 0.35, 0.7, 1.0],
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+
           // Floating filter tab bar above bottom nav (decreased spacing)
           Positioned(
             left: 0,
@@ -290,6 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPro = _filterIndex == 1;
     final provider = Provider.of<WallpaperProvider>(context);
 
@@ -304,10 +386,10 @@ class _HomeScreenState extends State<HomeScreen> {
               if (isPro)
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'PRO',
                       style: TextStyle(
-                        color: AppTheme.textWhite,
+                        color: AppTheme.getTextPrimary(isDark),
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         letterSpacing: -0.5,
@@ -322,10 +404,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 )
               else
-                const Text(
+                Text(
                   'TODAY',
                   style: TextStyle(
-                    color: AppTheme.textWhite,
+                    color: AppTheme.getTextPrimary(isDark),
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
@@ -363,16 +445,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C2C2E),
+                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.08),
                     ),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.search_rounded,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : AppTheme.textPrimary,
                       size: 22,
                     ),
                   ),

@@ -110,7 +110,8 @@ class _WallpaperCardState extends State<WallpaperCard>
                           fadeOutDuration: const Duration(milliseconds: 100),
                           memCacheWidth: 400, // Optimize memory usage for grid view
                           placeholder: (context, url) => Container(
-                            color: AppTheme.surfaceVariant,
+                            color: AppTheme.getSurfaceVariant(
+                                Theme.of(context).brightness == Brightness.dark),
                             child: const Center(
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
@@ -119,9 +120,11 @@ class _WallpaperCardState extends State<WallpaperCard>
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
-                            color: AppTheme.surfaceVariant,
-                            child: const Icon(Icons.error_outline,
-                                color: AppTheme.textMuted),
+                            color: AppTheme.getSurfaceVariant(
+                                Theme.of(context).brightness == Brightness.dark),
+                            child: Icon(Icons.error_outline,
+                                color: AppTheme.getTextMuted(
+                                    Theme.of(context).brightness == Brightness.dark)),
                           ),
                         ),
 

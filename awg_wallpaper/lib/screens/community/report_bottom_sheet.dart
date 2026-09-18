@@ -120,12 +120,12 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
                   decoration: BoxDecoration(
                     color: selected
                         ? AppTheme.primary.withValues(alpha: 0.15)
-                        : AppTheme.getSurface(isDark),
+                        : (isDark ? AppTheme.getSurface(isDark) : AppTheme.surfaceVariant),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: selected
                           ? AppTheme.primary
-                          : Colors.transparent,
+                          : (isDark ? Colors.transparent : Colors.black.withValues(alpha: 0.06)),
                       width: 1.5,
                     ),
                   ),
@@ -177,13 +177,13 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.black),
+                            strokeWidth: 2, color: Colors.white),
                       )
                     : const Text(
                         'Submit Report',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Colors.white,
                             fontSize: 15),
                       ),
               ),
@@ -194,8 +194,8 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
             Center(
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel',
-                    style: TextStyle(color: Colors.grey)),
+                child: Text('Cancel',
+                    style: TextStyle(color: AppTheme.getTextSecondary(isDark))),
               ),
             ),
           ],

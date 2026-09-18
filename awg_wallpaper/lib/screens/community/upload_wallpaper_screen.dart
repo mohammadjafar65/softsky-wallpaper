@@ -7,6 +7,7 @@ import '../../config/theme.dart';
 import '../../models/community_post.dart';
 import '../../services/api_service.dart';
 import '../../services/community_upload_service.dart';
+import '../../utils/creator_helper.dart';
 
 class UploadWallpaperScreen extends StatefulWidget {
   const UploadWallpaperScreen({super.key});
@@ -129,6 +130,8 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
       final post =
           CommunityPost.fromJson(data['post'] as Map<String, dynamic>);
 
+      await CreatorHelper.setCreatorStatus(true);
+
       if (mounted) {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -230,12 +233,14 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                       icon: Icons.title_rounded,
                       title: 'Title',
                       badge: 'Optional',
+                      isDark: isDark,
                     ),
                     const SizedBox(height: 8),
                     _buildTextField(
                       controller: _titleController,
                       hint: 'Give your wallpaper an inspiring name...',
                       icon: Icons.edit_rounded,
+                      isDark: isDark,
                     ),
 
                     const SizedBox(height: 20),
@@ -245,6 +250,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                       icon: Icons.notes_rounded,
                       title: 'Description',
                       badge: 'Optional',
+                      isDark: isDark,
                     ),
                     const SizedBox(height: 8),
                     _buildTextField(
@@ -252,6 +258,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                       hint: 'Share details, inspiration, or how this art was created...',
                       icon: Icons.short_text_rounded,
                       maxLines: 3,
+                      isDark: isDark,
                     ),
 
                     const SizedBox(height: 24),
@@ -290,16 +297,27 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2E),
+                color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   Icons.arrow_back_rounded,
-                  color: Colors.white,
+                  color: AppTheme.getTextPrimary(isDark),
                   size: 20,
                 ),
               ),
@@ -312,7 +330,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
               Text(
                 'SHARE WALLPAPER',
                 style: GoogleFonts.poppins(
-                  color: AppTheme.textWhite,
+                  color: AppTheme.getTextPrimary(isDark),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.2,
@@ -322,7 +340,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
               Text(
                 'SoftSky Collective Studio',
                 style: TextStyle(
-                  color: AppTheme.textMuted.withValues(alpha: 0.8),
+                  color: AppTheme.getTextSecondary(isDark),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -344,7 +362,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                 child: const Text(
                   'Post',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -366,11 +384,22 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
         width: double.infinity,
         height: 360,
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E22),
+          color: isDark ? const Color(0xFF1E1E22) : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.08),
           ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Center(
           child: Column(
@@ -388,7 +417,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
               Text(
                 'Checking Image Resolution...',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: AppTheme.getTextPrimary(isDark),
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
@@ -397,7 +426,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
               Text(
                 'Ensuring 1080×1920 HD requirement',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: AppTheme.getTextSecondary(isDark),
                   fontSize: 12,
                 ),
               ),
@@ -627,12 +656,23 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
         width: double.infinity,
         height: 340,
         decoration: BoxDecoration(
-          color: const Color(0xFF1B1B1E),
+          color: isDark ? const Color(0xFF1B1B1E) : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.08),
             width: 1.5,
           ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -668,7 +708,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
             Text(
               'Select Portrait Wallpaper',
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: AppTheme.getTextPrimary(isDark),
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
               ),
@@ -678,7 +718,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
               'Tap to choose high resolution image from gallery',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: AppTheme.getTextSecondary(isDark),
                 fontSize: 13,
               ),
             ),
@@ -689,11 +729,11 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildSpecChip('1080×1920 min'),
+                _buildSpecChip('1080×1920 min', isDark),
                 const SizedBox(width: 8),
-                _buildSpecChip('Up to 20 MB'),
+                _buildSpecChip('Up to 20 MB', isDark),
                 const SizedBox(width: 8),
-                _buildSpecChip('Portrait'),
+                _buildSpecChip('Portrait', isDark),
               ],
             ),
           ],
@@ -702,18 +742,24 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
     );
   }
 
-  Widget _buildSpecChip(String text) {
+  Widget _buildSpecChip(String text, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.65),
+          color: AppTheme.getTextSecondary(isDark),
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
@@ -759,6 +805,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
     required IconData icon,
     required String title,
     required String badge,
+    required bool isDark,
   }) {
     return Row(
       children: [
@@ -767,7 +814,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
         Text(
           title,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: AppTheme.getTextPrimary(isDark),
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
@@ -776,13 +823,15 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             badge,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.45),
+              color: AppTheme.getTextSecondary(isDark),
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -798,29 +847,41 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
     required TextEditingController controller,
     required String hint,
     required IconData icon,
+    required bool isDark,
     int maxLines = 1,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1B1E),
+        color: isDark ? const Color(0xFF1B1B1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: AppTheme.getTextPrimary(isDark), fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.35),
+            color: AppTheme.getTextMuted(isDark),
             fontSize: 13,
           ),
           prefixIcon: Icon(
             icon,
-            color: Colors.white.withValues(alpha: 0.4),
+            color: AppTheme.getTextSecondary(isDark),
             size: 20,
           ),
           border: InputBorder.none,
@@ -837,10 +898,14 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
@@ -863,10 +928,10 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Creator Guidelines',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.getTextPrimary(isDark),
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -875,7 +940,7 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
                 Text(
                   'Please share high-resolution, original or royalty-free portrait art without watermarks. Wallpapers become instantly discoverable in the Collective.',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: AppTheme.getTextSecondary(isDark),
                     fontSize: 11,
                     height: 1.4,
                   ),

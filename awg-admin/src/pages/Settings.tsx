@@ -11,9 +11,9 @@ const defaultSettings: AppSettings = {
   contactEmail: 'contact@softsky.studio',
   privacyPolicyUrl: 'https://softskyadmin.softsky.studio/privacy-policy.html',
   termsUrl: 'https://softskyadmin.softsky.studio/terms',
-  androidPackageName: 'com.awg.awg_wallpaper',
-  minAppVersion: '1.0.0',
-  latestAppVersion: '1.0.0',
+  androidPackageName: 'com.webinessdesign.softskywallpaper',
+  minAppVersion: '3.0.0',
+  latestAppVersion: '3.0.29',
   forceUpdate: false,
   maintenanceMode: false,
   maintenanceMessage: 'SoftSky is under maintenance. Please try again shortly.',
@@ -24,6 +24,12 @@ const defaultSettings: AppSettings = {
   enableWideWallpapers: true,
   defaultNotificationTitle: 'Fresh wallpapers are live',
   defaultNotificationMessage: 'Open SoftSky to explore the newest collection.',
+  enableLimitedTimeDeal: true,
+  dealDiscountPercentage: 50,
+  dealOriginalPrice: 79.9,
+  dealDiscountedPrice: 40.0,
+  dealIntervalDays: 2,
+  dealTargetPlan: 'annual',
 };
 
 export default function Settings() {
@@ -196,6 +202,82 @@ export default function Settings() {
           </div>
         </AdminPanel>
 
+        <AdminPanel title="Promotions & Limited Deals" description="Configure the 50% off limited-time deal modal and home popup intervals.">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <label className="afield__checkbox-row">
+              <input
+                type="checkbox"
+                checked={Boolean(settings.enableLimitedTimeDeal)}
+                onChange={(e) => updateField('enableLimitedTimeDeal', e.target.checked)}
+              />
+              <span>Enable limited-time deal offers (50% OFF popup)</span>
+            </label>
+
+            <div className="admin-form-grid">
+              <div className="afield">
+                <label className="afield__label">Discount percentage (%)</label>
+                <input
+                  className="afield__input"
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={settings.dealDiscountPercentage ?? 50}
+                  onChange={(e) => updateField('dealDiscountPercentage', Number(e.target.value))}
+                />
+              </div>
+
+              <div className="afield">
+                <label className="afield__label">Target plan</label>
+                <select
+                  className="afield__select"
+                  value={settings.dealTargetPlan ?? 'annual'}
+                  onChange={(e) => updateField('dealTargetPlan', e.target.value)}
+                >
+                  <option value="annual">Annual Plan</option>
+                  <option value="monthly">Monthly Plan</option>
+                  <option value="lifetime">Lifetime Plan</option>
+                </select>
+              </div>
+
+              <div className="afield">
+                <label className="afield__label">Original price (INR)</label>
+                <input
+                  className="afield__input"
+                  type="number"
+                  step="0.1"
+                  value={settings.dealOriginalPrice ?? 79.9}
+                  onChange={(e) => updateField('dealOriginalPrice', Number(e.target.value))}
+                />
+              </div>
+
+              <div className="afield">
+                <label className="afield__label">Discounted price (INR)</label>
+                <input
+                  className="afield__input"
+                  type="number"
+                  step="0.1"
+                  value={settings.dealDiscountedPrice ?? 40.0}
+                  onChange={(e) => updateField('dealDiscountedPrice', Number(e.target.value))}
+                />
+              </div>
+
+              <div className="afield">
+                <label className="afield__label">Popup interval gap (Days)</label>
+                <input
+                  className="afield__input"
+                  type="number"
+                  min={1}
+                  value={settings.dealIntervalDays ?? 2}
+                  onChange={(e) => updateField('dealIntervalDays', Number(e.target.value))}
+                />
+                <span className="afield__helper">Gap between home screen promotional deal popups for free/monthly users.</span>
+              </div>
+            </div>
+          </div>
+        </AdminPanel>
+      </div>
+
+      <div className="admin-grid admin-grid--cards">
         <AdminPanel title="Notification defaults" description="Reusable copy for quick campaign composition and app-triggered messages.">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div className="afield">

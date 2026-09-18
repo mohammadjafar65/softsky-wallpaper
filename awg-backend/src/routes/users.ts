@@ -14,12 +14,22 @@ router.get("/", authenticate, requireAdmin, async (req: AuthRequest, res) => {
         const limit = parseInt(req.query.limit as string) || 20;
         const search = req.query.search as string;
         const plan = req.query.plan as string;
+        const role = req.query.role as string;
+        const isCreator = req.query.isCreator as string;
 
         const userRepository = AppDataSource.getRepository(User);
 
-        const queryBuilder = userRepository
-            .createQueryBuilder("user")
-            .where("user.role = :role", { role: "user" });
+        const queryBuilder = userRepository.createQueryBuilder("user");
+
+        if (role && role !== "all") {
+            queryBuilder.andWhere("user.role = :role", { role });
+        }
+
+        if (isCreator === "true") {
+            queryBuilder.andWhere("user.postsCount > 0");
+        } else if (isCreator === "false") {
+            queryBuilder.andWhere("user.postsCount = 0");
+        }
 
         if (search) {
             queryBuilder.andWhere(
@@ -46,8 +56,11 @@ router.get("/", authenticate, requireAdmin, async (req: AuthRequest, res) => {
                 displayName: u.displayName,
                 photoUrl: u.photoUrl,
                 authProvider: u.authProvider,
+                role: u.role,
                 subscription: u.subscription,
                 downloads: u.downloads,
+                postsCount: u.postsCount || 0,
+                isCreator: (u.postsCount || 0) > 0,
                 isActive: u.isActive,
                 createdAt: u.createdAt,
                 hasFcmToken: !!u.fcmToken,
@@ -154,8 +167,10 @@ router.get("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
             photoUrl: user.photoUrl,
             authProvider: user.authProvider,
             role: user.role,
+            isCreator: (user.postsCount || 0) > 0,
+            postsCount: user.postsCount || 0,
             subscription: user.subscription,
-            favorites: [], // TODO: Implement favorites relation
+            favorites: [],
             downloads: user.downloads,
             isActive: user.isActive,
             createdAt: user.createdAt,
@@ -169,7 +184,7 @@ router.get("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
 // Update user (admin only)
 router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-        const { displayName, isActive, subscription } = req.body;
+        const { displayName, isActive, subscription, role, isCreator } = req.body;
 
         const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOne({
@@ -183,6 +198,17 @@ router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
         if (displayName) user.displayName = displayName;
         if (isActive !== undefined)
             user.isActive = isActive === true || isActive === "true";
+        if (role && (role === "user" || role === "admin")) {
+            user.role = role;
+        }
+        if (isCreator !== undefined) {
+            const shouldBeCreator = isCreator === true || isCreator === "true";
+            if (shouldBeCreator && (user.postsCount || 0) === 0) {
+                user.postsCount = 1;
+            } else if (!shouldBeCreator) {
+                user.postsCount = 0;
+            }
+        }
         if (subscription) {
             if (subscription.plan) user.subscriptionPlan = subscription.plan;
 
@@ -206,6 +232,9 @@ router.put("/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => 
                 id: user.id,
                 email: user.email,
                 displayName: user.displayName,
+                role: user.role,
+                isCreator: (user.postsCount || 0) > 0,
+                postsCount: user.postsCount || 0,
                 subscription: user.subscription,
                 isActive: user.isActive,
             },

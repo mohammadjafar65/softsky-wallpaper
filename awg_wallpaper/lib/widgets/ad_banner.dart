@@ -15,30 +15,31 @@ class AdBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (adType) {
       case AdType.banner:
-        return _buildBannerAd();
+        return _buildBannerAd(isDark);
       case AdType.interstitial:
         return _buildInterstitialAd();
       case AdType.native:
-        return _buildNativeAd();
+        return _buildNativeAd(isDark);
     }
   }
   
-  Widget _buildBannerAd() {
+  Widget _buildBannerAd(bool isDark) {
     return Container(
       height: 60,
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.surfaceVariant.withValues(alpha: 0.9),
-            AppTheme.surface.withValues(alpha: 0.9),
+            AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.9),
+            AppTheme.getSurface(isDark).withValues(alpha: 0.9),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.textMuted.withValues(alpha: 0.3),
+          color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -73,10 +74,10 @@ class AdBanner extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Remove Ads with Pro',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: AppTheme.getTextPrimary(isDark),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -84,7 +85,7 @@ class AdBanner extends StatelessWidget {
                       Text(
                         'Upgrade to enjoy ad-free experience',
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: AppTheme.getTextSecondary(isDark),
                           fontSize: 10,
                         ),
                       ),
@@ -267,15 +268,15 @@ class AdBanner extends StatelessWidget {
     );
   }
   
-  Widget _buildNativeAd() {
+  Widget _buildNativeAd(bool isDark) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.getSurface(isDark),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.surfaceVariant, // Fixed: was surfaceLight
+          color: AppTheme.getSurfaceVariant(isDark),
           width: 1,
         ),
       ),
@@ -306,17 +307,17 @@ class AdBanner extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Sponsored',
                       style: TextStyle(
-                        color: AppTheme.textMuted,
+                        color: AppTheme.getTextMuted(isDark),
                         fontSize: 10,
                       ),
                     ),
                     Text(
                       'Premium Wallpapers',
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: AppTheme.getTextPrimary(isDark),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -327,13 +328,13 @@ class AdBanner extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.textMuted.withValues(alpha: 0.3),
+                  color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: Text(
                   'AD',
                   style: TextStyle(
-                    color: AppTheme.textMuted,
+                    color: AppTheme.getTextMuted(isDark),
                     fontSize: 8,
                     fontWeight: FontWeight.bold,
                   ),
@@ -345,7 +346,7 @@ class AdBanner extends StatelessWidget {
           Text(
             'Discover thousands of stunning wallpapers. Upgrade to Pro for the best experience!',
             style: TextStyle(
-              color: AppTheme.textSecondary.withValues(alpha: 0.8),
+              color: AppTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
               fontSize: 12,
             ),
           ),

@@ -11,9 +11,9 @@ class AppTheme {
   static const surfaceVariant = Color(0xFFEDF2F7); // Light Grey
   static const surfaceLight = Color(0xFFFFFFFF);
 
-  static const textPrimary = Color(0xFF2D3436); // Dark Charcoal
-  static const textSecondary = Color(0xFFE6E8EB); // Medium Grey
-  static const textMuted = Color(0xFFB2BEC3); // Light Grey
+  static const textPrimary = Color(0xFF1E293B); // Slate 800 Dark
+  static const textSecondary = Color(0xFF64748B); // Slate 500 Medium Grey
+  static const textMuted = Color(0xFF94A3B8); // Slate 400 Light Grey
   static const textWhite = Color(0xFFFFFFFF); // Pure White
   static const textBlack = Color(0xFF000000); // Pure Black
 
@@ -67,8 +67,8 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  static const shimmerBase = Color(0xFF2A2A2A);
-  static const shimmerHighlight = Color(0xFF3D3D3D);
+  static const shimmerBase = Color(0xFFE2E8F0);
+  static const shimmerHighlight = Color(0xFFF8FAFC);
 
   // ==================== LIGHT THEME ====================
   static ThemeData get lightTheme {
@@ -82,6 +82,9 @@ class AppTheme {
         secondary: accent,
         surface: surface,
         error: error,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: textPrimary,
       ),
       textTheme: GoogleFonts.outfitTextTheme().copyWith(
         headlineLarge: const TextStyle(
@@ -129,6 +132,27 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: false,
         showUnselectedLabels: false,
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: surfaceLight,
+        titleTextStyle: TextStyle(
+          color: textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        contentTextStyle: TextStyle(
+          color: textSecondary,
+          fontSize: 14,
+        ),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: textPrimary,
+        contentTextStyle: TextStyle(color: Colors.white),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: surfaceVariant,
+        space: 1,
+        thickness: 1,
       ),
     );
   }

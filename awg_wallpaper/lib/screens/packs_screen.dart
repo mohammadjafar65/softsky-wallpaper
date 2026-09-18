@@ -39,7 +39,10 @@ class _PacksScreenState extends State<PacksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: AppTheme.getBackground(isDark),
       body: SafeArea(
         bottom: false,
         child: Consumer<PackProvider>(
@@ -50,7 +53,7 @@ class _PacksScreenState extends State<PacksScreen> {
             return RefreshIndicator(
               onRefresh: () => provider.fetchPacks(refresh: true),
               color: AppTheme.primary,
-              backgroundColor: AppTheme.surface,
+              backgroundColor: AppTheme.getSurface(isDark),
               child: CustomScrollView(
                 slivers: [
                   // Custom Header Matching Home Screen
@@ -63,10 +66,10 @@ class _PacksScreenState extends State<PacksScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'BUNDLES',
                                 style: TextStyle(
-                                  color: AppTheme.textWhite,
+                                  color: AppTheme.getTextPrimary(isDark),
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: -0.5,

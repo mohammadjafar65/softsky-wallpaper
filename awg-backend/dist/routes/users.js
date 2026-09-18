@@ -14,10 +14,19 @@ router.get("/", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const search = req.query.search;
         const plan = req.query.plan;
+        const role = req.query.role;
+        const isCreator = req.query.isCreator;
         const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
-        const queryBuilder = userRepository
-            .createQueryBuilder("user")
-            .where("user.role = :role", { role: "user" });
+        const queryBuilder = userRepository.createQueryBuilder("user");
+        if (role && role !== "all") {
+            queryBuilder.andWhere("user.role = :role", { role });
+        }
+        if (isCreator === "true") {
+            queryBuilder.andWhere("user.postsCount > 0");
+        }
+        else if (isCreator === "false") {
+            queryBuilder.andWhere("user.postsCount = 0");
+        }
         if (search) {
             queryBuilder.andWhere("(user.email LIKE :search OR user.displayName LIKE :search)", { search: `%${search}%` });
         }
@@ -37,8 +46,11 @@ router.get("/", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
                 displayName: u.displayName,
                 photoUrl: u.photoUrl,
                 authProvider: u.authProvider,
+                role: u.role,
                 subscription: u.subscription,
                 downloads: u.downloads,
+                postsCount: u.postsCount || 0,
+                isCreator: (u.postsCount || 0) > 0,
                 isActive: u.isActive,
                 createdAt: u.createdAt,
                 hasFcmToken: !!u.fcmToken,
@@ -128,8 +140,10 @@ router.get("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
             photoUrl: user.photoUrl,
             authProvider: user.authProvider,
             role: user.role,
+            isCreator: (user.postsCount || 0) > 0,
+            postsCount: user.postsCount || 0,
             subscription: user.subscription,
-            favorites: [], // TODO: Implement favorites relation
+            favorites: [],
             downloads: user.downloads,
             isActive: user.isActive,
             createdAt: user.createdAt,
@@ -143,7 +157,7 @@ router.get("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
 // Update user (admin only)
 router.put("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) => {
     try {
-        const { displayName, isActive, subscription } = req.body;
+        const { displayName, isActive, subscription, role, isCreator } = req.body;
         const userRepository = data_source_1.AppDataSource.getRepository(User_1.User);
         const user = await userRepository.findOne({
             where: { id: parseInt(req.params.id) },
@@ -155,6 +169,18 @@ router.put("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
             user.displayName = displayName;
         if (isActive !== undefined)
             user.isActive = isActive === true || isActive === "true";
+        if (role && (role === "user" || role === "admin")) {
+            user.role = role;
+        }
+        if (isCreator !== undefined) {
+            const shouldBeCreator = isCreator === true || isCreator === "true";
+            if (shouldBeCreator && (user.postsCount || 0) === 0) {
+                user.postsCount = 1;
+            }
+            else if (!shouldBeCreator) {
+                user.postsCount = 0;
+            }
+        }
         if (subscription) {
             if (subscription.plan)
                 user.subscriptionPlan = subscription.plan;
@@ -179,6 +205,9 @@ router.put("/:id", auth_1.authenticate, auth_1.requireAdmin, async (req, res) =>
                 id: user.id,
                 email: user.email,
                 displayName: user.displayName,
+                role: user.role,
+                isCreator: (user.postsCount || 0) > 0,
+                postsCount: user.postsCount || 0,
                 subscription: user.subscription,
                 isActive: user.isActive,
             },

@@ -16,16 +16,15 @@ class ThemeProvider extends ChangeNotifier {
     _initBox();
   }
 
-  Future<void> _initBox() async {
+  void _initBox() {
     _box = Hive.box('settings');
     _loadThemePreference();
     _isInitialized = true;
-    notifyListeners();
   }
 
   void _loadThemePreference() {
     final savedTheme = _box.get('themeMode', defaultValue: 'light') as String;
-    _themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.dark;
+    _themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
   }
 
   Future<void> _saveThemePreference() async {
@@ -53,7 +52,7 @@ class ThemeProvider extends ChangeNotifier {
 
   /// Force light mode (used when user's Pro subscription expires)
   Future<void> forceToLightMode() async {
-    _themeMode = ThemeMode.dark;
+    _themeMode = ThemeMode.light;
     await _saveThemePreference();
     notifyListeners();
   }

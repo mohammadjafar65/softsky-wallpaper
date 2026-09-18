@@ -7,7 +7,6 @@ import '../providers/auto_wallpaper_provider.dart';
 import '../widgets/rating_dialog.dart';
 import 'auto_wallpaper_settings_screen.dart';
 import 'subscription_screen.dart';
-import 'manage_subscription_screen.dart';
 import 'contact_us_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_conditions_screen.dart';
@@ -49,25 +48,27 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         color: AppTheme.getSurface(isDark).withValues(alpha: 0.6),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.08),
                         ),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.arrow_back_rounded,
-                          color: Colors.white,
+                          color: isDark ? Colors.white : AppTheme.textPrimary,
                           size: 20,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Text(
+                  Text(
                     'Settings',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppTheme.getTextPrimary(isDark),
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -82,7 +83,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 children: [
                   // Preferences Section
-                  _buildSectionHeader('Preferences'),
+                  _buildSectionHeader('Preferences', isDark),
                   _buildCard(
                     isDark: isDark,
                     children: [
@@ -101,18 +102,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             size: 20,
                           ),
                         ),
-                        title: const Text(
+                        title: Text(
                           'Dark Mode',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
+                          style: _itemStyle(isDark),
                         ),
                         subtitle: Text(
                           themeProvider.isDarkMode ? 'Enabled' : 'Disabled',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.5)
+                                : AppTheme.textSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -125,7 +124,13 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           },
                         ),
                       ),
-                      const Divider(height: 1, indent: 64, color: Colors.white12),
+                      Divider(
+                        height: 1,
+                        indent: 64,
+                        color: isDark
+                            ? Colors.white12
+                            : Colors.black.withValues(alpha: 0.06),
+                      ),
 
                       // Notifications Switch
                       ListTile(
@@ -142,18 +147,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             size: 20,
                           ),
                         ),
-                        title: const Text(
+                        title: Text(
                           'Notifications',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
+                          style: _itemStyle(isDark),
                         ),
                         subtitle: Text(
                           _notificationsEnabled ? 'Wallpaper updates' : 'Muted',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.5)
+                                : AppTheme.textSecondary,
                             fontSize: 12,
                           ),
                         ),
@@ -172,7 +175,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   const SizedBox(height: 24),
 
                   // Automation Section
-                  _buildSectionHeader('Automation'),
+                  _buildSectionHeader('Automation', isDark),
                   _buildCard(
                     isDark: isDark,
                     children: [
@@ -210,13 +213,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         ),
                         title: Row(
                           children: [
-                            const Text(
+                            Text(
                               'Auto Wallpaper',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
+                              style: _itemStyle(isDark),
                             ),
                             const SizedBox(width: 8),
                             if (!subscriptionProvider.isPro)
@@ -245,13 +244,15 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   : 'Configure automatic rotation')
                               : 'PRO Feature - Upgrade to unlock',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.5)
+                                : AppTheme.textSecondary,
                             fontSize: 12,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.chevron_right_rounded,
-                          color: Colors.white54,
+                          color: isDark ? Colors.white54 : AppTheme.textMuted,
                           size: 22,
                         ),
                       ),
@@ -260,101 +261,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Subscription Section
-                  _buildSectionHeader('Subscription'),
-                  _buildCard(
-                    isDark: isDark,
-                    children: [
-                      ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => subscriptionProvider.isPro
-                                  ? const ManageSubscriptionScreen()
-                                  : const SubscriptionScreen(),
-                            ),
-                          );
-                        },
-                        leading: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: AppTheme.gold.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.workspace_premium_rounded,
-                            color: AppTheme.gold,
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          subscriptionProvider.isPro
-                              ? 'Manage Subscription'
-                              : 'Upgrade to Pro',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        subtitle: Text(
-                          subscriptionProvider.isPro
-                              ? () {
-                                  final plan = subscriptionProvider.getPlanName(subscriptionProvider.currentPlan);
-                                  final expiry = subscriptionProvider.expiryDate;
-                                  final isLifetime = subscriptionProvider.currentPlan == SubscriptionPlan.lifetime;
-                                  if (isLifetime) return '$plan · Lifetime access';
-                                  if (expiry != null) {
-                                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                                    return '$plan · Renews ${expiry.day} ${months[expiry.month - 1]}';
-                                  }
-                                  return plan;
-                                }()
-                              : 'Unlock 1000+ wallpapers & features',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 12,
-                          ),
-                        ),
-                        trailing: subscriptionProvider.isPro
-                            ? const Icon(Icons.chevron_right_rounded, color: Colors.white54)
-                            : Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [AppTheme.gold, Color(0xFFFFB700)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.star_rounded, color: Colors.black, size: 12),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'PRO',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
                   // Storage Section
-                  _buildSectionHeader('Storage & Cache'),
+                  _buildSectionHeader('Storage & Cache', isDark),
                   _buildCard(
                     isDark: isDark,
                     children: [
@@ -380,24 +288,22 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             size: 20,
                           ),
                         ),
-                        title: const Text(
+                        title: Text(
                           'Clear Cache',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
+                          style: _itemStyle(isDark),
                         ),
                         subtitle: Text(
                           'Free up offline storage space',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.5)
+                                : AppTheme.textSecondary,
                             fontSize: 12,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.delete_outline_rounded,
-                          color: Colors.white54,
+                          color: isDark ? Colors.white54 : AppTheme.textMuted,
                           size: 20,
                         ),
                       ),
@@ -407,7 +313,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   const SizedBox(height: 24),
 
                   // Support & Legal
-                  _buildSectionHeader('Support & Legal'),
+                  _buildSectionHeader('Support & Legal', isDark),
                   _buildCard(
                     isDark: isDark,
                     children: [
@@ -417,38 +323,68 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           builder: (_) => const RatingDialog(),
                         ),
                         leading: _buildIcon(Icons.star_outline_rounded, Colors.orange),
-                        title: const Text('Rate App', style: _itemStyle),
-                        trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                        title: Text('Rate App', style: _itemStyle(isDark)),
+                        trailing: Icon(
+                          Icons.chevron_right_rounded,
+                          color: isDark ? Colors.white54 : AppTheme.textMuted,
+                        ),
                       ),
-                      const Divider(height: 1, indent: 64, color: Colors.white12),
+                      Divider(
+                        height: 1,
+                        indent: 64,
+                        color: isDark
+                            ? Colors.white12
+                            : Colors.black.withValues(alpha: 0.06),
+                      ),
                       ListTile(
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const ContactUsScreen()),
                         ),
                         leading: _buildIcon(Icons.mail_outline_rounded, Colors.cyan),
-                        title: const Text('Contact Us', style: _itemStyle),
-                        trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                        title: Text('Contact Us', style: _itemStyle(isDark)),
+                        trailing: Icon(
+                          Icons.chevron_right_rounded,
+                          color: isDark ? Colors.white54 : AppTheme.textMuted,
+                        ),
                       ),
-                      const Divider(height: 1, indent: 64, color: Colors.white12),
+                      Divider(
+                        height: 1,
+                        indent: 64,
+                        color: isDark
+                            ? Colors.white12
+                            : Colors.black.withValues(alpha: 0.06),
+                      ),
                       ListTile(
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
                         ),
                         leading: _buildIcon(Icons.privacy_tip_outlined, Colors.green),
-                        title: const Text('Privacy Policy', style: _itemStyle),
-                        trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                        title: Text('Privacy Policy', style: _itemStyle(isDark)),
+                        trailing: Icon(
+                          Icons.chevron_right_rounded,
+                          color: isDark ? Colors.white54 : AppTheme.textMuted,
+                        ),
                       ),
-                      const Divider(height: 1, indent: 64, color: Colors.white12),
+                      Divider(
+                        height: 1,
+                        indent: 64,
+                        color: isDark
+                            ? Colors.white12
+                            : Colors.black.withValues(alpha: 0.06),
+                      ),
                       ListTile(
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const TermsConditionsScreen()),
                         ),
                         leading: _buildIcon(Icons.description_outlined, Colors.purple),
-                        title: const Text('Terms of Service', style: _itemStyle),
-                        trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                        title: Text('Terms of Service', style: _itemStyle(isDark)),
+                        trailing: Icon(
+                          Icons.chevron_right_rounded,
+                          color: isDark ? Colors.white54 : AppTheme.textMuted,
+                        ),
                       ),
                     ],
                   ),
@@ -458,9 +394,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   // Version tag
                   Center(
                     child: Text(
-                      'SoftSky Version 3.0.23',
+                      'Softsky Wallpaper • Version 3.0.29',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.4)
+                            : AppTheme.textMuted,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -477,11 +415,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
-  static const TextStyle _itemStyle = TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w600,
-    fontSize: 15,
-  );
+  TextStyle _itemStyle(bool isDark) => TextStyle(
+        color: AppTheme.getTextPrimary(isDark),
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
+      );
 
   Widget _buildIcon(IconData icon, Color color) {
     return Container(
@@ -495,13 +433,15 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.5),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.5)
+              : AppTheme.textSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.1,
@@ -513,11 +453,22 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   Widget _buildCard({required bool isDark, required List<Widget> children}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E22),
+        color: isDark ? const Color(0xFF1E1E22) : Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

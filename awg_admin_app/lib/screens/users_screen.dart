@@ -20,6 +20,7 @@ class _UsersScreenState extends State<UsersScreen> {
   final int _limit = 20;
   String _search = '';
   String _planFilter = '';
+  String _creatorFilter = '';
   final _searchController = TextEditingController();
 
   @override
@@ -46,6 +47,8 @@ class _UsersScreenState extends State<UsersScreen> {
         'limit': '$_limit',
         if (_search.isNotEmpty) 'search': _search,
         if (_planFilter.isNotEmpty) 'plan': _planFilter,
+        if (_creatorFilter == 'creator') 'isCreator': 'true',
+        if (_creatorFilter == 'regular') 'isCreator': 'false',
       };
       final data = await ApiService.get('/users', params: params);
       if (!mounted) return;
@@ -79,13 +82,154 @@ class _UsersScreenState extends State<UsersScreen> {
     }
   }
 
+  void _showEditUserSheet(Map<String, dynamic> u) {
+    final displayNameCtrl = TextEditingController(text: u['displayName']?.toString() ?? '');
+    String role = u['role']?.toString().toLowerCase() == 'admin' ? 'admin' : 'user';
+    bool isCreator = u['isCreator'] == true || (u['postsCount'] is int && u['postsCount'] > 0);
+    bool isActive = u['isActive'] != false;
+    final sub = u['subscription'] as Map<String, dynamic>? ?? {};
+    String plan = sub['plan']?.toString().toLowerCase() ?? 'free';
+    final expiryCtrl = TextEditingController(
+      text: sub['expiryDate'] != null ? sub['expiryDate'].toString().split('T')[0] : '',
+    );
+    bool saving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+            return Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + bottomInset),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Edit User: ${u['email']}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: displayNameCtrl,
+                      decoration: const InputDecoration(labelText: 'Display Name'),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: role,
+                      decoration: const InputDecoration(labelText: 'System Role'),
+                      items: const [
+                        DropdownMenuItem(value: 'user', child: Text('Regular User')),
+                        DropdownMenuItem(value: 'admin', child: Text('Administrator')),
+                      ],
+                      onChanged: (v) => setSheetState(() => role = v ?? 'user'),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: plan,
+                      decoration: const InputDecoration(labelText: 'Subscription Plan'),
+                      items: const [
+                        DropdownMenuItem(value: 'free', child: Text('Free')),
+                        DropdownMenuItem(value: 'monthly', child: Text('Monthly Pro')),
+                        DropdownMenuItem(value: 'annual', child: Text('Annual Pro')),
+                        DropdownMenuItem(value: 'lifetime', child: Text('Lifetime Pro')),
+                      ],
+                      onChanged: (v) => setSheetState(() => plan = v ?? 'free'),
+                    ),
+                    if (plan != 'free' && plan != 'lifetime') ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: expiryCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Expiry Date (YYYY-MM-DD)',
+                          hintText: 'e.g. 2027-09-18',
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Creator Privileges', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: const Text('Enable Creator Studio, portfolio & verified badge', style: TextStyle(fontSize: 12)),
+                      value: isCreator,
+                      onChanged: (v) => setSheetState(() => isCreator = v),
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Account Active', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: const Text('Turn off to ban or restrict account access', style: TextStyle(fontSize: 12)),
+                      value: isActive,
+                      onChanged: (v) => setSheetState(() => isActive = v),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: saving
+                            ? null
+                            : () async {
+                                setSheetState(() => saving = true);
+                                try {
+                                  await ApiService.put('/users/${u['id']}', {
+                                    'displayName': displayNameCtrl.text.trim(),
+                                    'role': role,
+                                    'isCreator': isCreator,
+                                    'isActive': isActive,
+                                    'subscription': {
+                                      'plan': plan,
+                                      'expiryDate': expiryCtrl.text.trim().isNotEmpty ? expiryCtrl.text.trim() : null,
+                                    },
+                                  });
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                  _load();
+                                } catch (e) {
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
+                                      SnackBar(content: Text('Failed to update user: $e')),
+                                    );
+                                  }
+                                } finally {
+                                  if (ctx.mounted) setSheetState(() => saving = false);
+                                }
+                              },
+                        child: Text(saving ? 'Saving...' : 'Save User'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.surfaceVariant,
       body: Column(
         children: [
-          PageHeader(title: 'Users', subtitle: '$_total total users'),
+          PageHeader(title: 'Users', subtitle: '$_total total registered users'),
           Container(
             color: AppTheme.surface,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -109,10 +253,7 @@ class _UsersScreenState extends State<UsersScreen> {
                                 },
                               )
                             : null,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 0,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                       ),
                       onSubmitted: (v) {
                         _search = v;
@@ -126,19 +267,36 @@ class _UsersScreenState extends State<UsersScreen> {
                   child: DropdownButton<String>(
                     value: _planFilter.isEmpty ? null : _planFilter,
                     hint: const Text('Plan', style: TextStyle(fontSize: 13)),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppTheme.textPrimary,
-                    ),
+                    style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
                     borderRadius: BorderRadius.circular(8),
                     onChanged: (v) {
                       _planFilter = v ?? '';
                       _load(reset: true);
                     },
                     items: const [
-                      DropdownMenuItem(value: '', child: Text('All')),
+                      DropdownMenuItem(value: '', child: Text('All Plans')),
                       DropdownMenuItem(value: 'free', child: Text('Free')),
-                      DropdownMenuItem(value: 'pro', child: Text('Pro')),
+                      DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                      DropdownMenuItem(value: 'annual', child: Text('Annual')),
+                      DropdownMenuItem(value: 'lifetime', child: Text('Lifetime')),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _creatorFilter.isEmpty ? null : _creatorFilter,
+                    hint: const Text('Role', style: TextStyle(fontSize: 13)),
+                    style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+                    borderRadius: BorderRadius.circular(8),
+                    onChanged: (v) {
+                      _creatorFilter = v ?? '';
+                      _load(reset: true);
+                    },
+                    items: const [
+                      DropdownMenuItem(value: '', child: Text('All Users')),
+                      DropdownMenuItem(value: 'creator', child: Text('Creators')),
+                      DropdownMenuItem(value: 'regular', child: Text('Non-Creators')),
                     ],
                   ),
                 ),
@@ -158,99 +316,96 @@ class _UsersScreenState extends State<UsersScreen> {
                         child: ListView.separated(
                           padding: const EdgeInsets.all(16),
                           itemCount: _users.length,
-                          separatorBuilder: (_, i) =>
-                              const SizedBox(height: 8),
+                          separatorBuilder: (_, i) => const SizedBox(height: 8),
                           itemBuilder: (context, i) {
                             final u = _users[i] as Map<String, dynamic>;
-                            final isPro = u['subscriptionPlan'] == 'pro' ||
-                                u['role'] == 'admin';
+                            final sub = u['subscription'] as Map<String, dynamic>? ?? {};
+                            final plan = (sub['plan'] ?? u['subscriptionPlan'])?.toString().toLowerCase() ?? 'free';
+                            final isPro = plan != 'free';
+                            final isAdmin = u['role']?.toString().toLowerCase() == 'admin';
+                            final isCreator = u['isCreator'] == true || (u['postsCount'] is int && u['postsCount'] > 0);
+                            final isActive = u['isActive'] != false;
                             final photoUrl = u['photoUrl'] as String?;
-                            final displayName =
-                                u['displayName'] as String? ??
-                                    u['email'] as String? ??
-                                    'U';
-                            final initial = displayName.trim().isNotEmpty
-                                ? displayName.trim()[0].toUpperCase()
-                                : 'U';
+                            final displayName = u['displayName'] as String? ?? u['email'] as String? ?? 'User';
+                            final initial = displayName.trim().isNotEmpty ? displayName.trim()[0].toUpperCase() : 'U';
+
                             return Card(
                               child: ListTile(
                                 leading: CircleAvatar(
                                   radius: 20,
                                   backgroundColor: isPro
-                                      ? AppTheme.accentBright.withValues(alpha: 0.15)
+                                      ? AppTheme.pro.withValues(alpha: 0.15)
                                       : AppTheme.surfaceVariant,
-                                  backgroundImage: photoUrl != null
-                                      ? NetworkImage(photoUrl)
-                                      : null,
+                                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
                                   child: photoUrl == null
                                       ? Text(
                                           initial,
                                           style: TextStyle(
-                                            color: isPro
-                                                ? AppTheme.accentBright
-                                                : AppTheme.textSecondary,
+                                            color: isPro ? AppTheme.pro : AppTheme.textSecondary,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         )
                                       : null,
                                 ),
-                                title: Text(
-                                  displayName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                title: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        displayName,
+                                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (!isActive)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 6),
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.error.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text('BANNED', style: TextStyle(fontSize: 9, color: AppTheme.error, fontWeight: FontWeight.bold)),
+                                      ),
+                                  ],
                                 ),
-                                subtitle: Text(
-                                  u['email'] as String? ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      u['email'] as String? ?? '',
+                                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Wrap(
+                                      spacing: 4,
+                                      children: [
+                                        if (isAdmin)
+                                          _buildBadge('ADMIN', AppTheme.admin),
+                                        if (isCreator)
+                                          _buildBadge('CREATOR', AppTheme.creator),
+                                        if (isPro)
+                                          _buildBadge(plan.toUpperCase(), AppTheme.pro)
+                                        else
+                                          _buildBadge('FREE', AppTheme.textSecondary),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (isPro)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.accentBright
-                                              .withValues(alpha: 0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: AppTheme.accentBright
-                                                .withValues(alpha: 0.3),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          u['role'] == 'admin'
-                                              ? 'ADMIN'
-                                              : 'PRO',
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            color: AppTheme.accentBright,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    const SizedBox(width: 4),
                                     IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        size: 18,
-                                        color: AppTheme.error,
-                                      ),
-                                      onPressed: () =>
-                                          _delete(u['id'].toString()),
+                                      icon: const Icon(Icons.edit_outlined, size: 18),
+                                      onPressed: () => _showEditUserSheet(u),
+                                      tooltip: 'Edit User',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, size: 18, color: AppTheme.error),
+                                      onPressed: () => _delete(u['id'].toString()),
+                                      tooltip: 'Delete User',
                                     ),
                                   ],
                                 ),
@@ -262,6 +417,21 @@ class _UsersScreenState extends State<UsersScreen> {
           ),
           _buildPagination(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 9.5, color: color, fontWeight: FontWeight.w700),
       ),
     );
   }

@@ -40,11 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
     final topHeight = (size.height * 0.36).clamp(240.0, 320.0);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121214),
+      backgroundColor: AppTheme.getBackground(isDark),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -70,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Gradient overlay to fade smoothly into the dark bottom card
+                  // Gradient overlay to fade smoothly into the bottom card
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -78,8 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          const Color(0xFF121214).withValues(alpha: 0.6),
-                          const Color(0xFF121214),
+                          AppTheme.getBackground(isDark).withValues(alpha: 0.6),
+                          AppTheme.getBackground(isDark),
                         ],
                         stops: const [0.5, 0.88, 1.0],
                       ),
@@ -183,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
-              color: const Color(0xFF121214),
+              color: AppTheme.getBackground(isDark),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -192,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppTheme.getTextPrimary(isDark),
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -201,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Sign in to sync your favorites and access creator tools.',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: AppTheme.getTextSecondary(isDark),
                     ),
                   ),
                   const SizedBox(height: 28),
@@ -212,6 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: 'Email address',
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 16),
 
@@ -222,12 +224,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: Icons.lock_outline_rounded,
                     isPassword: true,
                     obscureText: _obscurePassword,
+                    isDark: isDark,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: Colors.white.withValues(alpha: 0.5),
+                        color: AppTheme.getTextMuted(isDark),
                         size: 20,
                       ),
                       onPressed: () =>
@@ -240,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
-                      onTap: _showForgotPasswordDialog,
+                      onTap: () => _showForgotPasswordDialog(isDark),
                       child: const Text(
                         'Forgot Password?',
                         style: TextStyle(
@@ -294,7 +297,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Expanded(
                         child: Divider(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.08),
                         ),
                       ),
                       Padding(
@@ -302,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'OR',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: AppTheme.getTextMuted(isDark),
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -310,7 +315,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       Expanded(
                         child: Divider(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.08),
                         ),
                       ),
                     ],
@@ -323,23 +330,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: _isLoading ? null : _signInWithGoogle,
-                      icon: const FaIcon(FontAwesomeIcons.google,
-                          size: 16, color: Colors.white),
-                      label: const Text(
+                      icon: FaIcon(
+                        FontAwesomeIcons.google,
+                        size: 16,
+                        color: AppTheme.getTextPrimary(isDark),
+                      ),
+                      label: Text(
                         'Continue with Google',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.getTextPrimary(isDark),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? Colors.transparent
+                            : Colors.black.withValues(alpha: 0.02),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.15),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.15)
+                              : Colors.black.withValues(alpha: 0.12),
                         ),
                       ),
                     ),
@@ -354,7 +369,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'Don\'t have an account? ',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
+                          color: AppTheme.getTextSecondary(isDark),
                           fontSize: 13,
                         ),
                       ),
@@ -386,11 +401,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required bool isDark,
     bool isPassword = false,
     bool obscureText = false,
     Widget? suffixIcon,
@@ -398,26 +413,28 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E22),
+        color: isDark ? const Color(0xFF1E1E22) : AppTheme.surfaceVariant,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword && obscureText,
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: AppTheme.getTextPrimary(isDark), fontSize: 14),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.4),
+            color: AppTheme.getTextMuted(isDark),
             fontSize: 14,
           ),
           prefixIcon: Icon(
             icon,
-            color: Colors.white.withValues(alpha: 0.5),
+            color: AppTheme.getTextSecondary(isDark),
             size: 20,
           ),
           suffixIcon: suffixIcon,
@@ -480,17 +497,22 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showForgotPasswordDialog() {
+  void _showForgotPasswordDialog(bool isDark) {
     final emailController =
         TextEditingController(text: _emailController.text.trim());
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E22),
+        backgroundColor: AppTheme.getSurface(isDark),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Reset Password',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Reset Password',
+          style: TextStyle(
+            color: AppTheme.getTextPrimary(isDark),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,29 +520,38 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(
               'Enter your email address and we\'ll send you a link to reset your password.',
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
+                color: AppTheme.getTextSecondary(isDark),
+                fontSize: 13,
+              ),
             ),
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : AppTheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
               ),
               child: TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: TextStyle(
+                  color: AppTheme.getTextPrimary(isDark),
+                  fontSize: 14,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Email address',
                   hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
+                    color: AppTheme.getTextMuted(isDark),
                   ),
                   prefixIcon: Icon(
                     Icons.email_outlined,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: AppTheme.getTextSecondary(isDark),
                     size: 20,
                   ),
                   border: InputBorder.none,
@@ -536,7 +567,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: AppTheme.getTextSecondary(isDark)),
             ),
           ),
           ElevatedButton(
@@ -570,7 +601,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             child: const Text('Send Reset Link',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

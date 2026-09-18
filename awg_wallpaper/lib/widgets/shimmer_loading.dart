@@ -14,14 +14,16 @@ class ShimmerLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Shimmer.fromColors(
-      baseColor: AppTheme.darkSurfaceVariant,
-      highlightColor: Colors.black,
-      child: isWide ? _buildWideGrid() : _buildStaggeredGrid(),
+      baseColor: AppTheme.getShimmerBase(isDark),
+      highlightColor: AppTheme.getShimmerHighlight(isDark),
+      child: isWide ? _buildWideGrid(isDark) : _buildStaggeredGrid(isDark),
     );
   }
 
-  Widget _buildStaggeredGrid() {
+  Widget _buildStaggeredGrid(bool isDark) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -36,7 +38,7 @@ class ShimmerLoading extends StatelessWidget {
       itemBuilder: (context, index) {
         return Container(
           decoration: BoxDecoration(
-            color: AppTheme.darkSurface,
+            color: AppTheme.getSurface(isDark),
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         );
@@ -44,7 +46,7 @@ class ShimmerLoading extends StatelessWidget {
     );
   }
 
-  Widget _buildWideGrid() {
+  Widget _buildWideGrid(bool isDark) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -55,7 +57,7 @@ class ShimmerLoading extends StatelessWidget {
           height: 180,
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: AppTheme.darkSurface,
+            color: AppTheme.getSurface(isDark),
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         );
@@ -69,15 +71,17 @@ class ShimmerPackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Shimmer.fromColors(
-      baseColor: AppTheme.darkSurfaceVariant,
-      highlightColor: Colors.white,
+      baseColor: AppTheme.getShimmerBase(isDark),
+      highlightColor: AppTheme.getShimmerHighlight(isDark),
       child: Container(
         width: 160,
         height: 220,
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: AppTheme.getSurface(isDark),
           borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
       ),

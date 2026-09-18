@@ -10,6 +10,7 @@ import { CommunityLike } from "./entities/CommunityLike";
 import { CommunityComment } from "./entities/CommunityComment";
 import { CommunitySave } from "./entities/CommunitySave";
 import { PostReport } from "./entities/PostReport";
+import { NotificationTemplate } from "./entities/NotificationTemplate";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -26,7 +27,7 @@ export const AppDataSource = new DataSource({
     },
     synchronize: true, // Automatically create/update entity tables (community, etc.)
     logging: process.env.NODE_ENV !== "production",
-    entities: [User, Wallpaper, Category, Pack, CommunityPost, Follow, CommunityLike, CommunityComment, CommunitySave, PostReport],
+    entities: [User, Wallpaper, Category, Pack, CommunityPost, Follow, CommunityLike, CommunityComment, CommunitySave, PostReport, NotificationTemplate],
     subscribers: [],
     migrations: [],
 });

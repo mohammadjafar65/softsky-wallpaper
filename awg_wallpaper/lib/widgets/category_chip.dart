@@ -17,6 +17,8 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: GlassContainer(
@@ -24,12 +26,16 @@ class CategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         borderRadius: 50,
         blur: isSelected ? 0 : 10,
-        opacity: isSelected ? 1.0 : 0.1,
-        color: isSelected ? AppTheme.primary : AppTheme.darkSurfaceVariant,
+        opacity: isSelected ? 1.0 : (isDark ? 0.1 : 0.85),
+        color: isSelected
+            ? AppTheme.primary
+            : (isDark ? AppTheme.darkSurfaceVariant : AppTheme.surfaceVariant),
         border: isSelected
             ? Border.all(color: Colors.transparent, width: 0)
             : Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.15)
+                    : Colors.black.withValues(alpha: 0.08),
                 width: 1,
               ),
         child: Row(
@@ -38,7 +44,9 @@ class CategoryChip extends StatelessWidget {
             Text(
               category.name,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppTheme.textSecondary,
+                color: isSelected
+                    ? Colors.white
+                    : AppTheme.getTextSecondary(isDark),
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),

@@ -129,33 +129,41 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
   }
 
   void _showForgotPasswordDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final resetEmailController =
         TextEditingController(text: _emailController.text.trim());
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.darkSurface,
+        backgroundColor: AppTheme.getSurface(isDark),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Reset Password',
-            style: TextStyle(color: AppTheme.textWhite)),
+        title: Text(
+          'Reset Password',
+          style: TextStyle(color: AppTheme.getTextPrimary(isDark)),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Enter your email address and we\'ll send you a password reset link.',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(
+                color: AppTheme.getTextSecondary(isDark),
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: resetEmailController,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: AppTheme.getTextPrimary(isDark)),
               decoration: InputDecoration(
                 hintText: 'Enter your email',
-                hintStyle: const TextStyle(color: AppTheme.textMuted),
+                hintStyle: TextStyle(color: AppTheme.getTextMuted(isDark)),
                 filled: true,
-                fillColor: AppTheme.darkBackground,
+                fillColor: isDark
+                    ? AppTheme.darkBackground
+                    : AppTheme.surfaceVariant,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -167,8 +175,10 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppTheme.textMuted)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppTheme.getTextSecondary(isDark)),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -180,20 +190,12 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Password reset email sent! Check your inbox.'),
-                        backgroundColor: AppTheme.success,
+                        content: Text('Password reset email sent. Check your inbox.'),
                       ),
                     );
                   }
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: AppTheme.error,
-                      ),
-                    );
-                  }
+                  if (mounted) _showError('Could not send reset email.');
                 }
               }
             },
@@ -212,13 +214,21 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
       padding: EdgeInsets.only(bottom: bottomInset),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: AppTheme.getSurface(isDark),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.08),
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -233,7 +243,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: isDark ? Colors.white24 : Colors.black26,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -261,10 +271,10 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                       children: [
                         Text(
                           _tabIndex == 0 ? 'Welcome Back' : 'Create Account',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppTheme.getTextPrimary(isDark),
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -272,9 +282,9 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                           const SizedBox(height: 4),
                           Text(
                             widget.message!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: AppTheme.textSecondary,
+                              color: AppTheme.getTextSecondary(isDark),
                             ),
                           ),
                         ],
@@ -289,13 +299,15 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.06),
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.close_rounded,
-                          color: Colors.white70,
+                          color: AppTheme.getTextPrimary(isDark),
                           size: 20,
                         ),
                       ),
@@ -309,10 +321,14 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.06),
                   ),
                 ),
                 child: Row(
@@ -338,8 +354,8 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                               'Sign In',
                               style: TextStyle(
                                 color: _tabIndex == 0
-                                    ? Colors.black
-                                    : Colors.white70,
+                                    ? Colors.white
+                                    : AppTheme.getTextSecondary(isDark),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -369,8 +385,8 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                               'Sign Up',
                               style: TextStyle(
                                 color: _tabIndex == 1
-                                    ? Colors.black
-                                    : Colors.white70,
+                                    ? Colors.white
+                                    : AppTheme.getTextSecondary(isDark),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -420,6 +436,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                   controller: _nameController,
                   label: 'Full Name',
                   icon: Icons.person_outline_rounded,
+                  isDark: isDark,
                 ),
                 const SizedBox(height: 14),
               ],
@@ -430,6 +447,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                 label: 'Email Address',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                isDark: isDark,
               ),
               const SizedBox(height: 14),
 
@@ -439,6 +457,7 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                 label: 'Password',
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
+                isDark: isDark,
               ),
 
               if (_tabIndex == 0) ...[
@@ -502,21 +521,29 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
               Row(
                 children: [
                   Expanded(
-                    child: Divider(color: Colors.white.withValues(alpha: 0.1)),
+                    child: Divider(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.08),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Text(
                       'OR',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: AppTheme.getTextMuted(isDark),
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                   Expanded(
-                    child: Divider(color: Colors.white.withValues(alpha: 0.1)),
+                    child: Divider(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.08),
+                    ),
                   ),
                 ],
               ),
@@ -528,23 +555,31 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _isLoading ? null : _signInWithGoogle,
-                  icon: const FaIcon(FontAwesomeIcons.google,
-                      size: 16, color: Colors.white),
-                  label: const Text(
+                  icon: FaIcon(
+                    FontAwesomeIcons.google,
+                    size: 16,
+                    color: AppTheme.getTextPrimary(isDark),
+                  ),
+                  label: Text(
                     'Continue with Google',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.getTextPrimary(isDark),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
+                    backgroundColor: isDark
+                        ? Colors.transparent
+                        : Colors.black.withValues(alpha: 0.02),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.black.withValues(alpha: 0.12),
                     ),
                   ),
                 ),
@@ -560,30 +595,38 @@ class _AuthModalSheetState extends State<AuthModalSheet> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required bool isDark,
     bool isPassword = false,
     TextInputType? keyboardType,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : AppTheme.surfaceVariant,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: AppTheme.getTextPrimary(isDark), fontSize: 14),
         decoration: InputDecoration(
           hintText: label,
           hintStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.35),
+            color: AppTheme.getTextMuted(isDark),
             fontSize: 14,
           ),
-          prefixIcon: Icon(icon,
-              color: Colors.white.withValues(alpha: 0.5), size: 20),
+          prefixIcon: Icon(
+            icon,
+            color: AppTheme.getTextSecondary(isDark),
+            size: 20,
+          ),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

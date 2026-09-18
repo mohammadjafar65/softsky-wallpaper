@@ -82,6 +82,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             }
 
             setDialogState(() => saving = true);
+            final messenger = ScaffoldMessenger.of(context);
+            final nav = Navigator.of(ctx);
             try {
               final body = {
                 'name': nameCtrl.text.trim(),
@@ -96,8 +98,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               }
 
               if (!mounted) return;
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
+              nav.pop();
+              messenger.showSnackBar(
                 SnackBar(
                   content: Text(isEditing ? 'Category updated.' : 'Category created.'),
                   backgroundColor: AppTheme.success,
@@ -106,12 +108,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               _load();
             } catch (e) {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text(e.toString())),
                 );
               }
             } finally {
-              setDialogState(() => saving = false);
+              if (mounted) {
+                setDialogState(() => saving = false);
+              }
             }
           }
 

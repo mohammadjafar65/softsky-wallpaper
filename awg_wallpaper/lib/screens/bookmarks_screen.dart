@@ -14,9 +14,12 @@ class BookmarksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Consumer2<BookmarkProvider, SubscriptionProvider>(
       builder: (context, provider, subscriptionProvider, child) {
         return Scaffold(
+          backgroundColor: AppTheme.getBackground(isDark),
           body: SafeArea(
             bottom: false,
             child: CustomScrollView(
@@ -29,7 +32,7 @@ class BookmarksScreen extends StatelessWidget {
                 // Empty state or grid
                 if (provider.bookmarks.isEmpty)
                   SliverFillRemaining(
-                    child: _buildEmptyState(),
+                    child: _buildEmptyState(context),
                   )
                 else ...[
                   // Section title
@@ -106,6 +109,8 @@ class BookmarksScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, BookmarkProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
@@ -114,10 +119,10 @@ class BookmarksScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'FAVORITES',
                 style: TextStyle(
-                  color: AppTheme.textWhite,
+                  color: AppTheme.getTextPrimary(isDark),
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
@@ -141,16 +146,18 @@ class BookmarksScreen extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2C2E),
+                  color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.08),
                   ),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.delete_outline_rounded,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : AppTheme.textPrimary,
                     size: 20,
                   ),
                 ),
@@ -161,33 +168,9 @@ class BookmarksScreen extends StatelessWidget {
     );
   }
 
-  // Widget _buildSectionTitle(BookmarkProvider provider) {
-  //   return Padding(
-  //     padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         const Text(
-  //           'Your Collection',
-  //           style: TextStyle(
-  //             fontSize: 18,
-  //             fontWeight: FontWeight.bold,
-  //             color: AppTheme.textPrimary,
-  //           ),
-  //         ),
-  //         Text(
-  //           '${provider.bookmarkCount} saved',
-  //           style: const TextStyle(
-  //             fontSize: 13,
-  //             color: AppTheme.textSecondary,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+  Widget _buildEmptyState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  Widget _buildEmptyState() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -207,12 +190,12 @@ class BookmarksScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Saved Wallpapers',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textWhite,
+                color: AppTheme.getTextPrimary(isDark),
               ),
             ),
             const SizedBox(height: 12),
@@ -221,7 +204,7 @@ class BookmarksScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppTheme.textSecondary.withValues(alpha: 0.8),
+                color: AppTheme.getTextSecondary(isDark),
               ),
             ),
           ],
@@ -231,27 +214,29 @@ class BookmarksScreen extends StatelessWidget {
   }
 
   void _showClearConfirmation(BuildContext context, BookmarkProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
+        backgroundColor: AppTheme.getSurface(isDark),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        title: const Text(
+        title: Text(
           'Clear All?',
-          style: TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: AppTheme.getTextPrimary(isDark)),
         ),
-        content: const Text(
+        content: Text(
           'This will remove all saved wallpapers from your collection.',
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.getTextSecondary(isDark)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.getTextSecondary(isDark)),
             ),
           ),
           TextButton(

@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import '../config/theme.dart';
 import '../services/auth_service.dart';
-import '../providers/community_provider.dart';
-import '../models/community_user.dart';
-import '../screens/community/community_profile_screen.dart';
-import '../screens/auth/login_screen.dart';
-import '../screens/onboarding_start_screen.dart';
+import '../utils/creator_helper.dart';
 
 class TopBarProfileAvatar extends StatelessWidget {
   final double radius;
@@ -19,6 +14,8 @@ class TopBarProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return StreamBuilder(
       stream: AuthService().authStateChanges,
       builder: (context, snapshot) {
@@ -26,129 +23,39 @@ class TopBarProfileAvatar extends StatelessWidget {
         final photoUrl = AuthService().currentUser?.photoURL;
         final size = radius * 2;
 
-        // When user is NOT logged in:
-        // Show account icon styled identically to other topbar circular buttons
-        if (!isLoggedIn) {
-          return GestureDetector(
-            onTap: () async {
-              final result = await Navigator.push<bool>(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-              if (result == true && context.mounted) {
-                final settingsBox = Hive.box('settings');
-                final hasStarted = settingsBox.get('has_started_app',
-                    defaultValue: false) as bool;
-                if (!hasStarted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const OnboardingStartScreen()),
-                  );
-                }
-              }
-            },
-            child: Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2E),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.person_outline_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ),
-          );
-        }
-
-        // When user IS logged in:
-        // Show user profile photo and navigate to user collective profile
         return GestureDetector(
-          onTap: () {
-            final authUser = AuthService().currentUser;
-            final communityProvider = context.read<CommunityProvider>();
-            CommunityUser? myUser;
-            for (final p in [
-              ...communityProvider.myPosts,
-              ...communityProvider.trendingPosts,
-              ...communityProvider.feedPosts
-            ]) {
-              if (authUser != null &&
-                  (p.author?.displayName == authUser.displayName ||
-                      p.author?.photoUrl == authUser.photoURL)) {
-                myUser = p.author;
-                break;
-              }
-            }
-            myUser ??= communityProvider.myPosts.isNotEmpty
-                ? communityProvider.myPosts.first.author
-                : (communityProvider.trendingPosts.isNotEmpty
-                    ? communityProvider.trendingPosts.first.author
-                    : null);
-
-            final int targetUserId =
-                myUser?.id ?? AuthService().backendUserId ?? 1;
-            final initialUser = myUser ??
-                CommunityUser(
-                  id: targetUserId,
-                  displayName: authUser?.displayName ?? 'My Profile',
-                  photoUrl: authUser?.photoURL,
-                  bio: 'Wallpaper Creator',
-                  followersCount: 0,
-                  followingCount: 0,
-                  postsCount: 0,
-                  totalDownloads: 0,
-                  isFollowing: false,
-                );
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CommunityProfileScreen(
-                  userId: targetUserId,
-                  initialUser: initialUser,
-                  isCurrentUser: true,
-                ),
-              ),
-            );
-          },
+          onTap: () => CreatorHelper.openProfile(context),
           child: Container(
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: const Color(0xFF2C2C2E),
+              color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : Colors.black.withValues(alpha: 0.08),
               ),
             ),
             child: ClipOval(
-              child: photoUrl != null && photoUrl.isNotEmpty
+              child: isLoggedIn && photoUrl != null && photoUrl.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: photoUrl,
                       fit: BoxFit.cover,
                       width: size,
                       height: size,
-                      errorWidget: (_, __, ___) => const Center(
+                      errorWidget: (_, __, ___) => Center(
                         child: Icon(
                           Icons.person_rounded,
-                          color: Colors.white,
+                          color: isDark ? Colors.white : AppTheme.textPrimary,
                           size: 22,
                         ),
                       ),
                     )
-                  : const Center(
+                  : Center(
                       child: Icon(
-                        Icons.person_rounded,
-                        color: Colors.white,
+                        Icons.person_outline_rounded,
+                        color: isDark ? Colors.white : AppTheme.textPrimary,
                         size: 22,
                       ),
                     ),
@@ -159,3 +66,4 @@ class TopBarProfileAvatar extends StatelessWidget {
     );
   }
 }
+

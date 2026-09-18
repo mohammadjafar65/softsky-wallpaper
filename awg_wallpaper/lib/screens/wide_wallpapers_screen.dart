@@ -16,7 +16,10 @@ class WideWallpapersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: AppTheme.getBackground(isDark),
       body: SafeArea(
         bottom: false,
         child: Consumer<WallpaperProvider>(
@@ -101,6 +104,8 @@ class WideWallpapersScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
@@ -112,7 +117,7 @@ class WideWallpapersScreen extends StatelessWidget {
               Text(
                 'SCAPES',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppTheme.textWhite,
+                      color: AppTheme.getTextPrimary(isDark),
                       fontSize: 28,
                     ),
               ),
@@ -145,13 +150,19 @@ class WideWallpapersScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.black.withValues(alpha: 0.08),
+                    ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.person_rounded,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : AppTheme.textPrimary,
                     size: 23,
                   ),
                 ),

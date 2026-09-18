@@ -62,8 +62,10 @@ class _AutoWallpaperSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppTheme.getBackground(isDark),
       body: Consumer<AutoWallpaperProvider>(
         builder: (context, provider, child) {
           return Stack(
@@ -81,8 +83,8 @@ class _AutoWallpaperSettingsScreenState
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          Colors.purple.withValues(alpha: 0.25),
-                          Colors.deepPurple.withValues(alpha: 0.1),
+                          Colors.purple.withValues(alpha: isDark ? 0.25 : 0.12),
+                          Colors.deepPurple.withValues(alpha: isDark ? 0.1 : 0.05),
                           Colors.transparent,
                         ],
                       ),
@@ -102,7 +104,7 @@ class _AutoWallpaperSettingsScreenState
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          Colors.orange.withValues(alpha: 0.2),
+                          Colors.orange.withValues(alpha: isDark ? 0.2 : 0.08),
                           Colors.transparent,
                         ],
                       ),
@@ -122,7 +124,7 @@ class _AutoWallpaperSettingsScreenState
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          AppTheme.primary.withValues(alpha: 0.15),
+                          AppTheme.primary.withValues(alpha: isDark ? 0.15 : 0.08),
                           Colors.transparent,
                         ],
                       ),
@@ -138,22 +140,22 @@ class _AutoWallpaperSettingsScreenState
                   slivers: [
                     // Header
                     SliverToBoxAdapter(
-                      child: _buildHeader(context),
+                      child: _buildHeader(context, isDark),
                     ),
 
                     // Auto Wallpaper Section
                     SliverToBoxAdapter(
-                      child: _buildAutoWallpaperSection(context, provider),
+                      child: _buildAutoWallpaperSection(context, provider, isDark),
                     ),
 
                     // Day/Night Section
                     SliverToBoxAdapter(
-                      child: _buildDayNightSection(context, provider),
+                      child: _buildDayNightSection(context, provider, isDark),
                     ),
 
                     // Quick Actions
                     SliverToBoxAdapter(
-                      child: _buildQuickActions(context, provider),
+                      child: _buildQuickActions(context, provider, isDark),
                     ),
 
                     const SliverToBoxAdapter(
@@ -192,7 +194,7 @@ class _AutoWallpaperSettingsScreenState
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -202,15 +204,17 @@ class _AutoWallpaperSettingsScreenState
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.darkSurface.withValues(alpha: 0.7),
+                color: AppTheme.getSurface(isDark).withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.5),
+                  color: isDark
+                      ? AppTheme.darkSurfaceVariant.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_rounded,
-                color: Colors.white,
+                color: isDark ? Colors.white : AppTheme.textPrimary,
                 size: 20,
               ),
             ),
@@ -222,12 +226,12 @@ class _AutoWallpaperSettingsScreenState
               children: [
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'Auto Wallpaper',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppTheme.getTextPrimary(isDark),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -266,7 +270,7 @@ class _AutoWallpaperSettingsScreenState
                   'Automatically refresh your wallpaper',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: AppTheme.getTextSecondary(isDark),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -279,18 +283,22 @@ class _AutoWallpaperSettingsScreenState
   }
 
   Widget _buildAutoWallpaperSection(
-      BuildContext context, AutoWallpaperProvider provider) {
+      BuildContext context, AutoWallpaperProvider provider, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle(
-              '🔄 Auto Change', 'Schedule automatic wallpaper changes'),
+            '🔄 Auto Change',
+            'Schedule automatic wallpaper changes',
+            isDark,
+          ),
           const SizedBox(height: 16),
 
           // Main toggle card with enhanced glassmorphism
           _buildEnhancedGlassCard(
+            isDark: isDark,
             child: Column(
               children: [
                 // Enable toggle
@@ -304,11 +312,14 @@ class _AutoWallpaperSettingsScreenState
                   value: provider.isEnabled,
                   onChanged: (val) => provider.toggleAutoWallpaper(val),
                   isActive: provider.isEnabled,
+                  isDark: isDark,
                 ),
 
                 if (provider.isEnabled) ...[
-                  const Divider(
-                    color: AppTheme.darkSurfaceVariant,
+                  Divider(
+                    color: isDark
+                        ? AppTheme.darkSurfaceVariant
+                        : Colors.black.withValues(alpha: 0.06),
                     height: 1,
                     thickness: 0.5,
                   ),
@@ -320,10 +331,13 @@ class _AutoWallpaperSettingsScreenState
                     title: 'Change Interval',
                     value: provider.getIntervalName(provider.interval),
                     onTap: () => _showIntervalPicker(context, provider),
+                    isDark: isDark,
                   ),
 
-                  const Divider(
-                    color: AppTheme.darkSurfaceVariant,
+                  Divider(
+                    color: isDark
+                        ? AppTheme.darkSurfaceVariant
+                        : Colors.black.withValues(alpha: 0.06),
                     height: 1,
                     thickness: 0.5,
                   ),
@@ -335,6 +349,7 @@ class _AutoWallpaperSettingsScreenState
                     title: 'Wallpaper Source',
                     value: provider.getSourceName(provider.source),
                     onTap: () => _showSourcePicker(context, provider),
+                    isDark: isDark,
                   ),
                 ],
               ],
@@ -346,16 +361,20 @@ class _AutoWallpaperSettingsScreenState
   }
 
   Widget _buildDayNightSection(
-      BuildContext context, AutoWallpaperProvider provider) {
+      BuildContext context, AutoWallpaperProvider provider, bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle(
-              '🌙 Smart Day/Night', 'Different wallpapers for day and night'),
+            '🌙 Smart Day/Night',
+            'Different wallpapers for day and night',
+            isDark,
+          ),
           const SizedBox(height: 16),
           _buildEnhancedGlassCard(
+            isDark: isDark,
             child: Column(
               children: [
                 // Enable toggle
@@ -369,11 +388,14 @@ class _AutoWallpaperSettingsScreenState
                   value: provider.isDayNightEnabled,
                   onChanged: (val) => provider.toggleDayNightMode(val),
                   isActive: provider.isDayNightEnabled,
+                  isDark: isDark,
                 ),
 
                 if (provider.isDayNightEnabled) ...[
-                  const Divider(
-                    color: AppTheme.darkSurfaceVariant,
+                  Divider(
+                    color: isDark
+                        ? AppTheme.darkSurfaceVariant
+                        : Colors.black.withValues(alpha: 0.06),
                     height: 1,
                     thickness: 0.5,
                   ),
@@ -386,10 +408,13 @@ class _AutoWallpaperSettingsScreenState
                     subtitle: 'Active from ${provider.dayStartHour}:00',
                     imageUrl: provider.dayWallpaperUrl,
                     onTap: () => _pickWallpaper(context, provider, true),
+                    isDark: isDark,
                   ),
 
-                  const Divider(
-                    color: AppTheme.darkSurfaceVariant,
+                  Divider(
+                    color: isDark
+                        ? AppTheme.darkSurfaceVariant
+                        : Colors.black.withValues(alpha: 0.06),
                     height: 1,
                     thickness: 0.5,
                   ),
@@ -402,10 +427,13 @@ class _AutoWallpaperSettingsScreenState
                     subtitle: 'Active from ${provider.nightStartHour}:00',
                     imageUrl: provider.nightWallpaperUrl,
                     onTap: () => _pickWallpaper(context, provider, false),
+                    isDark: isDark,
                   ),
 
-                  const Divider(
-                    color: AppTheme.darkSurfaceVariant,
+                  Divider(
+                    color: isDark
+                        ? AppTheme.darkSurfaceVariant
+                        : Colors.black.withValues(alpha: 0.06),
                     height: 1,
                     thickness: 0.5,
                   ),
@@ -418,6 +446,7 @@ class _AutoWallpaperSettingsScreenState
                     value:
                         'Day: ${provider.dayStartHour}:00 • Night: ${provider.nightStartHour}:00',
                     onTap: () => _showTimePicker(context, provider),
+                    isDark: isDark,
                   ),
                 ],
               ],
@@ -429,13 +458,13 @@ class _AutoWallpaperSettingsScreenState
   }
 
   Widget _buildQuickActions(
-      BuildContext context, AutoWallpaperProvider provider) {
+      BuildContext context, AutoWallpaperProvider provider, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('⚡ Quick Actions', 'Manual controls'),
+          _buildSectionTitle('⚡ Quick Actions', 'Manual controls', isDark),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -444,6 +473,7 @@ class _AutoWallpaperSettingsScreenState
                   icon: Icons.refresh_rounded,
                   label: 'Change Now',
                   color: AppTheme.primary,
+                  isDark: isDark,
                   onTap: provider.isEnabled
                       ? () async {
                           await provider.changeNow();
@@ -469,6 +499,7 @@ class _AutoWallpaperSettingsScreenState
                   icon: Icons.stop_rounded,
                   label: 'Stop All',
                   color: Colors.red,
+                  isDark: isDark,
                   onTap: (provider.isEnabled || provider.isDayNightEnabled)
                       ? () async {
                           await provider.cancelAll();
@@ -497,10 +528,12 @@ class _AutoWallpaperSettingsScreenState
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.darkSurface.withValues(alpha: 0.5),
+                  color: AppTheme.getSurface(isDark).withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.darkSurfaceVariant.withValues(alpha: 0.3),
+                    color: isDark
+                        ? AppTheme.darkSurfaceVariant.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.06),
                   ),
                 ),
                 child: Row(
@@ -509,14 +542,16 @@ class _AutoWallpaperSettingsScreenState
                     Icon(
                       Icons.history_rounded,
                       size: 14,
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.5)
+                          : AppTheme.textSecondary,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Last changed: ${_formatDateTime(provider.lastChangedAt!)}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: AppTheme.getTextSecondary(isDark),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -530,16 +565,16 @@ class _AutoWallpaperSettingsScreenState
     );
   }
 
-  Widget _buildSectionTitle(String title, String subtitle) {
+  Widget _buildSectionTitle(String title, String subtitle, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppTheme.getTextPrimary(isDark),
           ),
         ),
         const SizedBox(height: 6),
@@ -547,7 +582,7 @@ class _AutoWallpaperSettingsScreenState
           subtitle,
           style: TextStyle(
             fontSize: 13,
-            color: Colors.white.withValues(alpha: 0.5),
+            color: AppTheme.getTextSecondary(isDark),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -555,25 +590,34 @@ class _AutoWallpaperSettingsScreenState
     );
   }
 
-  Widget _buildEnhancedGlassCard({required Widget child}) {
+  Widget _buildEnhancedGlassCard({required Widget child, required bool isDark}) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppTheme.darkSurface.withValues(alpha: 0.8),
-            AppTheme.darkSurface.withValues(alpha: 0.6),
-          ],
+          colors: isDark
+              ? [
+                  AppTheme.darkSurface.withValues(alpha: 0.8),
+                  AppTheme.darkSurface.withValues(alpha: 0.6),
+                ]
+              : [
+                  Colors.white.withValues(alpha: 0.95),
+                  Colors.white.withValues(alpha: 0.85),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.06),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -597,6 +641,7 @@ class _AutoWallpaperSettingsScreenState
     required bool value,
     required Function(bool) onChanged,
     bool isActive = false,
+    bool isDark = true,
   }) {
     return Padding(
       padding: const EdgeInsets.all(18),
@@ -625,10 +670,10 @@ class _AutoWallpaperSettingsScreenState
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppTheme.getTextPrimary(isDark),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -636,7 +681,11 @@ class _AutoWallpaperSettingsScreenState
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha: isActive ? 0.7 : 0.5),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: isActive ? 0.7 : 0.5)
+                        : (isActive
+                            ? AppTheme.textPrimary.withValues(alpha: 0.75)
+                            : AppTheme.textSecondary),
                   ),
                 ),
               ],
@@ -662,6 +711,7 @@ class _AutoWallpaperSettingsScreenState
     required String title,
     required String value,
     required VoidCallback onTap,
+    bool isDark = true,
   }) {
     return InkWell(
       onTap: onTap,
@@ -693,10 +743,10 @@ class _AutoWallpaperSettingsScreenState
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: AppTheme.getTextPrimary(isDark),
                 ),
               ),
             ),
@@ -704,14 +754,16 @@ class _AutoWallpaperSettingsScreenState
               value,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.white.withValues(alpha: 0.7),
+                color: AppTheme.getTextSecondary(isDark),
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(width: 12),
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.white.withValues(alpha: 0.3),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : AppTheme.textMuted,
               size: 22,
             ),
           ],
@@ -727,6 +779,7 @@ class _AutoWallpaperSettingsScreenState
     required String subtitle,
     String? imageUrl,
     required VoidCallback onTap,
+    bool isDark = true,
   }) {
     return InkWell(
       onTap: onTap,
@@ -761,10 +814,10 @@ class _AutoWallpaperSettingsScreenState
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppTheme.getTextPrimary(isDark),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -772,7 +825,7 @@ class _AutoWallpaperSettingsScreenState
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: AppTheme.getTextSecondary(isDark),
                     ),
                   ),
                 ],
@@ -802,7 +855,7 @@ class _AutoWallpaperSettingsScreenState
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     placeholder: (_, __) => Container(
-                      color: AppTheme.darkSurfaceVariant,
+                      color: AppTheme.getSurfaceVariant(isDark),
                     ),
                   ),
                 ),
@@ -812,7 +865,7 @@ class _AutoWallpaperSettingsScreenState
                 width: 50,
                 height: 70,
                 decoration: BoxDecoration(
-                  color: AppTheme.darkSurfaceVariant,
+                  color: AppTheme.getSurfaceVariant(isDark),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: iconColor.withValues(alpha: 0.3),
@@ -829,7 +882,9 @@ class _AutoWallpaperSettingsScreenState
             const SizedBox(width: 12),
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.white.withValues(alpha: 0.3),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : AppTheme.textMuted,
               size: 22,
             ),
           ],
@@ -843,6 +898,7 @@ class _AutoWallpaperSettingsScreenState
     required String label,
     required Color color,
     VoidCallback? onTap,
+    bool isDark = true,
   }) {
     final isDisabled = onTap == null;
 
@@ -861,7 +917,7 @@ class _AutoWallpaperSettingsScreenState
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-          color: isDisabled ? AppTheme.darkSurfaceVariant : null,
+          color: isDisabled ? AppTheme.getSurfaceVariant(isDark) : null,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color:
@@ -883,7 +939,9 @@ class _AutoWallpaperSettingsScreenState
           children: [
             Icon(
               icon,
-              color: isDisabled ? Colors.white.withValues(alpha: 0.3) : color,
+              color: isDisabled
+                  ? (isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.textMuted)
+                  : color,
               size: 22,
             ),
             const SizedBox(width: 10),
@@ -892,7 +950,9 @@ class _AutoWallpaperSettingsScreenState
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: isDisabled ? Colors.white.withValues(alpha: 0.3) : color,
+                color: isDisabled
+                    ? (isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.textMuted)
+                    : color,
               ),
             ),
           ],
@@ -913,6 +973,8 @@ class _AutoWallpaperSettingsScreenState
 
   void _showIntervalPicker(
       BuildContext context, AutoWallpaperProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -926,76 +988,83 @@ class _AutoWallpaperSettingsScreenState
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AppTheme.darkSurface,
-                AppTheme.darkSurface.withValues(alpha: 0.95),
-              ],
+              colors: isDark
+                  ? [
+                      AppTheme.darkSurface,
+                      AppTheme.darkSurface.withValues(alpha: 0.95),
+                    ]
+                  : [
+                      Colors.white,
+                      const Color(0xFFF8FAFC),
+                    ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Change Interval',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Change Interval',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextPrimary(isDark),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ...ScheduleInterval.values.map((interval) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: provider.interval == interval
-                          ? AppTheme.primary.withValues(alpha: 0.15)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
+                const SizedBox(height: 24),
+                ...ScheduleInterval.values.map((interval) => Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
                         color: provider.interval == interval
-                            ? AppTheme.primary.withValues(alpha: 0.3)
+                            ? AppTheme.primary.withValues(alpha: 0.15)
                             : Colors.transparent,
-                      ),
-                    ),
-                    child: ListTile(
-                      hoverColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      selectedTileColor: Colors.transparent,
-                      leading: Radio<ScheduleInterval>(
-                        value: interval,
-                        groupValue: provider.interval,
-                        onChanged: (val) {
-                          if (val != null) provider.setInterval(val);
-                          Navigator.pop(context);
-                        },
-                        activeColor: AppTheme.primary,
-                      ),
-                      title: Text(
-                        provider.getIntervalName(interval),
-                        style: TextStyle(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
                           color: provider.interval == interval
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.7),
-                          fontWeight: provider.interval == interval
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                              ? AppTheme.primary.withValues(alpha: 0.3)
+                              : (isDark
+                                  ? Colors.transparent
+                                  : Colors.black.withValues(alpha: 0.05)),
                         ),
                       ),
-                      onTap: () {
-                        provider.setInterval(interval);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  )),
-              const SizedBox(height: 20),
-            ],
-          ),
+                      child: ListTile(
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        selectedTileColor: Colors.transparent,
+                        leading: Radio<ScheduleInterval>(
+                          value: interval,
+                          groupValue: provider.interval,
+                          onChanged: (val) {
+                            if (val != null) provider.setInterval(val);
+                            Navigator.pop(context);
+                          },
+                          activeColor: AppTheme.primary,
+                        ),
+                        title: Text(
+                          provider.getIntervalName(interval),
+                          style: TextStyle(
+                            color: provider.interval == interval
+                                ? (isDark ? Colors.white : AppTheme.primary)
+                                : AppTheme.getTextSecondary(isDark),
+                            fontWeight: provider.interval == interval
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        onTap: () {
+                          provider.setInterval(interval);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    )),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -1003,6 +1072,8 @@ class _AutoWallpaperSettingsScreenState
   }
 
   void _showSourcePicker(BuildContext context, AutoWallpaperProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1016,76 +1087,83 @@ class _AutoWallpaperSettingsScreenState
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AppTheme.darkSurface,
-                AppTheme.darkSurface.withValues(alpha: 0.95),
-              ],
+              colors: isDark
+                  ? [
+                      AppTheme.darkSurface,
+                      AppTheme.darkSurface.withValues(alpha: 0.95),
+                    ]
+                  : [
+                      Colors.white,
+                      const Color(0xFFF8FAFC),
+                    ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Wallpaper Source',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Wallpaper Source',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextPrimary(isDark),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ...WallpaperSource.values.map((source) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: provider.source == source
-                          ? AppTheme.primary.withValues(alpha: 0.15)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
+                const SizedBox(height: 24),
+                ...WallpaperSource.values.map((source) => Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
                         color: provider.source == source
-                            ? AppTheme.primary.withValues(alpha: 0.3)
+                            ? AppTheme.primary.withValues(alpha: 0.15)
                             : Colors.transparent,
-                      ),
-                    ),
-                    child: ListTile(
-                      hoverColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      selectedTileColor: Colors.transparent,
-                      leading: Radio<WallpaperSource>(
-                        value: source,
-                        groupValue: provider.source,
-                        onChanged: (val) {
-                          if (val != null) provider.setSource(val);
-                          Navigator.pop(context);
-                        },
-                        activeColor: AppTheme.primary,
-                      ),
-                      title: Text(
-                        provider.getSourceName(source),
-                        style: TextStyle(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
                           color: provider.source == source
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.7),
-                          fontWeight: provider.source == source
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                              ? AppTheme.primary.withValues(alpha: 0.3)
+                              : (isDark
+                                  ? Colors.transparent
+                                  : Colors.black.withValues(alpha: 0.05)),
                         ),
                       ),
-                      onTap: () {
-                        provider.setSource(source);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  )),
-              const SizedBox(height: 20),
-            ],
-          ),
+                      child: ListTile(
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        selectedTileColor: Colors.transparent,
+                        leading: Radio<WallpaperSource>(
+                          value: source,
+                          groupValue: provider.source,
+                          onChanged: (val) {
+                            if (val != null) provider.setSource(val);
+                            Navigator.pop(context);
+                          },
+                          activeColor: AppTheme.primary,
+                        ),
+                        title: Text(
+                          provider.getSourceName(source),
+                          style: TextStyle(
+                            color: provider.source == source
+                                ? (isDark ? Colors.white : AppTheme.primary)
+                                : AppTheme.getTextSecondary(isDark),
+                            fontWeight: provider.source == source
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        onTap: () {
+                          provider.setSource(source);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    )),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -1094,6 +1172,8 @@ class _AutoWallpaperSettingsScreenState
 
   void _pickWallpaper(
       BuildContext context, AutoWallpaperProvider provider, bool isDay) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Show bookmarks to pick from
     final bookmarks = context.read<BookmarkProvider>().bookmarks;
 
@@ -1123,10 +1203,15 @@ class _AutoWallpaperSettingsScreenState
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AppTheme.darkSurface,
-                AppTheme.darkSurface.withValues(alpha: 0.95),
-              ],
+              colors: isDark
+                  ? [
+                      AppTheme.darkSurface,
+                      AppTheme.darkSurface.withValues(alpha: 0.95),
+                    ]
+                  : [
+                      Colors.white,
+                      const Color(0xFFF8FAFC),
+                    ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -1156,10 +1241,10 @@ class _AutoWallpaperSettingsScreenState
                     const SizedBox(width: 16),
                     Text(
                       'Select ${isDay ? "Day" : "Night"} Wallpaper',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppTheme.getTextPrimary(isDark),
                       ),
                     ),
                   ],
@@ -1234,7 +1319,7 @@ class _AutoWallpaperSettingsScreenState
                                 imageUrl: wallpaper.thumbnailUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (_, __) => Container(
-                                  color: AppTheme.darkSurfaceVariant,
+                                  color: AppTheme.getSurfaceVariant(isDark),
                                 ),
                               ),
                               if (isSelected)
@@ -1272,6 +1357,7 @@ class _AutoWallpaperSettingsScreenState
   }
 
   void _showTimePicker(BuildContext context, AutoWallpaperProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     int dayHour = provider.dayStartHour;
     int nightHour = provider.nightStartHour;
 
@@ -1282,10 +1368,15 @@ class _AutoWallpaperSettingsScreenState
         builder: (context, setSheetState) => Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AppTheme.darkSurface,
-                AppTheme.darkSurface.withValues(alpha: 0.95),
-              ],
+              colors: isDark
+                  ? [
+                      AppTheme.darkSurface,
+                      AppTheme.darkSurface.withValues(alpha: 0.95),
+                    ]
+                  : [
+                      Colors.white,
+                      const Color(0xFFF8FAFC),
+                    ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -1297,12 +1388,12 @@ class _AutoWallpaperSettingsScreenState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Set Times',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppTheme.getTextPrimary(isDark),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -1324,11 +1415,14 @@ class _AutoWallpaperSettingsScreenState
                           const Icon(Icons.wb_sunny_rounded,
                               color: Colors.amber, size: 24),
                           const SizedBox(width: 12),
-                          const Text('Day starts:',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'Day starts:',
+                            style: TextStyle(
+                              color: AppTheme.getTextPrimary(isDark),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const Spacer(),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -1377,11 +1471,14 @@ class _AutoWallpaperSettingsScreenState
                           const Icon(Icons.nightlight_rounded,
                               color: Colors.indigo, size: 24),
                           const SizedBox(width: 12),
-                          const Text('Night starts:',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'Night starts:',
+                            style: TextStyle(
+                              color: AppTheme.getTextPrimary(isDark),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const Spacer(),
                           Container(
                             padding: const EdgeInsets.symmetric(

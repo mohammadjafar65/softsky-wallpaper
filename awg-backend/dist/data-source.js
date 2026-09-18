@@ -13,6 +13,7 @@ const CommunityLike_1 = require("./entities/CommunityLike");
 const CommunityComment_1 = require("./entities/CommunityComment");
 const CommunitySave_1 = require("./entities/CommunitySave");
 const PostReport_1 = require("./entities/PostReport");
+const NotificationTemplate_1 = require("./entities/NotificationTemplate");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "mysql",
     host: process.env.MYSQL_HOST || "localhost",
@@ -28,7 +29,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     },
     synchronize: true, // Automatically create/update entity tables (community, etc.)
     logging: process.env.NODE_ENV !== "production",
-    entities: [User_1.User, Wallpaper_1.Wallpaper, Category_1.Category, Pack_1.Pack, CommunityPost_1.CommunityPost, Follow_1.Follow, CommunityLike_1.CommunityLike, CommunityComment_1.CommunityComment, CommunitySave_1.CommunitySave, PostReport_1.PostReport],
+    entities: [User_1.User, Wallpaper_1.Wallpaper, Category_1.Category, Pack_1.Pack, CommunityPost_1.CommunityPost, Follow_1.Follow, CommunityLike_1.CommunityLike, CommunityComment_1.CommunityComment, CommunitySave_1.CommunitySave, PostReport_1.PostReport, NotificationTemplate_1.NotificationTemplate],
     subscribers: [],
     migrations: [],
 });

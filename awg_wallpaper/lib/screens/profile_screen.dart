@@ -4,20 +4,17 @@ import '../config/theme.dart';
 import '../providers/bookmark_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
-import '../widgets/rating_dialog.dart';
 import '../widgets/glass_container.dart';
 
 import 'subscription_screen.dart';
-import 'contact_us_screen.dart';
-import 'privacy_policy_screen.dart';
-import 'terms_conditions_screen.dart';
 import 'manage_subscription_screen.dart';
-import 'auto_wallpaper_settings_screen.dart';
 import 'app_settings_screen.dart';
 
 import '../services/auth_service.dart';
-import '../providers/auto_wallpaper_provider.dart';
 import 'auth/login_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../utils/creator_helper.dart';
+import 'community/upload_wallpaper_screen.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -40,12 +37,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         builder: (context, snapshot) {
           return SafeArea(
             bottom: false,
-            child: Consumer4<BookmarkProvider, SubscriptionProvider,
-                ThemeProvider, AutoWallpaperProvider>(
+            child: Consumer3<BookmarkProvider, SubscriptionProvider,
+                ThemeProvider>(
               builder: (context, bookmarkProvider, subscriptionProvider,
-                  themeProvider, autoWallpaperProvider, child) {
+                  themeProvider, child) {
                 final isDark = themeProvider.isDarkMode;
                 final isLoggedIn = snapshot.hasData && snapshot.data != null;
+                final isCreator = CreatorHelper.isCreator(context);
 
                 return Stack(
                   children: [
@@ -102,7 +100,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             subscriptionProvider,
                             isDark,
                             isLoggedIn,
+                            isCreator,
                           ),
+
+                          if (!isCreator) ...[
+                            const SizedBox(height: 18),
+                            _buildBecomeCreatorBanner(context, isDark),
+                          ],
+
+                          if (isCreator) ...[
+                            const SizedBox(height: 18),
+                            _buildCreatorStudioCard(context, isDark),
+                          ],
 
                           const SizedBox(height: 24),
 
@@ -119,73 +128,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           const SizedBox(height: 24),
 
-                          // PRO FEATURES section
-                          _buildSettingsGroup(
-                            title: 'Pro Features',
-                            isDark: isDark,
-                            children: [
-                              _buildProFeatureTile(
-                                icon: Icons.auto_awesome_rounded,
-                                title: 'Auto Wallpaper',
-                                subtitle: subscriptionProvider.isPro
-                                    ? (autoWallpaperProvider.isEnabled
-                                        ? 'Active • ${autoWallpaperProvider.getIntervalName(autoWallpaperProvider.interval)}'
-                                        : 'Schedule automatic changes')
-                                    : 'PRO Feature - Upgrade to unlock',
-                                iconColor: AppTheme.primary,
-                                gradientColors: [
-                                  AppTheme.primary.withValues(alpha: 0.2),
-                                  AppTheme.primary.withValues(alpha: 0.08),
-                                ],
-                                isDark: isDark,
-                                showLock: !subscriptionProvider.isPro,
-                                onTap: () {
-                                  if (subscriptionProvider.isPro) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const AutoWallpaperSettingsScreen(),
-                                      ),
-                                    );
-                                  } else {
-                                    _showProRequiredDialog(context);
-                                  }
-                                },
-                              ),
-                              _buildProFeatureTile(
-                                icon: Icons.brightness_6_rounded,
-                                title: 'Day/Night Mode',
-                                subtitle: subscriptionProvider.isPro
-                                    ? (autoWallpaperProvider.isDayNightEnabled
-                                        ? 'Active • Smart switching'
-                                        : 'Auto switch based on time')
-                                    : 'PRO Feature - Upgrade to unlock',
-                                iconColor: Colors.orange,
-                                gradientColors: [
-                                  Colors.orange.withValues(alpha: 0.2),
-                                  Colors.amber.withValues(alpha: 0.08),
-                                ],
-                                isDark: isDark,
-                                showLock: !subscriptionProvider.isPro,
-                                onTap: () {
-                                  if (subscriptionProvider.isPro) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const AutoWallpaperSettingsScreen(),
-                                      ),
-                                    );
-                                  } else {
-                                    _showProRequiredDialog(context);
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 24),
+                          // CREATOR STUDIO section (for creators)
+                          if (isCreator) ...[
+                            _buildSettingsGroup(
+                              title: 'Creator Studio',
+                              isDark: isDark,
+                              children: [
+                                _buildSettingsTile(
+                                  icon: Icons.person_pin_circle_outlined,
+                                  title: 'Creator Profile',
+                                  subtitle: 'View portfolio, followers & posts',
+                                  iconColor: const Color(0xFFE94057),
+                                  isDark: isDark,
+                                  trailingBadge: 'CREATOR',
+                                  onTap: () =>
+                                      CreatorHelper.openCreatorProfile(context),
+                                ),
+                                _buildSettingsTile(
+                                  icon: Icons.add_photo_alternate_outlined,
+                                  title: 'Upload Wallpaper',
+                                  subtitle: 'Share artwork with the community',
+                                  iconColor: AppTheme.primary,
+                                  isDark: isDark,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const UploadWallpaperScreen(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                          ],
 
                           // PREFERENCES section
                           _buildSettingsGroup(
@@ -195,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _buildSettingsTile(
                                 icon: Icons.settings_outlined,
                                 title: 'App Settings',
-                                subtitle: 'Theme, notifications & preferences',
+                                subtitle: 'Theme, notifications, cache & legal',
                                 isDark: isDark,
                                 onTap: () => Navigator.push(
                                   context,
@@ -240,74 +216,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           builder: (_) =>
                                               const SubscriptionScreen())),
                                 ),
-                              _buildSettingsTile(
-                                icon: Icons.delete_outline_rounded,
-                                title: 'Clear Cache',
-                                subtitle: 'Free up storage space',
-                                isDark: isDark,
-                                onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text('Cache cleared!')),
-                                  );
-                                },
-                              ),
+                              if (!isCreator)
+                                _buildSettingsTile(
+                                  icon: Icons.palette_outlined,
+                                  title: 'Become a Creator',
+                                  subtitle: 'Publish wallpapers & showcase your art',
+                                  iconColor: AppTheme.primary,
+                                  isDark: isDark,
+                                  trailingBadge: 'JOIN',
+                                  onTap: () =>
+                                      CreatorHelper.showBecomeCreatorSheet(context),
+                                ),
                             ],
                           ),
 
                           const SizedBox(height: 24),
-
-                          // SUPPORT section
-                          _buildSettingsGroup(
-                            title: 'Support',
-                            isDark: isDark,
-                            children: [
-                              _buildSettingsTile(
-                                icon: Icons.star_border_rounded,
-                                title: 'Rate App',
-                                subtitle: 'Share your feedback',
-                                isDark: isDark,
-                                onTap: () => showDialog(
-                                    context: context,
-                                    builder: (_) => const RatingDialog()),
-                              ),
-                              _buildSettingsTile(
-                                icon: Icons.mail_outline_rounded,
-                                title: 'Contact Us',
-                                subtitle: 'Get help and support',
-                                isDark: isDark,
-                                onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const ContactUsScreen())),
-                              ),
-                              _buildSettingsTile(
-                                icon: Icons.privacy_tip_outlined,
-                                title: 'Privacy Policy',
-                                subtitle: 'View privacy policy',
-                                isDark: isDark,
-                                onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const PrivacyPolicyScreen())),
-                              ),
-                              _buildSettingsTile(
-                                icon: Icons.description_outlined,
-                                title: 'Terms of Service',
-                                subtitle: 'View terms and conditions',
-                                isDark: isDark,
-                                onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const TermsConditionsScreen())),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 32),
 
                           // ACCOUNT section — logout
                           if (isLoggedIn)
@@ -383,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 32),
 
                           Text(
-                            'Version 3.0.23',
+                            'Version 3.0.28',
                             style: TextStyle(
                               color: AppTheme.getTextMuted(isDark)
                                   .withValues(alpha: 0.65),
@@ -471,12 +394,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileHero(BuildContext context, SubscriptionProvider provider,
-      bool isDark, bool isLoggedIn) {
+      bool isDark, bool isLoggedIn, bool isCreator) {
     final user = AuthService().currentUser;
     final displayName = isLoggedIn ? (user?.displayName ?? 'User') : 'Guest User';
     final subtitle = isLoggedIn
         ? (user?.email ?? 'Signed in account')
         : 'Sign in to sync your likes and premium access';
+    final photoUrl = user?.photoURL;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -505,12 +429,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                 ),
               ),
-              child: Icon(
-                provider.isPro
-                    ? Icons.workspace_premium_rounded
-                    : Icons.person_rounded,
-                size: 34,
-                color: Colors.black.withValues(alpha: 0.8),
+              child: ClipOval(
+                child: (photoUrl != null && photoUrl.isNotEmpty)
+                    ? CachedNetworkImage(
+                        imageUrl: photoUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => Icon(
+                          provider.isPro
+                              ? Icons.workspace_premium_rounded
+                              : Icons.person_rounded,
+                          size: 34,
+                          color: Colors.black.withValues(alpha: 0.8),
+                        ),
+                      )
+                    : Icon(
+                        provider.isPro
+                            ? Icons.workspace_premium_rounded
+                            : Icons.person_rounded,
+                        size: 34,
+                        color: Colors.black.withValues(alpha: 0.8),
+                      ),
               ),
             ),
             const SizedBox(width: 14),
@@ -540,50 +478,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => provider.isPro
-                            ? const ManageSubscriptionScreen()
-                            : const SubscriptionScreen(),
-                      ),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
-                            .withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: (provider.isPro ? AppTheme.gold : AppTheme.primary)
-                              .withValues(alpha: 0.3),
-                          width: 1,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => provider.isPro
+                                ? const ManageSubscriptionScreen()
+                                : const SubscriptionScreen(),
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            provider.isPro ? 'PRO MEMBER' : 'FREE PLAN',
-                            style: TextStyle(
-                              color: provider.isPro ? AppTheme.gold : AppTheme.primary,
-                              fontSize: 10,
-                              letterSpacing: 0.7,
-                              fontWeight: FontWeight.w700,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: (provider.isPro
+                                    ? AppTheme.gold
+                                    : AppTheme.primary)
+                                .withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: (provider.isPro
+                                      ? AppTheme.gold
+                                      : AppTheme.primary)
+                                  .withValues(alpha: 0.3),
+                              width: 1,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            provider.isPro
-                                ? Icons.manage_accounts_rounded
-                                : Icons.arrow_forward_ios_rounded,
-                            size: 10,
-                            color: provider.isPro ? AppTheme.gold : AppTheme.primary,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                provider.isPro ? 'PRO MEMBER' : 'FREE PLAN',
+                                style: TextStyle(
+                                  color: provider.isPro
+                                      ? AppTheme.gold
+                                      : AppTheme.primary,
+                                  fontSize: 10,
+                                  letterSpacing: 0.7,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                provider.isPro
+                                    ? Icons.manage_accounts_rounded
+                                    : Icons.arrow_forward_ios_rounded,
+                                size: 10,
+                                color: provider.isPro
+                                    ? AppTheme.gold
+                                    : AppTheme.primary,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      if (isCreator)
+                        GestureDetector(
+                          onTap: () => CreatorHelper.openCreatorProfile(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF8A2387), Color(0xFFE94057)],
+                              ),
+                              borderRadius: BorderRadius.circular(999),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFE94057)
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.verified_rounded,
+                                  size: 11,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'CREATOR',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    letterSpacing: 0.7,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -601,6 +596,287 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: const Text('Sign in'),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBecomeCreatorBanner(BuildContext context, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1F1C2C),
+              Color(0xFF928DAB),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                bottom: -20,
+                child: Icon(
+                  Icons.palette_rounded,
+                  size: 120,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.auto_awesome,
+                                  size: 12, color: Colors.black),
+                              SizedBox(width: 4),
+                              Text(
+                                'CREATOR COLLECTIVE',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Become a Creator',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Publish wallpapers to our community, get featured, and build your follower base.',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            CreatorHelper.showBecomeCreatorSheet(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.brush_rounded,
+                                size: 18, color: Colors.black),
+                            SizedBox(width: 8),
+                            Text(
+                              'Join as Creator',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreatorStudioCard(BuildContext context, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF2C1654),
+              Color(0xFF4A154B),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purple.withValues(alpha: 0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.verified_rounded,
+                              size: 13, color: Colors.white),
+                          SizedBox(width: 5),
+                          Text(
+                            'CREATOR STUDIO',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.arrow_forward_rounded,
+                          color: Colors.white70, size: 20),
+                      onPressed: () => CreatorHelper.openCreatorProfile(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Your Creator Hub',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Manage your wallpaper portfolio, upload new art, and check your audience stats.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            CreatorHelper.openCreatorProfile(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.person_outline_rounded,
+                            size: 18, color: Colors.black),
+                        label: const Text(
+                          'View Profile',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const UploadWallpaperScreen(),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(
+                              color: Colors.white54, width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.add_photo_alternate_rounded,
+                            size: 18, color: Colors.white),
+                        label: const Text(
+                          'Upload Art',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -809,107 +1085,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProFeatureTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color iconColor,
-    required List<Color> gradientColors,
-    VoidCallback? onTap,
-    bool isDark = false,
-    bool showLock = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: iconColor.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Icon(
-          icon,
-          size: 22,
-          color: iconColor,
-        ),
-        ),
-        title: Text(
-        title,
-        style: TextStyle(
-          color: AppTheme.getTextPrimary(isDark),
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        ),
-        subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          subtitle,
-          style: TextStyle(
-            color: AppTheme.getTextSecondary(isDark).withValues(alpha: 0.8),
-            fontSize: 13,
-          ),
-        ),
-        ),
-        trailing: showLock
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.gold.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppTheme.gold.withValues(alpha: 0.4),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(
-                    Icons.lock_rounded,
-                    color: AppTheme.gold,
-                    size: 14,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    'PRO',
-                    style: TextStyle(
-                      color: AppTheme.gold,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.chevron_right_rounded,
-                color: iconColor,
-                size: 20,
-              ),
-            ),
-      ),
-    );
-  }
-
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
@@ -1014,77 +1189,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-    );
-  }
-
-  void _showProRequiredDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.darkSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.gold, Color(0xFFFFB700)],
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.workspace_premium_rounded,
-                color: Colors.black,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'PRO Feature',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'This feature is exclusive to PRO members. Upgrade now to unlock Auto Wallpaper and Day/Night Mode!',
-          style: TextStyle(
-            color: AppTheme.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Maybe Later',
-              style: TextStyle(color: AppTheme.textMuted),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _openSubscription(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: const Text(
-              'Upgrade to PRO',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

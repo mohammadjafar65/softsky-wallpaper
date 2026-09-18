@@ -87,8 +87,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               decoration: BoxDecoration(
                                 color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: AppTheme.surfaceVariant),
+                                border: Border.all(
+                                  color: AppTheme.getSurfaceVariant(
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark),
+                                ),
                               ),
                               child: Icon(
                                 Icons.close_rounded,
@@ -149,7 +152,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
               if (_isProcessing)
                 Container(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.black
+                          : Colors.white)
+                      .withValues(alpha: 0.8),
                   child: const Center(
                     child: CircularProgressIndicator(color: AppTheme.primary),
                   ),
@@ -317,7 +323,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         color: Color(0xFFFFB703), size: 16),
                     SizedBox(width: 5),
                     Text(
-                      'LIMITED TIME DEAL',
+                      'LIMITED TIME DEAL • ANNUAL PLAN',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -359,7 +365,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
           const SizedBox(height: 14),
           const Text(
-            'Special 50% Discount Offer',
+            'Annual Plan: 50% Discount Deal',
             style: TextStyle(
               color: Colors.white,
               fontSize: 19,
@@ -369,7 +375,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Unlock all 4K wallpapers, exclusive packs & ad-free experience at half the price before this deal expires.',
+            'Get 1 Full Year of Pro for just ₹40.0 (Regular ₹79.9). 4K wallpapers, exclusive packs & ad-free experience at half price!',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.88),
               fontSize: 13,
@@ -442,21 +448,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   String _getOriginalPrice(SubscriptionPlan plan, String currentPrice) {
     if (plan != SubscriptionPlan.annual) return '';
-    final match =
-        RegExp(r'([\D\s]*)([\d,]+(?:\.\d+)?)').firstMatch(currentPrice);
-    if (match != null) {
-      final prefix = match.group(1) ?? '₹';
-      final numStr = match.group(2)?.replaceAll(',', '') ?? '';
-      final val = double.tryParse(numStr);
-      if (val != null) {
-        final origVal = val * 2;
-        final formatted = origVal == origVal.roundToDouble()
-            ? origVal.toStringAsFixed(0)
-            : origVal.toStringAsFixed(2);
-        return '$prefix$formatted';
-      }
-    }
-    return '₹159.99';
+    return '₹79.9';
   }
 
   Widget _buildPlanCards() {
@@ -706,8 +698,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 const SizedBox(width: 6),
                 Text(
                   _selectedPlan == SubscriptionPlan.annual
-                      ? 'Claim 50% OFF - Get Pro'
-                      : 'Start Subscription',
+                      ? 'Claim 50% OFF - Get Pro (₹40.0)'
+                      : _selectedPlan == SubscriptionPlan.monthly
+                          ? 'Start Monthly - ₹29.99'
+                          : 'Get Lifetime Access - ₹299.99',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
@@ -720,7 +714,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             if (_selectedPlan == SubscriptionPlan.annual) ...[
               const SizedBox(height: 3),
               Text(
-                '⚡ Limited time 50% discount automatically applied',
+                '⚡ 50% discount automatically applied (Regular ₹79.9)',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 11.5,

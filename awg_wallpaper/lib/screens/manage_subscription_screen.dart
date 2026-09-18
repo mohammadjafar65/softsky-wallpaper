@@ -6,6 +6,7 @@ import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/auth_service.dart';
 import 'subscription_screen.dart';
+import '../widgets/subscription_plan_popup.dart';
 
 class ManageSubscriptionScreen extends StatefulWidget {
   const ManageSubscriptionScreen({super.key});
@@ -402,40 +403,36 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
               ),
               const SizedBox(height: 12),
 
-              // View All Plans & Special Offers Button
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SubscriptionScreen(),
+              // Quick Plan Deals Button (Hidden if user already has Lifetime Plan)
+              if (!isLifetime) ...[
+                OutlinedButton.icon(
+                  onPressed: () {
+                    SubscriptionPlanPopup.show(context);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(
+                      color: const Color(0xFFFB8500).withValues(alpha: 0.6),
+                      width: 1.2,
                     ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(
-                    color: AppTheme.primary.withValues(alpha: 0.5),
-                    width: 1.2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    minimumSize: const Size(double.infinity, 52),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  minimumSize: const Size(double.infinity, 52),
-                ),
-                icon: const Icon(Icons.local_fire_department_rounded,
-                    color: Color(0xFFFB8500), size: 18),
-                label: Text(
-                  'View All Plans (50% Off Deals)',
-                  style: TextStyle(
-                    color: AppTheme.getTextPrimary(isDark),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                  icon: const Icon(Icons.local_fire_department_rounded,
+                      color: Color(0xFFFB8500), size: 18),
+                  label: Text(
+                    'Quick Plan Deals (50% Off)',
+                    style: TextStyle(
+                      color: AppTheme.getTextPrimary(isDark),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
+              ],
 
               // Cancel Subscription Option (Only for recurring subscriptions)
               if (!isLifetime)
@@ -1067,63 +1064,207 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Subscription Details',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.2,
-            color: AppTheme.getTextPrimary(isDark),
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.verified_user_rounded,
+                size: 16,
+                color: AppTheme.primary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Subscription Details',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+                color: AppTheme.getTextPrimary(isDark),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.getSurface(isDark),
+            color: isDark ? const Color(0xFF18181D) : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.5),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.09)
+                  : Colors.black.withValues(alpha: 0.07),
+              width: 1,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              _buildDetailRow(
-                isDark,
-                'Current Plan',
-                isPro ? provider.getPlanName(plan) : 'Free Tier',
+              // Current Plan Row with Stylized Badge
+              _buildCustomDetailRow(
+                isDark: isDark,
                 icon: Icons.card_membership_rounded,
+                title: 'Current Plan',
+                trailing: _buildPlanBadge(plan, isPro, isLifetime),
               ),
               _buildRowDivider(isDark),
-              _buildDetailRow(
-                isDark,
-                'Status',
-                isPro ? 'Active' : 'Inactive',
-                valueColor: isPro ? AppTheme.success : AppTheme.getTextMuted(isDark),
+
+              // Status Row with verified indicator
+              _buildCustomDetailRow(
+                isDark: isDark,
                 icon: Icons.shield_rounded,
-              ),
-              if (isPro && !isLifetime) ...[
-                _buildRowDivider(isDark),
-                _buildDetailRow(
-                  isDark,
-                  'Renewal Date',
-                  dateStr,
-                  icon: Icons.event_repeat_rounded,
+                title: 'Status',
+                trailing: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                  decoration: BoxDecoration(
+                    color: isPro
+                        ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                        : Colors.grey.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isPro
+                          ? const Color(0xFF10B981).withValues(alpha: 0.45)
+                          : Colors.grey.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6.5,
+                        height: 6.5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              isPro ? const Color(0xFF10B981) : Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isPro ? 'ACTIVE' : 'INACTIVE',
+                        style: TextStyle(
+                          color: isPro
+                              ? const Color(0xFF10B981)
+                              : Colors.grey,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-              _buildRowDivider(isDark),
-              _buildDetailRow(
-                isDark,
-                'Billing Provider',
-                'Google Play Store',
-                icon: Icons.shop_two_outlined,
               ),
+              _buildRowDivider(isDark),
+
+              // Plan Duration / Renewal Date Row
+              _buildCustomDetailRow(
+                isDark: isDark,
+                icon: isLifetime
+                    ? Icons.all_inclusive_rounded
+                    : Icons.event_repeat_rounded,
+                title: isLifetime ? 'Plan Duration' : 'Renewal Date',
+                trailing: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isLifetime
+                        ? const Color(0xFFFFB703).withValues(alpha: 0.12)
+                        : (isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.04)),
+                    borderRadius: BorderRadius.circular(8),
+                    border: isLifetime
+                        ? Border.all(
+                            color: const Color(0xFFFFB703).withValues(alpha: 0.3),
+                          )
+                        : null,
+                  ),
+                  child: Text(
+                    isLifetime ? 'Never Expires • Lifetime' : dateStr,
+                    style: TextStyle(
+                      color: isLifetime
+                          ? const Color(0xFFFFB703)
+                          : AppTheme.getTextPrimary(isDark),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ),
+              ),
+              _buildRowDivider(isDark),
+
+              // Billing Provider Row
+              _buildCustomDetailRow(
+                isDark: isDark,
+                icon: Icons.shop_two_outlined,
+                title: 'Billing Provider',
+                trailing: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.play_arrow_rounded,
+                          color: Color(0xFF00C853), size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Google Play Store',
+                        style: TextStyle(
+                          color: AppTheme.getTextPrimary(isDark),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               if (accountEmail != null && accountEmail.isNotEmpty) ...[
                 _buildRowDivider(isDark),
-                _buildDetailRow(
-                  isDark,
-                  'Account',
-                  accountEmail,
+                // Account Row
+                _buildCustomDetailRow(
+                  isDark: isDark,
                   icon: Icons.alternate_email_rounded,
+                  title: 'Account',
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      accountEmail,
+                      style: TextStyle(
+                        color: AppTheme.getTextSecondary(isDark),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -1133,46 +1274,144 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
     );
   }
 
-  Widget _buildDetailRow(
-    bool isDark,
-    String title,
-    String value, {
-    IconData? icon,
-    Color? valueColor,
+  Widget _buildPlanBadge(SubscriptionPlan plan, bool isPro, bool isLifetime) {
+    if (!isPro) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Text(
+          'FREE TIER',
+          style: TextStyle(
+            color: Colors.grey,
+            fontWeight: FontWeight.w800,
+            fontSize: 11,
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
+    }
+
+    if (isLifetime) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFB703), Color(0xFFFB8500)],
+          ),
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFB8500).withValues(alpha: 0.35),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.workspace_premium_rounded,
+                color: Colors.black, size: 13),
+            SizedBox(width: 4),
+            Text(
+              'LIFETIME VIP',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w900,
+                fontSize: 11,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (plan == SubscriptionPlan.annual) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2B5CE6), Color(0xFF1E45C8)],
+          ),
+          borderRadius: BorderRadius.circular(9),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2B5CE6).withValues(alpha: 0.35),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.flash_on_rounded, color: Colors.white, size: 13),
+            SizedBox(width: 4),
+            Text(
+              'ANNUAL PRO',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 11,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B5CE6).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFF2B5CE6).withValues(alpha: 0.4),
+        ),
+      ),
+      child: const Text(
+        'MONTHLY PRO',
+        style: TextStyle(
+          color: Color(0xFF2B5CE6),
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomDetailRow({
+    required bool isDark,
+    required IconData icon,
+    required String title,
+    required Widget trailing,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       child: Row(
         children: [
-          if (icon != null) ...[
-            Icon(
-              icon,
-              size: 18,
-              color: AppTheme.getTextMuted(isDark),
-            ),
-            const SizedBox(width: 10),
-          ],
+          Icon(
+            icon,
+            size: 18,
+            color: AppTheme.getTextMuted(isDark),
+          ),
+          const SizedBox(width: 10),
           Text(
             title,
             style: TextStyle(
               color: AppTheme.getTextSecondary(isDark),
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w500,
             ),
           ),
           const Spacer(),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: valueColor ?? AppTheme.getTextPrimary(isDark),
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-          ),
+          trailing,
         ],
       ),
     );
@@ -1184,7 +1423,9 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
       child: Divider(
         height: 1,
         thickness: 0.8,
-        color: AppTheme.getSurfaceVariant(isDark).withValues(alpha: 0.4),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.05),
       ),
     );
   }

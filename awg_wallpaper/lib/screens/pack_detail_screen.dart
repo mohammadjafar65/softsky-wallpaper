@@ -45,17 +45,24 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: AppTheme.darkBackground,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: AppTheme.getBackground(isDark),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_pack == null) {
-      return const Scaffold(
-        backgroundColor: AppTheme.darkBackground,
-        body: Center(child: Text("Pack not found")),
+      return Scaffold(
+        backgroundColor: AppTheme.getBackground(isDark),
+        body: Center(
+          child: Text(
+            "Pack not found",
+            style: TextStyle(color: AppTheme.getTextPrimary(isDark)),
+          ),
+        ),
       );
     }
 
@@ -70,7 +77,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.getBackground(isDark),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -186,7 +193,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppTheme.darkSurfaceVariant,
+                          color: AppTheme.getSurfaceVariant(isDark),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -194,7 +201,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: AppTheme.textSecondary,
+                                    color: AppTheme.getTextSecondary(isDark),
                                   ),
                         ),
                       ),

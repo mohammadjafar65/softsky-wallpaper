@@ -119,6 +119,37 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
           ),
 
+          // Bottom fade gradient behind tabs and bottom nav
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 230,
+            child: IgnorePointer(
+              child: isDark
+                  ? Image.asset(
+                      'assets/images/newgradient_bottom.png',
+                      fit: BoxFit.fill,
+                      width: double.infinity,
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppTheme.getBackground(isDark).withValues(alpha: 0.0),
+                            AppTheme.getBackground(isDark).withValues(alpha: 0.45),
+                            AppTheme.getBackground(isDark).withValues(alpha: 0.85),
+                            AppTheme.getBackground(isDark),
+                          ],
+                          stops: const [0.0, 0.35, 0.7, 1.0],
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+
           // Floating Pill Tab Bar for Following & Trending above bottom nav (decreased spacing)
           Positioned(
             left: 0,
@@ -141,6 +172,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
@@ -150,10 +182,10 @@ class _CommunityScreenState extends State<CommunityScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'COLLECTIVE',
                 style: TextStyle(
-                  color: AppTheme.textWhite,
+                  color: AppTheme.getTextPrimary(isDark),
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
@@ -171,8 +203,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                     count > 0
                         ? '${DateFormatter.format()} • $count Wallpapers'
                         : DateFormatter.format(),
-                    style: const TextStyle(
-                      color: AppTheme.textMuted,
+                    style: TextStyle(
+                      color: AppTheme.getTextSecondary(isDark),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -192,16 +224,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C2C2E),
+                    color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.08),
                     ),
+                    boxShadow: isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.file_upload_outlined,
-                      color: Colors.white,
+                      color: AppTheme.getTextPrimary(isDark),
                       size: 22,
                     ),
                   ),
@@ -846,19 +889,26 @@ class _EmptyFeed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: Colors.grey.withValues(alpha: 0.4)),
+            Icon(
+              icon,
+              size: 56,
+              color: isDark
+                  ? Colors.grey.withValues(alpha: 0.4)
+                  : Colors.grey.withValues(alpha: 0.6),
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey.withValues(alpha: 0.7),
+                color: AppTheme.getTextSecondary(isDark),
                 fontSize: 14,
                 height: 1.4,
               ),

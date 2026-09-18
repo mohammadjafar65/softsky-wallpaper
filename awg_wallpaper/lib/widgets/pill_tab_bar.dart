@@ -16,6 +16,8 @@ class PillTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
@@ -24,15 +26,19 @@ class PillTabBar extends StatelessWidget {
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF222226).withValues(alpha: 0.72),
+            color: isDark
+                ? const Color(0xFF222226).withValues(alpha: 0.72)
+                : Colors.white.withValues(alpha: 0.88),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.08),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -89,7 +95,9 @@ class PillTabBar extends StatelessWidget {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : Colors.white.withValues(alpha: 0.75),
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.75)
+                                : const Color(0xFF64748B)),
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.w500,
                         fontSize: 12,

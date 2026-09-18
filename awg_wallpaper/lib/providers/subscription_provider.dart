@@ -428,10 +428,11 @@ class SubscriptionProvider extends ChangeNotifier {
     },
     SubscriptionPlan.annual: {
       'name': 'Annual',
-      'price': '₹79.99',
+      'price': '₹40.0',
+      'originalPrice': '₹79.9',
       'period': '/year',
       'features': ['Pro Wallpapers', 'No ads', '4K quality', 'Exclusive packs'],
-      'savings': '',
+      'savings': '50% OFF',
     },
     SubscriptionPlan.lifetime: {
       'name': 'Lifetime',

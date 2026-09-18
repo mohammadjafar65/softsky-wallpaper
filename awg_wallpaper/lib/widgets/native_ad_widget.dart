@@ -33,34 +33,36 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     // Don't load ads for Pro users
     if (subscriptionProvider.isPro) return;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     _nativeAd = NativeAd(
       adUnitId: AdHelper.nativeAdUnitId,
       request: const AdRequest(),
       nativeTemplateStyle: NativeTemplateStyle(
         // Use Google's built-in medium template (no native code required)
         templateType: TemplateType.medium,
-        mainBackgroundColor: const Color(0xFF1E1E1E), // Match dark theme
+        mainBackgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         cornerRadius: 15.0, // Match wallpaper card corner radius
         callToActionTextStyle: NativeTemplateTextStyle(
           textColor: Colors.white,
-          backgroundColor: const Color(0xFF6C63FF),
+          backgroundColor: const Color(0xFF2B5CE6),
           style: NativeTemplateFontStyle.bold,
           size: 14.0,
         ),
         primaryTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
+          textColor: isDark ? Colors.white : const Color(0xFF1E293B),
           backgroundColor: Colors.transparent,
           style: NativeTemplateFontStyle.bold,
           size: 14.0,
         ),
         secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white70,
+          textColor: isDark ? Colors.white70 : const Color(0xFF64748B),
           backgroundColor: Colors.transparent,
           style: NativeTemplateFontStyle.normal,
           size: 12.0,
         ),
         tertiaryTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white60,
+          textColor: isDark ? Colors.white60 : const Color(0xFF94A3B8),
           backgroundColor: Colors.transparent,
           style: NativeTemplateFontStyle.normal,
           size: 11.0,

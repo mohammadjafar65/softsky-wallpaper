@@ -36,21 +36,23 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.getBackground(isDark),
       body: SafeArea(
         child: Consumer2<SearchProvider, WallpaperProvider>(
           builder: (context, searchProvider, wallpaperProvider, child) {
             return Column(
               children: [
                 // Search bar
-                _buildSearchBar(context, searchProvider, wallpaperProvider),
+                _buildSearchBar(context, searchProvider, wallpaperProvider, isDark),
 
                 // Content
                 Expanded(
                   child: searchProvider.query.isEmpty
-                      ? _buildSearchHistory(searchProvider, wallpaperProvider)
-                      : _buildSearchResults(searchProvider),
+                      ? _buildSearchHistory(searchProvider, wallpaperProvider, isDark)
+                      : _buildSearchResults(searchProvider, isDark),
                 ),
               ],
             );
@@ -64,6 +66,7 @@ class _SearchScreenState extends State<SearchScreen> {
     BuildContext context,
     SearchProvider searchProvider,
     WallpaperProvider wallpaperProvider,
+    bool isDark,
   ) {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -74,13 +77,13 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.darkSurface,
+                color: AppTheme.getSurface(isDark),
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppTheme.darkSurfaceVariant),
+                border: Border.all(color: AppTheme.getSurfaceVariant(isDark)),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_rounded,
-                color: AppTheme.textWhite,
+                color: AppTheme.getTextPrimary(isDark),
                 size: 20,
               ),
             ),
@@ -89,33 +92,31 @@ class _SearchScreenState extends State<SearchScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppTheme.darkSurface,
+                color: AppTheme.getSurface(isDark),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: _focusNode.hasFocus
-                      ? AppTheme.darkSurfaceVariant
-                      : AppTheme.darkSurfaceVariant,
+                  color: AppTheme.getSurfaceVariant(isDark),
                 ),
               ),
               child: TextField(
                 controller: _controller,
                 focusNode: _focusNode,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: AppTheme.getTextPrimary(isDark),
                   fontSize: 16,
                 ),
                 cursorColor: AppTheme.primary,
                 decoration: InputDecoration(
                   hintText: 'Search wallpapers...',
-                  hintStyle: const TextStyle(color: AppTheme.textSecondary),
+                  hintStyle: TextStyle(color: AppTheme.getTextMuted(isDark)),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.search_rounded,
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.getTextSecondary(isDark),
                   ),
                   suffixIcon: _controller.text.isNotEmpty
                       ? GestureDetector(
@@ -123,9 +124,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             _controller.clear();
                             searchProvider.clearSearch();
                           },
-                          child: const Icon(
+                          child: Icon(
                             Icons.close_rounded,
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.getTextSecondary(isDark),
                             size: 20,
                           ),
                         )
@@ -152,6 +153,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildSearchHistory(
     SearchProvider searchProvider,
     WallpaperProvider wallpaperProvider,
+    bool isDark,
   ) {
     return CustomScrollView(
       slivers: [
@@ -163,12 +165,12 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Recent Searches',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.getTextPrimary(isDark),
                     ),
                   ),
                   GestureDetector(
@@ -207,23 +209,23 @@ class _SearchScreenState extends State<SearchScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.surface,
+                        color: AppTheme.getSurface(isDark),
                         borderRadius: BorderRadius.circular(AppRadius.full),
-                        border: Border.all(color: AppTheme.surfaceVariant),
+                        border: Border.all(color: AppTheme.getSurfaceVariant(isDark)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.history_rounded,
                             size: 16,
-                            color: AppTheme.textSecondary,
+                            color: AppTheme.getTextSecondary(isDark),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             query,
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: AppTheme.getTextPrimary(isDark),
                               fontSize: 13,
                             ),
                           ),
@@ -231,10 +233,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           GestureDetector(
                             onTap: () =>
                                 searchProvider.removeFromHistory(query),
-                            child: const Icon(
+                            child: Icon(
                               Icons.close_rounded,
                               size: 16,
-                              color: AppTheme.textSecondary,
+                              color: AppTheme.getTextSecondary(isDark),
                             ),
                           ),
                         ],
@@ -254,12 +256,12 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Popular Categories',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textWhite,
+                    color: AppTheme.getTextPrimary(isDark),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -281,7 +283,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          color: AppTheme.primary.withValues(alpha: isDark ? 0.15 : 0.08),
                           borderRadius: BorderRadius.circular(AppRadius.full),
                           border: Border.all(
                             color: AppTheme.primary.withValues(alpha: 0.3),
@@ -295,8 +297,8 @@ class _SearchScreenState extends State<SearchScreen> {
                             const SizedBox(width: 8),
                             Text(
                               cat.name,
-                              style: const TextStyle(
-                                color: AppTheme.textWhite,
+                              style: TextStyle(
+                                color: AppTheme.getTextPrimary(isDark),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -315,9 +317,9 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSearchResults(SearchProvider searchProvider) {
+  Widget _buildSearchResults(SearchProvider searchProvider, bool isDark) {
     if (searchProvider.results.isEmpty) {
-      return _buildNoResults();
+      return _buildNoResults(isDark);
     }
 
     return CustomScrollView(
@@ -328,9 +330,9 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
             child: Text(
               '${searchProvider.results.length} results for "${searchProvider.query}"',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppTheme.textSecondary,
+                color: AppTheme.getTextSecondary(isDark),
               ),
             ),
           ),
@@ -393,7 +395,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildNoResults() {
+  Widget _buildNoResults(bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -401,15 +403,15 @@ class _SearchScreenState extends State<SearchScreen> {
           Icon(
             Icons.search_off_rounded,
             size: 64,
-            color: AppTheme.textMuted.withValues(alpha: 0.5),
+            color: AppTheme.getTextMuted(isDark).withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No Results Found',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
+              color: AppTheme.getTextPrimary(isDark),
             ),
           ),
           const SizedBox(height: 8),
@@ -417,7 +419,7 @@ class _SearchScreenState extends State<SearchScreen> {
             'Try searching for something else',
             style: TextStyle(
               fontSize: 14,
-              color: AppTheme.textSecondary.withValues(alpha: 0.8),
+              color: AppTheme.getTextSecondary(isDark),
             ),
           ),
         ],

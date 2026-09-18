@@ -57,7 +57,8 @@ class PackCard extends StatelessWidget {
               imageUrl: pack.coverImage,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
-                color: AppTheme.surfaceVariant,
+                color: AppTheme.getSurfaceVariant(
+                    Theme.of(context).brightness == Brightness.dark),
                 child: const Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
@@ -66,10 +67,12 @@ class PackCard extends StatelessWidget {
                 ),
               ),
               errorWidget: (context, url, error) => Container(
-                color: AppTheme.surfaceVariant,
-                child: const Icon(
+                color: AppTheme.getSurfaceVariant(
+                    Theme.of(context).brightness == Brightness.dark),
+                child: Icon(
                   Icons.broken_image_rounded,
-                  color: AppTheme.textMuted,
+                  color: AppTheme.getTextMuted(
+                      Theme.of(context).brightness == Brightness.dark),
                   size: 40,
                 ),
               ),

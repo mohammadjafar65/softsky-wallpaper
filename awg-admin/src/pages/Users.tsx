@@ -13,6 +13,9 @@ interface User {
   displayName: string;
   photoUrl?: string;
   authProvider: string;
+  role?: string;
+  isCreator?: boolean;
+  postsCount?: number;
   subscription: { plan: string; expiryDate?: string };
   downloads: number;
   isActive: boolean;
@@ -28,28 +31,37 @@ export default function Users() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [planFilter, setPlanFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [creatorFilter, setCreatorFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     void fetchUsers({ pageNumber: page });
-  }, [page, planFilter]);
+  }, [page, planFilter, roleFilter, creatorFilter]);
 
   const visibleStats = useMemo(() => {
     const active = users.filter((user) => user.isActive).length;
     const paid = users.filter((user) => user.subscription?.plan && user.subscription.plan !== 'free').length;
+    const creators = users.filter((user) => user.isCreator).length;
     const pushReady = users.filter((user) => user.hasFcmToken).length;
     const downloads = users.reduce((sum, user) => sum + (user.downloads || 0), 0);
 
-    return { active, paid, pushReady, downloads };
+    return { active, paid, creators, pushReady, downloads };
   }, [users]);
 
   const fetchUsers = async ({ pageNumber = page, search = searchQuery } = {}) => {
     setIsLoading(true);
     try {
-      const params: { page: number; limit: number; search?: string; plan?: string } = { page: pageNumber, limit: 10 };
+      const params: { page: number; limit: number; search?: string; plan?: string; role?: string; isCreator?: string } = {
+        page: pageNumber,
+        limit: 10,
+      };
       if (search.trim()) params.search = search.trim();
       if (planFilter !== 'all') params.plan = planFilter;
+      if (roleFilter !== 'all') params.role = roleFilter;
+      if (creatorFilter === 'creator') params.isCreator = 'true';
+      if (creatorFilter === 'regular') params.isCreator = 'false';
 
       const response = await usersApi.getAll(params);
       setUsers(response.data.users || []);
@@ -143,7 +155,7 @@ export default function Users() {
         <StatTile label="Downloads" value={visibleStats.downloads.toLocaleString()} helper="Visible user total" tone="red" loading={isLoading} />
       </div>
 
-      <AdminPanel title="Filters" description="Search across your customer base and narrow by subscription plan.">
+      <AdminPanel title="Filters" description="Search across your customer base and narrow by subscription plan, role, or creator privileges.">
         <div className="admin-form-grid">
           <form onSubmit={(e) => void handleSearch(e)}>
             <div className="afield">
@@ -154,6 +166,7 @@ export default function Users() {
               </div>
             </div>
           </form>
+
           <div className="afield">
             <label className="afield__label">Plan</label>
             <select className="afield__select" value={planFilter} onChange={(e) => { setPlanFilter(e.target.value); setPage(1); }}>
@@ -164,10 +177,28 @@ export default function Users() {
               <option value="lifetime">Lifetime</option>
             </select>
           </div>
+
+          <div className="afield">
+            <label className="afield__label">Role</label>
+            <select className="afield__select" value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}>
+              <option value="all">All roles</option>
+              <option value="user">Regular Users</option>
+              <option value="admin">Administrators</option>
+            </select>
+          </div>
+
+          <div className="afield">
+            <label className="afield__label">Creator status</label>
+            <select className="afield__select" value={creatorFilter} onChange={(e) => { setCreatorFilter(e.target.value); setPage(1); }}>
+              <option value="all">All creators & users</option>
+              <option value="creator">Creators only</option>
+              <option value="regular">Non-creators</option>
+            </select>
+          </div>
         </div>
       </AdminPanel>
 
-      <AdminPanel title="User directory" description="An operational view of account and plan data.">
+      <AdminPanel title="User directory" description="An operational view of account, badges, and plan data.">
         {isLoading ? (
           <p style={{ color: 'var(--admin-text-muted)', padding: '16px 0' }}>Loading users…</p>
         ) : users.length === 0 ? (
@@ -179,11 +210,12 @@ export default function Users() {
                 <thead>
                   <tr>
                     <th>User</th>
+                    <th>Badges</th>
                     <th>Provider</th>
                     <th>Plan</th>
                     <th>Push</th>
                     <th>Downloads</th>
-                    <th>Joined</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -193,8 +225,28 @@ export default function Users() {
                     return (
                       <tr key={user.id}>
                         <td>
-                          <strong style={{ display: 'block', fontSize: 13 }}>{user.displayName}</strong>
-                          <div style={{ fontSize: 11, color: 'var(--admin-text-sub)', marginTop: 2 }}>{user.email}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            {user.photoUrl ? (
+                              <img src={user.photoUrl} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--admin-surface-sub)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 13 }}>
+                                {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <strong style={{ display: 'block', fontSize: 13 }}>{user.displayName}</strong>
+                              <div style={{ fontSize: 11, color: 'var(--admin-text-sub)', marginTop: 2 }}>{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            {user.role === 'admin' ? <StatusTag type="red">ADMIN</StatusTag> : null}
+                            {user.isCreator ? <StatusTag type="purple">CREATOR</StatusTag> : null}
+                            {user.subscription.plan !== 'free' && !isExpired ? (
+                              <StatusTag type="magenta">PRO</StatusTag>
+                            ) : null}
+                          </div>
                         </td>
                         <td style={{ textTransform: 'capitalize' }}>{user.authProvider}</td>
                         <td>
@@ -208,7 +260,11 @@ export default function Users() {
                           </StatusTag>
                         </td>
                         <td>{(user.downloads || 0).toLocaleString()}</td>
-                        <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <StatusTag type={user.isActive ? 'green' : 'red'}>
+                            {user.isActive ? 'Active' : 'Banned'}
+                          </StatusTag>
+                        </td>
                         <td>
                           <div className="admin-inline-actions">
                             <button className="admin-round-button" title="Edit user" onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}>

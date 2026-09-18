@@ -16,9 +16,9 @@ const defaultSettings = {
     contactEmail: "contact@softsky.studio",
     privacyPolicyUrl: "https://softskyadmin.softsky.studio/privacy-policy.html",
     termsUrl: "https://softskyadmin.softsky.studio/terms",
-    androidPackageName: "com.awg.awg_wallpaper",
-    minAppVersion: "1.0.0",
-    latestAppVersion: "1.0.0",
+    androidPackageName: "com.webinessdesign.softskywallpaper",
+    minAppVersion: "3.0.0",
+    latestAppVersion: "3.0.29",
     forceUpdate: false,
     maintenanceMode: false,
     maintenanceMessage: "SoftSky is under maintenance. Please try again shortly.",
@@ -29,6 +29,12 @@ const defaultSettings = {
     enableWideWallpapers: true,
     defaultNotificationTitle: "Fresh wallpapers are live",
     defaultNotificationMessage: "Open SoftSky to explore the newest collection.",
+    enableLimitedTimeDeal: true,
+    dealDiscountPercentage: 50,
+    dealOriginalPrice: 79.9,
+    dealDiscountedPrice: 40.0,
+    dealIntervalDays: 2,
+    dealTargetPlan: "annual",
 };
 const publicKeys = [
     "appName",
@@ -47,6 +53,12 @@ const publicKeys = [
     "enableNotifications",
     "enableSubscriptions",
     "enableWideWallpapers",
+    "enableLimitedTimeDeal",
+    "dealDiscountPercentage",
+    "dealOriginalPrice",
+    "dealDiscountedPrice",
+    "dealIntervalDays",
+    "dealTargetPlan",
 ];
 async function readSettings() {
     try {
@@ -79,6 +91,12 @@ function toNonNegativeNumber(value, fallback) {
         return fallback;
     return Math.floor(parsed);
 }
+function toPositiveFloat(value, fallback) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0)
+        return fallback;
+    return parsed;
+}
 function sanitizeSettings(body, current) {
     return {
         ...current,
@@ -100,6 +118,12 @@ function sanitizeSettings(body, current) {
         enableWideWallpapers: toBoolean(body.enableWideWallpapers, current.enableWideWallpapers),
         defaultNotificationTitle: String(body.defaultNotificationTitle ?? current.defaultNotificationTitle).trim(),
         defaultNotificationMessage: String(body.defaultNotificationMessage ?? current.defaultNotificationMessage).trim(),
+        enableLimitedTimeDeal: toBoolean(body.enableLimitedTimeDeal, current.enableLimitedTimeDeal ?? true),
+        dealDiscountPercentage: toNonNegativeNumber(body.dealDiscountPercentage, current.dealDiscountPercentage ?? 50),
+        dealOriginalPrice: toPositiveFloat(body.dealOriginalPrice, current.dealOriginalPrice ?? 79.9),
+        dealDiscountedPrice: toPositiveFloat(body.dealDiscountedPrice, current.dealDiscountedPrice ?? 40.0),
+        dealIntervalDays: toNonNegativeNumber(body.dealIntervalDays, current.dealIntervalDays ?? 2),
+        dealTargetPlan: String(body.dealTargetPlan ?? current.dealTargetPlan ?? "annual").trim(),
         updatedAt: new Date().toISOString(),
     };
 }

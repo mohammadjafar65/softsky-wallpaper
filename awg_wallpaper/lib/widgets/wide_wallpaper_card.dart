@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -47,7 +46,8 @@ class WideWallpaperCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   alignment: Alignment.center,
                   placeholder: (context, url) => Container(
-                    color: const Color(0xFF232323),
+                    color: AppTheme.getSurfaceVariant(
+                        Theme.of(context).brightness == Brightness.dark),
                     child: const Center(
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
@@ -56,10 +56,12 @@ class WideWallpaperCard extends StatelessWidget {
                     ),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: const Color(0xFF232323),
-                    child: const Icon(
+                    color: AppTheme.getSurfaceVariant(
+                        Theme.of(context).brightness == Brightness.dark),
+                    child: Icon(
                       Icons.error_outline,
-                      color: Colors.white54,
+                      color: AppTheme.getTextMuted(
+                          Theme.of(context).brightness == Brightness.dark),
                     ),
                   ),
                 ),

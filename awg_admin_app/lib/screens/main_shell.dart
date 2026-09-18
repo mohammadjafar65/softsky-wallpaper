@@ -16,6 +16,7 @@ class MainShell extends StatelessWidget {
     _NavItem('/users', Icons.people_outline, Icons.people_rounded, 'Users'),
     _NavItem('/subscriptions', Icons.card_membership_outlined, Icons.card_membership_rounded, 'Subscriptions'),
     _NavItem('/notifications', Icons.notifications_outlined, Icons.notifications_rounded, 'Notifications'),
+    _NavItem('/settings', Icons.settings_outlined, Icons.settings_rounded, 'Settings'),
   ];
 
   int _selectedIndex(BuildContext context) {
@@ -24,10 +25,112 @@ class MainShell extends StatelessWidget {
     return idx < 0 ? 0 : idx;
   }
 
+  void _showMoreMenu(BuildContext context, String currentLoc) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final moreItems = _navItems.sublist(4);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.grid_view_rounded, size: 20, color: AppTheme.primary),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'More Modules',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const Divider(height: 16),
+                ...moreItems.map((item) {
+                  final isCurrent = currentLoc.startsWith(item.path);
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      isCurrent ? item.activeIcon : item.icon,
+                      color: isCurrent ? AppTheme.primary : AppTheme.textSecondary,
+                    ),
+                    title: Text(
+                      item.label,
+                      style: TextStyle(
+                        fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                        color: isCurrent ? AppTheme.primary : AppTheme.textPrimary,
+                      ),
+                    ),
+                    trailing: isCurrent
+                        ? Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppTheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          )
+                        : null,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    tileColor: isCurrent ? const Color(0xFFEEF2FF) : null,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      context.go(item.path);
+                    },
+                  );
+                }),
+                const Divider(height: 16),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.logout_rounded, color: AppTheme.error),
+                  title: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: AppTheme.error, fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await AuthService.logout();
+                    if (context.mounted) context.go('/login');
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
+    final loc = GoRouterState.of(context).matchedLocation;
     final isWide = MediaQuery.of(context).size.width >= 720;
+    final isMoreSelected = selectedIndex >= 4;
+    final mobileIndex = isMoreSelected ? 4 : selectedIndex;
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceVariant,
@@ -44,10 +147,32 @@ class MainShell extends StatelessWidget {
       ),
       bottomNavigationBar: isWide
           ? null
-          : _BottomNav(
-              items: _navItems.take(5).toList(),
-              selectedIndex: selectedIndex < 5 ? selectedIndex : 0,
-              onTap: (i) => context.go(_navItems[i].path),
+          : NavigationBar(
+              selectedIndex: mobileIndex,
+              onDestinationSelected: (i) {
+                if (i < 4) {
+                  context.go(_navItems[i].path);
+                } else {
+                  _showMoreMenu(context, loc);
+                }
+              },
+              backgroundColor: AppTheme.surface,
+              elevation: 0,
+              surfaceTintColor: Colors.transparent,
+              destinations: [
+                ..._navItems.take(4).map(
+                      (item) => NavigationDestination(
+                        icon: Icon(item.icon, size: 22),
+                        selectedIcon: Icon(item.activeIcon, size: 22),
+                        label: item.label,
+                      ),
+                    ),
+                NavigationDestination(
+                  icon: const Icon(Icons.grid_view_outlined, size: 22),
+                  selectedIcon: const Icon(Icons.grid_view_rounded, size: 22),
+                  label: isMoreSelected ? _navItems[selectedIndex].label : 'More',
+                ),
+              ],
             ),
     );
   }
@@ -147,8 +272,7 @@ class _SideNav extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     onTap: () => onTap(i),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                     minLeadingWidth: 20,
                   ),
                 );
@@ -213,35 +337,4 @@ class _SideNav extends StatelessWidget {
 String _userInitial(String? name) {
   final trimmed = name?.trim() ?? '';
   return trimmed.isNotEmpty ? trimmed[0].toUpperCase() : 'A';
-}
-
-class _BottomNav extends StatelessWidget {
-  final List<_NavItem> items;
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-  const _BottomNav({
-    required this.items,
-    required this.selectedIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return NavigationBar(
-      selectedIndex: selectedIndex,
-      onDestinationSelected: onTap,
-      backgroundColor: AppTheme.surface,
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      destinations: items
-          .map(
-            (item) => NavigationDestination(
-              icon: Icon(item.icon, size: 22),
-              selectedIcon: Icon(item.activeIcon, size: 22),
-              label: item.label,
-            ),
-          )
-          .toList(),
-    );
-  }
 }

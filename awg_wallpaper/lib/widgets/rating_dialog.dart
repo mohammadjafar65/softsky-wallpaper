@@ -16,8 +16,10 @@ class _RatingDialogState extends State<RatingDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
-      backgroundColor: AppTheme.darkSurface,
+      backgroundColor: AppTheme.getSurface(isDark),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -30,20 +32,20 @@ class _RatingDialogState extends State<RatingDialog> {
               color: AppTheme.gold,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Enjoying the app?',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textWhite,
+                color: AppTheme.getTextPrimary(isDark),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Tap a star to rate it on the store.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textSecondary,
+                color: AppTheme.getTextSecondary(isDark),
                 fontSize: 14,
               ),
             ),
@@ -69,10 +71,10 @@ class _RatingDialogState extends State<RatingDialog> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
+                    child: Text(
                       'Not Now',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.getTextSecondary(isDark),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -100,7 +102,7 @@ class _RatingDialogState extends State<RatingDialog> {
                         'Submit',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

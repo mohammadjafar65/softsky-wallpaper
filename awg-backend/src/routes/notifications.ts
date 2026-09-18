@@ -1,8 +1,56 @@
-import { Router, Request, Response } from 'express';
+﻿import { Router, Request, Response } from 'express';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
+import { upload, uploadToCloudinary } from '../middleware/upload';
+import { AppDataSource } from '../data-source';
+import { NotificationTemplate } from '../entities/NotificationTemplate';
 import fcmService from '../services/fcm';
 
 const router = Router();
+
+const DEFAULT_PREMADE_TEMPLATES = [
+    {
+        name: "Fresh Wallpaper Drop ✨",
+        title: "Fresh Wallpapers Just Added! ✨",
+        message: "Explore our latest collection of stunning 4K & UHD wallpapers curated just for your home screen.",
+        category: "drop",
+        isPremade: true,
+    },
+    {
+        name: "Trending Now 🔥",
+        title: "Trending Right Now 🔥",
+        message: "Check out the most popular aesthetic wallpapers the community is downloading today!",
+        category: "trending",
+        isPremade: true,
+    },
+    {
+        name: "Weekend Pro Special 💎",
+        title: "Exclusive Pro Designs Unlocked 💎",
+        message: "Upgrade your screen setup with exclusive handcrafted AMOLED & Minimal designs.",
+        category: "promo",
+        isPremade: true,
+    },
+    {
+        name: "Pure Dark / AMOLED 🖤",
+        title: "Pitch Black AMOLED Collection 🖤",
+        message: "True black wallpapers crafted to look sensational and conserve your battery.",
+        category: "featured",
+        isPremade: true,
+    },
+    {
+        name: "Community Spotlight 🎨",
+        title: "Community Creators Spotlight 🎨",
+        message: "Discover breathtaking wallpapers submitted by top artists in our community.",
+        category: "community",
+        isPremade: true,
+    },
+    {
+        name: "New App Update 🚀",
+        title: "SoftSky Wallpaper Update Available 🚀",
+        message: "Update now to experience smoother performance, new category filters, and fresh daily wallpapers!",
+        category: "update",
+        isPremade: true,
+    },
+];
 
 router.get('/status', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
     try {
@@ -111,6 +159,121 @@ router.post('/test', authenticate, requireAdmin, async (req: AuthRequest, res: R
     } catch (error: any) {
         console.error('Error in test notification:', error);
         return res.status(500).json({ error: 'Failed to send test notification', details: error.message });
+    }
+});
+
+/**
+ * @route   POST /api/notifications/upload-image
+ * @desc    Upload thumbnail image for notifications
+ * @access  Admin
+ */
+router.post(
+    '/upload-image',
+    authenticate,
+    requireAdmin,
+    upload.single('image'),
+    async (req: AuthRequest, res: Response) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ error: 'Image file is required' });
+            }
+
+            const { url, thumbnailUrl } = await uploadToCloudinary(req.file.buffer, 'notifications');
+            return res.json({
+                success: true,
+                url,
+                thumbnailUrl,
+            });
+        } catch (error: any) {
+            console.error('Error uploading notification thumbnail:', error);
+            return res.status(500).json({ error: 'Failed to upload notification thumbnail', details: error.message });
+        }
+    }
+);
+
+/**
+ * @route   GET /api/notifications/templates
+ * @desc    Get all notification templates (seeds premade defaults if empty)
+ * @access  Admin
+ */
+router.get('/templates', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+        const repo = AppDataSource.getRepository(NotificationTemplate);
+        const count = await repo.count();
+
+        if (count === 0) {
+            const seedEntities = repo.create(DEFAULT_PREMADE_TEMPLATES);
+            await repo.save(seedEntities);
+        }
+
+        const templates = await repo.find({
+            order: {
+                isPremade: 'DESC',
+                createdAt: 'DESC',
+            },
+        });
+
+        res.json({ success: true, templates });
+    } catch (error: any) {
+        console.error('Error fetching notification templates:', error);
+        res.status(500).json({ error: 'Failed to fetch notification templates', details: error.message });
+    }
+});
+
+/**
+ * @route   POST /api/notifications/templates
+ * @desc    Create a new notification template
+ * @access  Admin
+ */
+router.post('/templates', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+        const { name, title, message, imageUrl, category } = req.body;
+
+        if (!name || !title || !message) {
+            return res.status(400).json({ error: 'Name, title, and message are required' });
+        }
+
+        const repo = AppDataSource.getRepository(NotificationTemplate);
+        const template = repo.create({
+            name: String(name).trim(),
+            title: String(title).trim(),
+            message: String(message).trim(),
+            imageUrl: imageUrl ? String(imageUrl).trim() : undefined,
+            category: category ? String(category).trim() : 'custom',
+            isPremade: false,
+        });
+
+        await repo.save(template);
+        res.status(201).json({ success: true, template });
+    } catch (error: any) {
+        console.error('Error creating notification template:', error);
+        res.status(500).json({ error: 'Failed to create notification template', details: error.message });
+    }
+});
+
+/**
+ * @route   DELETE /api/notifications/templates/:id
+ * @desc    Delete a notification template
+ * @access  Admin
+ */
+router.delete('/templates/:id', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Invalid template ID' });
+        }
+
+        const repo = AppDataSource.getRepository(NotificationTemplate);
+        const template = await repo.findOne({ where: { id } });
+        if (!template) {
+            return res.status(404).json({ error: 'Template not found' });
+        }
+
+        await repo.remove(template);
+        res.json({ success: true, message: 'Template deleted successfully' });
+    } catch (error: any) {
+        console.error('Error deleting notification template:', error);
+        res.status(500).json({ error: 'Failed to delete notification template', details: error.message });
     }
 });
 

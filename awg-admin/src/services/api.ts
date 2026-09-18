@@ -37,6 +37,12 @@ export type AppSettings = {
     enableWideWallpapers: boolean;
     defaultNotificationTitle: string;
     defaultNotificationMessage: string;
+    enableLimitedTimeDeal: boolean;
+    dealDiscountPercentage: number;
+    dealOriginalPrice: number;
+    dealDiscountedPrice: number;
+    dealIntervalDays: number;
+    dealTargetPlan: string;
     updatedAt?: string;
 };
 
@@ -96,7 +102,7 @@ export const categoriesApi = {
 
 // Users API
 export const usersApi = {
-    getAll: (params?: { page?: number; limit?: number; search?: string; plan?: string }) =>
+    getAll: (params?: { page?: number; limit?: number; search?: string; plan?: string; role?: string; isCreator?: string }) =>
         api.get('/users', { params }),
     getById: (id: string) => api.get(`/users/${id}`),
     update: (id: string, data: ApiPayload) => api.put(`/users/${id}`, data),
@@ -117,6 +123,18 @@ export const packsApi = {
     delete: (id: string) => api.delete(`/packs/${id}`),
 };
 
+export type NotificationTemplate = {
+    id: number;
+    name: string;
+    title: string;
+    message: string;
+    imageUrl?: string | null;
+    category?: string;
+    isPremade?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
 // Notifications API
 export const notificationsApi = {
     getStatus: () => api.get('/notifications/status'),
@@ -126,6 +144,19 @@ export const notificationsApi = {
         api.post('/notifications/send-to-all', data),
     sendTest: (data: { token: string; title: string; message: string; imageUrl?: string; data?: Record<string, string> }) =>
         api.post('/notifications/test', data),
+    uploadImage: (file: File) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        return api.post<{ success: boolean; url: string; thumbnailUrl: string }>('/notifications/upload-image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
+    getTemplates: () =>
+        api.get<{ success: boolean; templates: NotificationTemplate[] }>('/notifications/templates'),
+    createTemplate: (data: { name: string; title: string; message: string; imageUrl?: string; category?: string }) =>
+        api.post<{ success: boolean; template: NotificationTemplate }>('/notifications/templates', data),
+    deleteTemplate: (id: number) =>
+        api.delete<{ success: boolean; message: string }>(`/notifications/templates/${id}`),
 };
 
 // Subscriptions API

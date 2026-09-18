@@ -57,8 +57,10 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.getBackground(isDark),
       body: SafeArea(
         bottom: false,
         child: Consumer<WallpaperProvider>(
@@ -68,7 +70,7 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                 await provider.loadProWallpapers(refresh: true, force: true);
               },
               color: AppTheme.primary,
-              backgroundColor: AppTheme.darkSurface,
+              backgroundColor: AppTheme.getSurface(isDark),
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
@@ -215,6 +217,8 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       child: Row(
@@ -223,18 +227,18 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: const [
+              Row(children: [
                 Text(
                   'PRO',
                   style: TextStyle(
-                    color: AppTheme.textWhite,
+                    color: AppTheme.getTextPrimary(isDark),
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
                   ),
                 ),
-                SizedBox(width: 8),
-                Icon(
+                const SizedBox(width: 8),
+                const Icon(
                   Icons.star_rounded,
                   size: 28,
                   color: Colors.amberAccent,
@@ -266,16 +270,18 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2C2C2E),
+                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF1F5F9),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.08),
                     ),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.search_rounded,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : AppTheme.textPrimary,
                       size: 22,
                     ),
                   ),

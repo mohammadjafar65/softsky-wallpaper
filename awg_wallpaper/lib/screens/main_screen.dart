@@ -28,6 +28,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       extendBody: true,
       body: Stack(
@@ -36,20 +38,36 @@ class _MainScreenState extends State<MainScreen> {
             index: _currentIndex,
             children: _screens,
           ),
-          // Bottom bar gradient
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 180,
-            child: IgnorePointer(
-              child: Image.asset(
-                'assets/images/newgradient_bottom.png',
-                fit: BoxFit.fill,
-                width: double.infinity,
+          // Bottom bar gradient (only for screens without floating tabs, i.e. Bookmarks, Packs, Pro)
+          if (_currentIndex != 0 && _currentIndex != 1)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 180,
+              child: IgnorePointer(
+                child: isDark
+                    ? Image.asset(
+                        'assets/images/newgradient_bottom.png',
+                        fit: BoxFit.fill,
+                        width: double.infinity,
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.0),
+                              Colors.white.withValues(alpha: 0.8),
+                              Colors.white,
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
               ),
             ),
-          ),
         ],
       ),
       bottomNavigationBar: CustomBottomNav(

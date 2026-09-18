@@ -13,7 +13,7 @@ import '../models/wallpaper.dart';
 import '../providers/bookmark_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/wallpaper_provider.dart';
-import 'subscription_screen.dart';
+import '../widgets/subscription_plan_popup.dart';
 
 class WallpaperDetailScreen extends StatefulWidget {
   final List<Wallpaper> wallpapers;
@@ -474,6 +474,9 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   Widget _buildBottomContent() {
     return Consumer<SubscriptionProvider>(
       builder: (context, subscriptionProvider, child) {
+        final isLockedPro =
+            _currentWallpaper.isPro && !subscriptionProvider.isPro;
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -492,49 +495,21 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Text(
-                      //   _currentWallpaper.title,
-                      //   style: GoogleFonts.outfit(
-                      //     color: Colors.white,
-                      //     fontSize: 24,
-                      //     fontWeight: FontWeight.bold,
-                      //     letterSpacing: -0.5,
-                      //   ),
-                      //   textAlign: TextAlign.center,
-                      //   maxLines: 1,
-                      //   overflow: TextOverflow.ellipsis,
-                      // ),
-                      // const SizedBox(height: 8),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: [
-                      //     _buildTag('HD', AppTheme.success),
-                      //     if (_currentWallpaper.isWide) ...[
-                      //       const SizedBox(width: 8),
-                      //       _buildTag('Wide', AppTheme.accent),
-                      //     ],
-                      //     const SizedBox(width: 8),
-                      //     _buildTag(_currentWallpaper.category, Colors.white70),
-                      //   ],
-                      // ),
-                      // const SizedBox(height: 10),
                       Row(
                         children: [
-                          // _buildActionBtn(
-                          //   icon: Icons.info_outline_rounded,
-                          //   onTap: () => _showInfoSheet(),
-                          // ),
-                          // const SizedBox(width: 16),
                           _buildActionBtn(
                             icon: Icons.share_rounded,
                             onTap: () => _shareWallpaper(),
+                            isProLocked: isLockedPro,
                           ),
-                          // const SizedBox(width: 8),
                           const SizedBox(width: 16),
                           Expanded(
                             child: _buildPrimaryBtn(
-                              label: 'Download',
-                              icon: Icons.download_rounded,
+                              label: isLockedPro ? 'Unlock with Pro' : 'Download',
+                              icon: isLockedPro
+                                  ? Icons.workspace_premium_rounded
+                                  : Icons.download_rounded,
+                              isProLocked: isLockedPro,
                               onTap: () =>
                                   _handleDownload(subscriptionProvider),
                             ),
@@ -544,6 +519,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                             _buildActionBtn(
                               icon: Icons.wallpaper_rounded,
                               onTap: () => _handleApply(subscriptionProvider),
+                              isProLocked: isLockedPro,
                             ),
                           ],
                         ],
@@ -562,134 +538,21 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   // Dialogs and Sheets updated for Light Theme Text visibility
 
   void _showProPurchasePopup() {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.8),
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: Colors.black,
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Premium Wallpaper',
-                style: TextStyle(
-                  color: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.color, // Fixed text color
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Unlock this wallpaper and thousands more with Pro subscription',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildProFeature(Icons.image_rounded, 'All premium wallpapers'),
-              _buildProFeature(Icons.block_rounded, 'Ad-free experience'),
-              // _buildProFeature(Icons.hd_rounded, '4K downloads'),
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const SubscriptionScreen()),
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.primary, AppTheme.accent],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primary.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Text(
-                    'Upgrade to Pro',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black, // Visible on pastel
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProFeature(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(icon, color: AppTheme.gold, size: 18),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-                fontSize: 13), // Fixed
-          ),
-        ],
-      ),
-    );
+    SubscriptionPlanPopup.show(context);
   }
 
   Widget _buildUpgradeBanner() {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-      ),
+      onTap: () => SubscriptionPlanPopup.show(context),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.2),
+          color: const Color(0xFF1E284E).withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
+          border: Border.all(
+            color: AppTheme.primary.withValues(alpha: 0.4),
+          ),
         ),
         child: Row(
           children: [
@@ -697,42 +560,57 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               padding: const EdgeInsets.all(8),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.gold, Color(0xFFFFB700)],
+                  colors: [Color(0xFF2B5CE6), Color(0xFF1E45C8)],
                 ),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.workspace_premium_rounded,
-                  color: Colors.black, size: 16),
+                  color: Colors.white, size: 16),
             ),
             const SizedBox(width: 12),
             const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Unlock Premium',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      Text(
+                        'Unlock Premium',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        '50% OFF',
+                        style: TextStyle(
+                          color: Color(0xFFFFB703),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
-                    'Remove ads & unlock 4K',
+                    'Annual ₹40.0 only • No ads & 4K',
                     style: TextStyle(color: Colors.white70, fontSize: 11),
                   ),
                 ],
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2B5CE6), Color(0xFF1E45C8)],
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
                 'UPGRADE',
                 style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1),
@@ -804,6 +682,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   }
 
   void _showDownloadSheet() {
+    final subProvider = context.read<SubscriptionProvider>();
+    if (_currentWallpaper.isPro && !subProvider.isPro) {
+      _showProPurchasePopup();
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -813,11 +696,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           decoration: BoxDecoration(
-            color: Colors.grey[900]!.withOpacity(0.92),
+            color: Colors.grey[900]!.withValues(alpha: 0.92),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.18),
+                color: Colors.black.withValues(alpha: 0.18),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -831,7 +714,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -861,6 +744,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   }
 
   void _showApplySheet() {
+    final subProvider = context.read<SubscriptionProvider>();
+    if (_currentWallpaper.isPro && !subProvider.isPro) {
+      _showProPurchasePopup();
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -870,11 +758,11 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           decoration: BoxDecoration(
-            color: Colors.grey[900]!.withOpacity(0.92),
+            color: Colors.grey[900]!.withValues(alpha: 0.92),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.18),
+                color: Colors.black.withValues(alpha: 0.18),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -888,7 +776,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1030,7 +918,10 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            _sheetItem(Icons.share_rounded, 'Share', () => Navigator.pop(ctx)),
+            _sheetItem(Icons.share_rounded, 'Share', () {
+              Navigator.pop(ctx);
+              _shareWallpaper();
+            }),
             _sheetItem(Icons.info_outline_rounded, 'Info', () {
               Navigator.pop(ctx);
               _showInfoSheet();
@@ -1066,23 +957,57 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   Widget _buildActionBtn({
     required IconData icon,
     required VoidCallback onTap,
+    bool isProLocked = false,
   }) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isProLocked
+                      ? const Color(0xFFFFB703).withValues(alpha: 0.15)
+                      : Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isProLocked
+                        ? const Color(0xFFFFB703).withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  color: isProLocked ? const Color(0xFFFFB703) : Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
           ),
-        ),
+          if (isProLocked)
+            Positioned(
+              right: -1,
+              top: -1,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFB703),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  size: 10,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1091,19 +1016,29 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
     required String label,
     required IconData icon,
     required VoidCallback onTap,
+    bool isProLocked = false,
   }) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.white, Colors.white],
-          ),
+          gradient: isProLocked
+              ? const LinearGradient(
+                  colors: [Color(0xFFFFB703), Color(0xFFFB8500)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : const LinearGradient(
+                  colors: [Colors.white, Colors.white],
+                ),
           borderRadius: BorderRadius.circular(13),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: isProLocked
+                  ? const Color(0xFFFFB703).withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -1162,6 +1097,12 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   }
 
   Future<void> _download(String quality) async {
+    final subProvider = context.read<SubscriptionProvider>();
+    if (_currentWallpaper.isPro && !subProvider.isPro) {
+      _showProPurchasePopup();
+      return;
+    }
+
     // Show progress
     _showDownloadProgress();
 
@@ -1211,6 +1152,12 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   }
 
   Future<void> _shareWallpaper() async {
+    final subProvider = context.read<SubscriptionProvider>();
+    if (_currentWallpaper.isPro && !subProvider.isPro) {
+      _showProPurchasePopup();
+      return;
+    }
+
     try {
       await Share.share(
         'Check out this amazing wallpaper: ${_currentWallpaper.title}\n${_currentWallpaper.imageUrl}',
@@ -1222,6 +1169,12 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
   }
 
   Future<void> _applyWallpaper(int location) async {
+    final subProvider = context.read<SubscriptionProvider>();
+    if (_currentWallpaper.isPro && !subProvider.isPro) {
+      _showProPurchasePopup();
+      return;
+    }
+
     // 1: Home, 2: Lock, 3: Both
     _showApplyProgress();
 

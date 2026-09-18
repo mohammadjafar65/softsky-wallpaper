@@ -97,22 +97,28 @@ class _CommunityPostCardState extends State<CommunityPostCard>
                   fadeInDuration: const Duration(milliseconds: 300),
                   fadeOutDuration: const Duration(milliseconds: 100),
                   memCacheWidth: 400,
-                  placeholder: (_, __) => Container(
-                    color: AppTheme.surfaceVariant,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppTheme.primary,
+                  placeholder: (_, __) {
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                    return Container(
+                      color: AppTheme.getSurfaceVariant(isDark),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.primary,
+                        ),
                       ),
-                    ),
-                  ),
-                  errorWidget: (_, __, ___) => Container(
-                    color: AppTheme.surfaceVariant,
-                    child: const Icon(
-                      Icons.broken_image_rounded,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
+                    );
+                  },
+                  errorWidget: (_, __, ___) {
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                    return Container(
+                      color: AppTheme.getSurfaceVariant(isDark),
+                      child: Icon(
+                        Icons.broken_image_rounded,
+                        color: AppTheme.getTextMuted(isDark),
+                      ),
+                    );
+                  },
                 ),
 
                 // Top right: Like button (dark translucent circle with heart)
