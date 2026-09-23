@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() => _filterIndex = index);
                   if (index == 1) {
                     final provider = context.read<WallpaperProvider>();
-                    if (provider.proWallpapersList.isEmpty && !provider.isProLoading) {
+                    if (!provider.isProLoading) {
                       provider.loadProWallpapers(refresh: true, force: true);
                     }
                   }

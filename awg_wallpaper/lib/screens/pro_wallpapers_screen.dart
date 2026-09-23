@@ -32,8 +32,8 @@ class _ProWallpapersScreenState extends State<ProWallpapersScreen> {
     // Ensure data is loaded when screen first appears
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<WallpaperProvider>();
-      // Always try to load pro wallpapers if list is empty
-      if (provider.proWallpapersList.isEmpty && !provider.isProLoading) {
+      // Always fetch fresh pro wallpapers in background
+      if (!provider.isProLoading) {
         provider.loadProWallpapers(refresh: true, force: true);
       }
     });

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AppDataSource } from "../data-source";
 import { User } from "../entities/User";
+import { CommunityPost } from "../entities/CommunityPost";
 import {
     generateToken,
     authenticate,
@@ -200,6 +201,18 @@ router.post("/firebase/verify", async (req, res) => {
             }
         }
 
+        // Check user's actual uploaded posts count
+        const postRepo = AppDataSource.getRepository(CommunityPost);
+        const actualPostsCount = await postRepo.count({
+            where: { userId: user.id },
+        });
+        if (user.postsCount !== actualPostsCount) {
+            user.postsCount = actualPostsCount;
+            await userRepository.save(user);
+        }
+
+        const isCreator = (actualPostsCount > 0) || (user.role === "admin");
+
         // Generate token
         const token = generateToken({
             id: user.id.toString(),
@@ -217,6 +230,9 @@ router.post("/firebase/verify", async (req, res) => {
                 photoUrl: user.photoUrl,
                 role: user.role,
                 subscription: user.subscription,
+                postsCount: actualPostsCount,
+                is_creator: isCreator,
+                isCreator: isCreator,
             },
         });
     } catch (error) {
@@ -229,6 +245,7 @@ router.post("/firebase/verify", async (req, res) => {
 router.get("/me", authenticate, async (req: AuthRequest, res) => {
     try {
         const userRepository = AppDataSource.getRepository(User);
+        const postRepo = AppDataSource.getRepository(CommunityPost);
         const user = await userRepository.findOne({
             where: { id: parseInt(req.user?.id || "0") },
         });
@@ -247,6 +264,16 @@ router.get("/me", authenticate, async (req: AuthRequest, res) => {
             await userRepository.save(user);
         }
 
+        const actualPostsCount = await postRepo.count({
+            where: { userId: user.id },
+        });
+        if (user.postsCount !== actualPostsCount) {
+            user.postsCount = actualPostsCount;
+            await userRepository.save(user);
+        }
+
+        const isCreator = (actualPostsCount > 0) || (user.role === "admin");
+
         res.json({
             id: user.id,
             email: user.email,
@@ -256,6 +283,9 @@ router.get("/me", authenticate, async (req: AuthRequest, res) => {
             role: user.role,
             subscription: user.subscription,
             downloads: user.downloads,
+            postsCount: actualPostsCount,
+            is_creator: isCreator,
+            isCreator: isCreator,
             createdAt: user.createdAt,
         });
     } catch (error) {

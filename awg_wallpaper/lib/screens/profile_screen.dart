@@ -306,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 32),
 
                           Text(
-                            'Version 3.0.28',
+                            'Version 3.0.31',
                             style: TextStyle(
                               color: AppTheme.getTextMuted(isDark)
                                   .withValues(alpha: 0.65),

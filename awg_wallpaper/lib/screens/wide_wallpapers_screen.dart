@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
@@ -9,7 +7,7 @@ import 'wallpaper_detail_screen.dart';
 import '../utils/date_formatter.dart';
 import '../utils/ad_helper.dart';
 import '../providers/subscription_provider.dart';
-import 'profile_screen.dart';
+import '../widgets/top_bar_profile_avatar.dart';
 
 class WideWallpapersScreen extends StatelessWidget {
   const WideWallpapersScreen({super.key});
@@ -135,40 +133,7 @@ class WideWallpapersScreen extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
-              );
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.15)
-                          : Colors.black.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.person_rounded,
-                    color: isDark ? Colors.white : AppTheme.textPrimary,
-                    size: 23,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          const TopBarProfileAvatar(),
         ],
       ),
     );

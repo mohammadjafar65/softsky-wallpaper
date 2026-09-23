@@ -29,7 +29,7 @@ class WideWallpaperCard extends StatelessWidget {
             color: Colors.grey[900],
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.18),
+                color: Colors.black.withValues(alpha: 0.18),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -92,15 +92,15 @@ class WideWallpaperCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.55),
+                        color: Colors.black.withValues(alpha: 0.55),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFFFFD700).withOpacity(0.4),
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.18),
+                            color: Colors.black.withValues(alpha: 0.18),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -132,17 +132,17 @@ class WideWallpaperCard extends StatelessWidget {
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isBookmarked ? const Color(0xFFFF4081).withOpacity(0.18) : Colors.black.withOpacity(0.28),
+                            color: isBookmarked ? const Color(0xFFFF4081).withValues(alpha: 0.18) : Colors.black.withValues(alpha: 0.28),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.18),
+                                color: Colors.black.withValues(alpha: 0.18),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                             border: Border.all(
-                              color: isBookmarked ? const Color(0xFFFF4081).withOpacity(0.5) : Colors.white.withOpacity(0.18),
+                              color: isBookmarked ? const Color(0xFFFF4081).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.18),
                               width: 1,
                             ),
                           ),

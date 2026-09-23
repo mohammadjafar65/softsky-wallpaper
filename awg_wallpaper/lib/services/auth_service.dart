@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'api_service.dart';
 import 'notification_service.dart';
 
@@ -182,8 +183,28 @@ class AuthService {
       _backendUser = response.user;
       _apiService.setAuthToken(response.token);
 
-      debugPrint(
-          'User synced with backend successfully. Token: ${response.token}');
+      // Sync creator status with Hive settings
+      final rawPostsCount = response.user['postsCount'];
+      final int postsCount = rawPostsCount is int
+          ? rawPostsCount
+          : int.tryParse(rawPostsCount?.toString() ?? '0') ?? 0;
+      final role = response.user['role']?.toString().toLowerCase().trim();
+      final isCreatorRaw = response.user['is_creator'] ??
+          response.user['isCreator'] ??
+          response.user['creator'];
+      final bool isCreatorFieldTruthy = isCreatorRaw == true ||
+          isCreatorRaw == 1 ||
+          isCreatorRaw?.toString() == '1' ||
+          isCreatorRaw?.toString().toLowerCase() == 'true';
+      final bool isCreator = isCreatorFieldTruthy ||
+          (role == 'creator' || role == 'admin') ||
+          (postsCount > 0);
+      try {
+        final box = Hive.box('settings');
+        await box.put('is_creator', isCreator);
+      } catch (_) {}
+
+      debugPrint('User synced with backend successfully.');
       debugPrint('Triggering onSyncComplete...');
       _syncCompleteController.add(true);
       debugPrint('onSyncComplete triggered');
@@ -228,6 +249,10 @@ class AuthService {
     _backendToken = null;
     _backendUser = null;
     _apiService.clearAuthToken();
+    try {
+      final box = Hive.box('settings');
+      await box.put('is_creator', false);
+    } catch (_) {}
   }
 
   /// Get readable error message for Firebase Auth error codes

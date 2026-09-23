@@ -45,12 +45,16 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
     _loadData();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool isRefresh = false}) async {
     final provider = context.read<CommunityProvider>();
     CommunityUser? user = _user ?? widget.initialUser;
     final List<CommunityPost> localPosts = [];
 
-    for (final p in [...provider.trendingPosts, ...provider.feedPosts]) {
+    for (final p in [
+      ...provider.myPosts,
+      ...provider.trendingPosts,
+      ...provider.feedPosts
+    ]) {
       if (p.author != null && p.author!.id == widget.userId) {
         user ??= p.author;
         if (!localPosts.any((existing) => existing.id == p.id)) {
@@ -59,10 +63,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
       }
     }
 
-    if (mounted && (user != null || localPosts.isNotEmpty)) {
+    // Always sort local posts newest first
+    localPosts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (mounted && !isRefresh && (user != null || localPosts.isNotEmpty)) {
       setState(() {
         if (user != null) _user = user;
-        if (localPosts.isNotEmpty && _posts.isEmpty) _posts = localPosts;
+        if (localPosts.isNotEmpty && _posts.isEmpty) _posts = List.from(localPosts);
         _loading = false;
       });
     }
@@ -75,8 +82,20 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
       if (results[0] != null) user = results[0] as CommunityUser;
       final serverPosts = results[1] as List<CommunityPost>;
       if (serverPosts.isNotEmpty) {
+        // Merge server posts with any local posts
+        final Map<int, CommunityPost> postMap = {};
+        for (final p in serverPosts) {
+          postMap[p.id] = p;
+        }
+        for (final p in localPosts) {
+          if (!postMap.containsKey(p.id)) {
+            postMap[p.id] = p;
+          }
+        }
+        final merged = postMap.values.toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         localPosts.clear();
-        localPosts.addAll(serverPosts);
+        localPosts.addAll(merged);
       }
     } catch (e) {
       debugPrint('getCommunityUser error (using fallback): $e');
@@ -85,7 +104,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
     if (mounted) {
       setState(() {
         _user = user ?? _user ?? widget.initialUser;
-        if (localPosts.isNotEmpty) _posts = localPosts;
+        if (localPosts.isNotEmpty) {
+          _posts = List.from(localPosts);
+        }
         _loading = false;
       });
     }
@@ -181,8 +202,15 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
             ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
             : _user == null
                 ? const Center(child: Text('User not found'))
-                : CustomScrollView(
-                    slivers: [
+                : RefreshIndicator(
+                    onRefresh: () => _loadData(isRefresh: true),
+                    color: AppTheme.primary,
+                    backgroundColor: AppTheme.getSurface(isDark),
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      slivers: [
                       // ── Custom Header ──────────────────────────────────────
                       SliverToBoxAdapter(
                         child: _buildHeader(context, isDark, isOwnProfile),
@@ -364,6 +392,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen> {
                             ),
                     ],
                   ),
+                ),
       ),
     );
   }

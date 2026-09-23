@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -696,7 +697,7 @@ class _AutoWallpaperSettingsScreenState
             child: Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: iconColor,
+              activeThumbColor: iconColor,
               activeTrackColor: iconColor.withValues(alpha: 0.5),
             ),
           ),

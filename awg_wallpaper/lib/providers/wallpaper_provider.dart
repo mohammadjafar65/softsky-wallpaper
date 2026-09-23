@@ -141,11 +141,11 @@ class WallpaperProvider extends ChangeNotifier {
           return <WallpaperPack>[];
         }),
         _apiService
-            .getWallpapers(page: 1, limit: 1, isPro: true, isWide: false)
+            .getWallpapers(page: 1, limit: 20, isPro: true, isWide: false)
             .catchError((e) {
-          debugPrint('Error loading pro count: $e');
+          debugPrint('Error loading pro wallpapers: $e');
           return WallpapersResponse(
-              wallpapers: [], page: 1, limit: 1, total: 0, pages: 1);
+              wallpapers: [], page: 1, limit: 20, total: 0, pages: 1);
         }),
       ]);
 
@@ -177,9 +177,14 @@ class WallpaperProvider extends ChangeNotifier {
       _packs = results[3] as List<WallpaperPack>;
       debugPrint('WallpaperProvider: Loaded ${_packs.length} packs');
 
-      // 5. Calculate Counters
+      // 5. Pro Wallpapers & Counters
       final proNonWideResponse = results[4] as WallpapersResponse;
       _totalProWallpapers = proNonWideResponse.total;
+      if (proNonWideResponse.wallpapers.isNotEmpty) {
+        _proWallpapersList = proNonWideResponse.wallpapers;
+        _currentProPage = proNonWideResponse.page + 1;
+        _hasMorePro = proNonWideResponse.page < proNonWideResponse.pages;
+      }
 
       // wallpapersResponse is already filtered to free (isPro: false)
       _totalFreeWallpapers = wallpapersResponse.total;
@@ -190,9 +195,6 @@ class WallpaperProvider extends ChangeNotifier {
 
       // Save to cache
       _saveToCache();
-
-      // Also pre-load the first page of pro wallpapers
-      unawaited(loadProWallpapers(refresh: true));
     } catch (e) {
       debugPrint('Failed to load data from API: $e');
       rethrow;
@@ -220,6 +222,7 @@ class WallpaperProvider extends ChangeNotifier {
       try {
         final List<dynamic> wallJson = json.decode(box.get('wallpapers'));
         _wallpapers = wallJson.map((w) => Wallpaper.fromJson(w)).toList();
+        _sortWallpapers(_wallpapers);
       } catch (e) {
         debugPrint('Error loading wallpapers from cache: $e');
       }
@@ -229,6 +232,7 @@ class WallpaperProvider extends ChangeNotifier {
       try {
         final List<dynamic> wideJson = json.decode(box.get('wide_wallpapers'));
         _wideWallpapers = wideJson.map((w) => Wallpaper.fromJson(w)).toList();
+        _sortWallpapers(_wideWallpapers);
       } catch (e) {
         debugPrint('Error loading wide wallpapers from cache: $e');
       }
@@ -251,12 +255,24 @@ class WallpaperProvider extends ChangeNotifier {
       try {
         final List<dynamic> proJson = json.decode(box.get('pro_wallpapers'));
         _proWallpapersList = proJson.map((w) => Wallpaper.fromJson(w)).toList();
+        _sortWallpapers(_proWallpapersList);
       } catch (e) {
         debugPrint('Error loading pro wallpapers from cache: $e');
       }
     }
 
     notifyListeners();
+  }
+
+  void _sortWallpapers(List<Wallpaper> list) {
+    list.sort((a, b) {
+      if (a.createdAt != null && b.createdAt != null) {
+        return b.createdAt!.compareTo(a.createdAt!);
+      }
+      final aId = int.tryParse(a.id) ?? 0;
+      final bId = int.tryParse(b.id) ?? 0;
+      return bId.compareTo(aId);
+    });
   }
 
   void _saveToCache() {
@@ -361,7 +377,6 @@ class WallpaperProvider extends ChangeNotifier {
 
     if (refresh || force) {
       _currentProPage = 1;
-      _proWallpapersList = [];
       _hasMorePro = true;
     }
 
@@ -383,15 +398,22 @@ class WallpaperProvider extends ChangeNotifier {
         return;
       }
 
-      if (refresh || force) {
+      if (refresh || force || _currentProPage == 1) {
         _proWallpapersList = response.wallpapers;
       } else {
-        _proWallpapersList.addAll(response.wallpapers);
+        for (final w in response.wallpapers) {
+          if (!_proWallpapersList.any((existing) => existing.id == w.id)) {
+            _proWallpapersList.add(w);
+          }
+        }
       }
 
       _currentProPage = response.page + 1;
-      // _totalProPages = response.pages;
       _hasMorePro = response.page < response.pages;
+
+      if (_selectedProCategory == 'all' && _proWallpapersList.isNotEmpty) {
+        _saveToCache();
+      }
     } catch (e) {
       debugPrint('Failed to load pro wallpapers: $e');
     }
@@ -483,14 +505,21 @@ class WallpaperProvider extends ChangeNotifier {
   Future<void> refresh() async {
     _currentPage = 1;
     _hasMore = true;
-    _wallpapers = [];
-    _wideWallpapers = [];
-
-    // Reset Pro
     _currentProPage = 1;
     _hasMorePro = true;
-    _proWallpapersList = [];
+    _isLoading = true;
+    _isProLoading = true;
+    _error = null;
+    notifyListeners();
 
-    await _initializeData();
+    try {
+      await _loadFromApi();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      _isProLoading = false;
+      notifyListeners();
+    }
   }
 }

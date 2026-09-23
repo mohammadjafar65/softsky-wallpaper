@@ -12,6 +12,18 @@ import '../services/auth_service.dart';
 /// Helper utility for handling Creator vs Normal User profile state and navigation.
 class CreatorHelper {
   /// Checks whether the user is a creator.
+  static bool _isTruthy(dynamic val) {
+    if (val == null) return false;
+    if (val is bool) return val;
+    if (val is num) return val != 0;
+    if (val is String) {
+      final s = val.toLowerCase().trim();
+      return s == 'true' || s == '1' || s == 'yes';
+    }
+    return false;
+  }
+
+  /// Checks whether the user is a creator.
   /// A user is considered a creator if:
   /// 1. 'is_creator' is set to true in Hive settings box, OR
   /// 2. User has published community posts (in CommunityProvider.myPosts), OR
@@ -22,7 +34,7 @@ class CreatorHelper {
     // 1. Check local persistent setting
     try {
       final box = Hive.box('settings');
-      if (box.get('is_creator', defaultValue: false) == true) {
+      if (_isTruthy(box.get('is_creator', defaultValue: false))) {
         return true;
       }
     } catch (_) {}
@@ -30,9 +42,18 @@ class CreatorHelper {
     // 2. Check backend user record
     final backendUser = AuthService().backendUser;
     if (backendUser != null) {
-      if (backendUser['is_creator'] == true ||
-          backendUser['role'] == 'creator' ||
-          (backendUser['postsCount'] is int && backendUser['postsCount'] > 0)) {
+      final postsCount = backendUser['postsCount'] is int
+          ? backendUser['postsCount'] as int
+          : int.tryParse(backendUser['postsCount']?.toString() ?? '0') ?? 0;
+      final role = backendUser['role']?.toString().toLowerCase().trim();
+      if (_isTruthy(backendUser['is_creator']) ||
+          _isTruthy(backendUser['isCreator']) ||
+          _isTruthy(backendUser['creator']) ||
+          role == 'creator' ||
+          role == 'admin' ||
+          postsCount > 0) {
+        // Persist to Hive for fast local lookup
+        setCreatorStatus(true);
         return true;
       }
     }
@@ -41,6 +62,7 @@ class CreatorHelper {
     try {
       final cp = context.read<CommunityProvider>();
       if (cp.myPosts.isNotEmpty) {
+        setCreatorStatus(true);
         return true;
       }
     } catch (_) {}
@@ -54,17 +76,64 @@ class CreatorHelper {
       final box = Hive.box('settings');
       await box.put('is_creator', status);
     } catch (e) {
-      debugPrint('Error updating is_creator: ');
+      debugPrint('Error updating is_creator: $e');
     }
   }
 
   /// Opens the correct profile screen based on creator status:
-  /// - If user is a creator -> opens Creator Profile (CommunityProfileScreen)
+  /// - If user is a creator or has uploaded wallpapers -> opens Creator Profile (CommunityProfileScreen)
   /// - If user is not a creator -> opens Normal Profile (ProfileScreen)
-  static void openProfile(BuildContext context) {
+  static Future<void> openProfile(BuildContext context) async {
+    if (!AuthService().isLoggedIn) {
+      openNormalProfile(context);
+      return;
+    }
+
     if (isCreator(context)) {
       openCreatorProfile(context);
-    } else {
+      return;
+    }
+
+    // If local state hasn't loaded posts yet, try checking myPosts once
+    try {
+      final cp = context.read<CommunityProvider>();
+      if (cp.myPosts.isEmpty) {
+        await cp.loadMyPosts(refresh: true);
+        if (!context.mounted) return;
+        if (cp.myPosts.isNotEmpty) {
+          await setCreatorStatus(true);
+          if (!context.mounted) return;
+          openCreatorProfile(context);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Final safety net: check backend user object directly for creator indicators.
+    // This handles the case where Hive has is_creator=false (e.g. just after
+    // sign-out/sign-in) but the backend sync has since completed.
+    try {
+      final backendUser = AuthService().backendUser;
+      if (backendUser != null) {
+        final postsCount = backendUser['postsCount'] is int
+            ? backendUser['postsCount'] as int
+            : int.tryParse(backendUser['postsCount']?.toString() ?? '0') ?? 0;
+        final role = backendUser['role']?.toString().toLowerCase().trim();
+        final backendSaysCreator = _isTruthy(backendUser['is_creator']) ||
+            _isTruthy(backendUser['isCreator']) ||
+            _isTruthy(backendUser['creator']) ||
+            role == 'creator' ||
+            role == 'admin' ||
+            postsCount > 0;
+        if (backendSaysCreator) {
+          await setCreatorStatus(true);
+          if (context.mounted) openCreatorProfile(context);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    if (context.mounted) {
       openNormalProfile(context);
     }
   }
@@ -80,6 +149,7 @@ class CreatorHelper {
   /// Opens the creator profile screen (CommunityProfileScreen) for the current user
   static void openCreatorProfile(BuildContext context) {
     final authUser = AuthService().currentUser;
+    final backendUser = AuthService().backendUser;
     final communityProvider = context.read<CommunityProvider>();
     CommunityUser? myUser;
 
@@ -104,13 +174,24 @@ class CreatorHelper {
     final initialUser = myUser ??
         CommunityUser(
           id: targetUserId,
-          displayName: authUser?.displayName ?? 'Creator Profile',
-          photoUrl: authUser?.photoURL,
-          bio: 'Wallpaper Creator',
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: communityProvider.myPosts.length,
-          totalDownloads: 0,
+          displayName: backendUser?['displayName']?.toString() ??
+              authUser?.displayName ??
+              'Creator Profile',
+          photoUrl:
+              backendUser?['photoUrl']?.toString() ?? authUser?.photoURL,
+          bio: backendUser?['bio']?.toString() ?? 'Wallpaper Creator',
+          followersCount: backendUser?['followersCount'] is int
+              ? backendUser!['followersCount'] as int
+              : 0,
+          followingCount: backendUser?['followingCount'] is int
+              ? backendUser!['followingCount'] as int
+              : 0,
+          postsCount: backendUser?['postsCount'] is int
+              ? backendUser!['postsCount'] as int
+              : communityProvider.myPosts.length,
+          totalDownloads: backendUser?['totalDownloads'] is int
+              ? backendUser!['totalDownloads'] as int
+              : 0,
           isFollowing: false,
         );
 
@@ -369,17 +450,17 @@ class BecomeCreatorBottomSheet extends StatelessWidget {
                       return;
                     }
 
-                    // User is logged in: activate creator status and launch upload screen
-                    await CreatorHelper.setCreatorStatus(true);
-                    onBecameCreator?.call();
-
                     if (context.mounted) {
                       Navigator.pop(context);
-                      Navigator.push(
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (_) => const UploadWallpaperScreen()),
                       );
+                      if (result != null) {
+                        await CreatorHelper.setCreatorStatus(true);
+                        onBecameCreator?.call();
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

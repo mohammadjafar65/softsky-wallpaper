@@ -394,7 +394,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   // Version tag
                   Center(
                     child: Text(
-                      'Softsky Wallpaper • Version 3.0.29',
+                      'Softsky Wallpaper • Version 3.0.31',
                       style: TextStyle(
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.4)

@@ -132,6 +132,7 @@ class CommunityProvider extends ChangeNotifier {
           .toList();
 
       _myPosts = refresh ? posts : [..._myPosts, ...posts];
+      _myPosts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       _myPostsHasMore = data['hasMore'] as bool? ?? false;
       _myPostsPage++;
     } catch (e) {
@@ -334,9 +335,11 @@ class CommunityProvider extends ChangeNotifier {
   Future<List<CommunityPost>> getUserPosts(int userId, {int page = 1}) async {
     try {
       final data = await _api.getUserPosts(userId, page: page);
-      return (data['posts'] as List)
+      final posts = (data['posts'] as List)
           .map((e) => CommunityPost.fromJson(e as Map<String, dynamic>))
           .toList();
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return posts;
     } catch (e) {
       debugPrint('getUserPosts error: $e');
       return [];

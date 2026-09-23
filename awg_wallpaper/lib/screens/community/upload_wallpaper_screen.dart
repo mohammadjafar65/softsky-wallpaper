@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../models/community_post.dart';
+import '../../providers/community_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/community_upload_service.dart';
 import '../../utils/creator_helper.dart';
@@ -131,6 +133,12 @@ class _UploadWallpaperScreenState extends State<UploadWallpaperScreen> {
           CommunityPost.fromJson(data['post'] as Map<String, dynamic>);
 
       await CreatorHelper.setCreatorStatus(true);
+
+      if (mounted) {
+        try {
+          context.read<CommunityProvider>().addPostToFeed(post);
+        } catch (_) {}
+      }
 
       if (mounted) {
         HapticFeedback.heavyImpact();

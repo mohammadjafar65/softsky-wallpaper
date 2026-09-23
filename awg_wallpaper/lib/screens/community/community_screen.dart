@@ -219,7 +219,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             children: [
               // Upload Button
               GestureDetector(
-                onTap: () => _openUpload(context),
+                onTap: _openUpload,
                 child: Container(
                   width: 44,
                   height: 44,
@@ -261,7 +261,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
-  void _openUpload(BuildContext context) async {
+  void _openUpload() async {
     if (!AuthService().isLoggedIn) {
       final loggedIn = await showAuthModal(
         context,
@@ -630,6 +630,27 @@ class _PostCardState extends State<_PostCard>
     _scaleController.reverse();
   }
 
+  Future<void> _handleLike() async {
+    final post = widget.post;
+    if (!AuthService().isLoggedIn) {
+      final loggedIn = await showAuthModal(
+        context,
+        message: 'Sign in to like and bookmark wallpapers',
+      );
+      if (loggedIn != true || !AuthService().isLoggedIn) return;
+    }
+    if (!mounted) return;
+    HapticFeedback.lightImpact();
+    final bookmarkProvider = context.read<BookmarkProvider>();
+    final willLike = !post.isLiked;
+    context.read<CommunityProvider>().toggleLike(post.id);
+    if (willLike) {
+      bookmarkProvider.addBookmark(post.toWallpaper());
+    } else {
+      bookmarkProvider.removeBookmark('community_${post.id}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
@@ -695,25 +716,7 @@ class _PostCardState extends State<_PostCard>
                     top: 10,
                     right: 10,
                     child: GestureDetector(
-                      onTap: () async {
-                        if (!AuthService().isLoggedIn) {
-                          final loggedIn = await showAuthModal(
-                            context,
-                            message: 'Sign in to like and bookmark wallpapers',
-                          );
-                          if (loggedIn != true || !AuthService().isLoggedIn) return;
-                        }
-                        if (!mounted) return;
-                        HapticFeedback.lightImpact();
-                        final bookmarkProvider = context.read<BookmarkProvider>();
-                        final willLike = !post.isLiked;
-                        context.read<CommunityProvider>().toggleLike(post.id);
-                        if (willLike) {
-                          bookmarkProvider.addBookmark(post.toWallpaper());
-                        } else {
-                          bookmarkProvider.removeBookmark('community_${post.id}');
-                        }
-                      },
+                      onTap: _handleLike,
                       behavior: HitTestBehavior.opaque,
                       child: Container(
                         width: 34,

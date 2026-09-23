@@ -167,9 +167,9 @@ class NotificationService {
   void _onTokenRefresh(String token) async {
     final box = Hive.box('cache');
     await box.put('fcm_token', token);
-    debugPrint('FCM Token refreshed: $token');
 
-    debugPrint('NotificationService: FCM Token refreshed: $token');
+
+    debugPrint('NotificationService: FCM Token refreshed');
     await sendTokenToBackend(token);
   }
 

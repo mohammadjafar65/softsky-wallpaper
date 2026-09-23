@@ -250,14 +250,18 @@ class ApiService {
     String? productId,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/subscriptions/verify'),
-        headers: headers,
-        body: json.encode({
-          'purchaseToken': purchaseToken,
-          'plan': plan,
-          'productId': productId,
-        }),
+      final response = await _executeWithRetry(
+        () => http
+            .post(
+              Uri.parse('$baseUrl/subscriptions/verify'),
+              headers: headers,
+              body: json.encode({
+                'purchaseToken': purchaseToken,
+                'plan': plan,
+                'productId': productId,
+              }),
+            )
+            .timeout(const Duration(seconds: 30)),
       );
 
       if (response.statusCode == 200) {
@@ -275,9 +279,13 @@ class ApiService {
   /// Get subscription status
   Future<SubscriptionStatus> getSubscriptionStatus() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/subscriptions/status'),
-        headers: headers,
+      final response = await _executeWithRetry(
+        () => http
+            .get(
+              Uri.parse('$baseUrl/subscriptions/status'),
+              headers: headers,
+            )
+            .timeout(const Duration(seconds: 30)),
       );
 
       if (response.statusCode == 200) {
@@ -303,16 +311,20 @@ class ApiService {
     String authProvider = 'google',
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/firebase/verify'),
-        headers: headers,
-        body: json.encode({
-          'firebaseUid': firebaseUid,
-          'email': email,
-          'displayName': displayName,
-          'photoUrl': photoUrl,
-          'authProvider': authProvider,
-        }),
+      final response = await _executeWithRetry(
+        () => http
+            .post(
+              Uri.parse('$baseUrl/auth/firebase/verify'),
+              headers: headers,
+              body: json.encode({
+                'firebaseUid': firebaseUid,
+                'email': email,
+                'displayName': displayName,
+                'photoUrl': photoUrl,
+                'authProvider': authProvider,
+              }),
+            )
+            .timeout(const Duration(seconds: 30)),
       );
 
       if (response.statusCode == 200) {
@@ -335,10 +347,14 @@ class ApiService {
         return false;
       }
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/users/fcm-token'),
-        headers: headers,
-        body: json.encode({'fcmToken': token}),
+      final response = await _executeWithRetry(
+        () => http
+            .post(
+              Uri.parse('$baseUrl/users/fcm-token'),
+              headers: headers,
+              body: json.encode({'fcmToken': token}),
+            )
+            .timeout(const Duration(seconds: 20)),
       );
 
       if (response.statusCode != 200) {
@@ -443,7 +459,8 @@ extension CommunityApiExtension on ApiService {
       file.path,
     ));
 
-    final streamedResponse = await request.send();
+    final streamedResponse =
+        await request.send().timeout(const Duration(seconds: 60));
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 404) {
@@ -476,7 +493,8 @@ extension CommunityApiExtension on ApiService {
     int? width,
     int? height,
   }) async {
-    final response = await _executeWithRetry(() => http.post(
+    final response = await _executeWithRetry(() => http
+        .post(
           Uri.parse('$_communityBase/posts'),
           headers: headers,
           body: jsonEncode({
@@ -487,7 +505,8 @@ extension CommunityApiExtension on ApiService {
             if (width != null) 'width': width,
             if (height != null) 'height': height,
           }),
-        ));
+        )
+        .timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 201) throw Exception(data['error'] ?? 'Failed to create post');
     return data;
@@ -497,7 +516,8 @@ extension CommunityApiExtension on ApiService {
   Future<Map<String, dynamic>> getCommunityFeed({int page = 1, int limit = 20}) async {
     final uri = Uri.parse('$_communityBase/feed').replace(
         queryParameters: {'page': '$page', 'limit': '$limit'});
-    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final response = await _executeWithRetry(() =>
+        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load feed');
     return data;
@@ -507,7 +527,8 @@ extension CommunityApiExtension on ApiService {
   Future<Map<String, dynamic>> getTrendingPosts({int page = 1, int limit = 20}) async {
     final uri = Uri.parse('$_communityBase/trending').replace(
         queryParameters: {'page': '$page', 'limit': '$limit'});
-    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final response = await _executeWithRetry(() =>
+        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load trending');
     return data;
@@ -515,10 +536,12 @@ extension CommunityApiExtension on ApiService {
 
   /// Toggle like on a post
   Future<bool> toggleLike(int postId) async {
-    final response = await _executeWithRetry(() => http.post(
+    final response = await _executeWithRetry(() => http
+        .post(
           Uri.parse('$_communityBase/posts/$postId/like'),
           headers: headers,
-        ));
+        )
+        .timeout(const Duration(seconds: 20)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to like post');
     return data['liked'] as bool;
@@ -526,10 +549,12 @@ extension CommunityApiExtension on ApiService {
 
   /// Toggle save on a post
   Future<bool> toggleSave(int postId) async {
-    final response = await _executeWithRetry(() => http.post(
+    final response = await _executeWithRetry(() => http
+        .post(
           Uri.parse('$_communityBase/posts/$postId/save'),
           headers: headers,
-        ));
+        )
+        .timeout(const Duration(seconds: 20)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to save post');
     return data['saved'] as bool;
@@ -537,11 +562,21 @@ extension CommunityApiExtension on ApiService {
 
   /// Add comment to a post
   Future<Map<String, dynamic>> addComment(int postId, String content) async {
-    final response = await _executeWithRetry(() => http.post(
+    final trimmed = content.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError('Comment cannot be empty');
+    }
+    if (trimmed.length > 500) {
+      throw ArgumentError('Comment cannot exceed 500 characters');
+    }
+
+    final response = await _executeWithRetry(() => http
+        .post(
           Uri.parse('$_communityBase/posts/$postId/comment'),
           headers: headers,
-          body: jsonEncode({'content': content}),
-        ));
+          body: jsonEncode({'content': trimmed}),
+        )
+        .timeout(const Duration(seconds: 20)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 201) throw Exception(data['error'] ?? 'Failed to add comment');
     return data;
@@ -551,7 +586,8 @@ extension CommunityApiExtension on ApiService {
   Future<Map<String, dynamic>> getComments(int postId, {int page = 1}) async {
     final uri = Uri.parse('$_communityBase/posts/$postId/comments').replace(
         queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final response = await _executeWithRetry(() =>
+        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load comments');
     return data;
@@ -559,10 +595,12 @@ extension CommunityApiExtension on ApiService {
 
   /// Follow a user
   Future<void> followUser(int userId) async {
-    final response = await _executeWithRetry(() => http.post(
+    final response = await _executeWithRetry(() => http
+        .post(
           Uri.parse('$_communityBase/follow/$userId'),
           headers: headers,
-        ));
+        )
+        .timeout(const Duration(seconds: 20)));
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       throw Exception(data['error'] ?? 'Failed to follow user');
@@ -571,10 +609,12 @@ extension CommunityApiExtension on ApiService {
 
   /// Unfollow a user
   Future<void> unfollowUser(int userId) async {
-    final response = await _executeWithRetry(() => http.delete(
+    final response = await _executeWithRetry(() => http
+        .delete(
           Uri.parse('$_communityBase/follow/$userId'),
           headers: headers,
-        ));
+        )
+        .timeout(const Duration(seconds: 20)));
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       throw Exception(data['error'] ?? 'Failed to unfollow user');
@@ -583,8 +623,9 @@ extension CommunityApiExtension on ApiService {
 
   /// Get public user profile
   Future<Map<String, dynamic>> getCommunityUser(int userId) async {
-    final response = await _executeWithRetry(
-        () => http.get(Uri.parse('$_communityBase/users/$userId'), headers: headers));
+    final response = await _executeWithRetry(() => http
+        .get(Uri.parse('$_communityBase/users/$userId'), headers: headers)
+        .timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'User not found');
     return data;
@@ -594,7 +635,8 @@ extension CommunityApiExtension on ApiService {
   Future<Map<String, dynamic>> getUserPosts(int userId, {int page = 1}) async {
     final uri = Uri.parse('$_communityBase/users/$userId/posts').replace(
         queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final response = await _executeWithRetry(() =>
+        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load posts');
     return data;
@@ -604,7 +646,8 @@ extension CommunityApiExtension on ApiService {
   Future<Map<String, dynamic>> getMyPosts({int page = 1}) async {
     final uri = Uri.parse('$_communityBase/me/posts').replace(
         queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final response = await _executeWithRetry(() =>
+        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load your posts');
     return data;
@@ -612,11 +655,13 @@ extension CommunityApiExtension on ApiService {
 
   /// Report a post
   Future<void> reportPost(int postId, String reason) async {
-    final response = await _executeWithRetry(() => http.post(
+    final response = await _executeWithRetry(() => http
+        .post(
           Uri.parse('$_communityBase/posts/$postId/report'),
           headers: headers,
           body: jsonEncode({'reason': reason}),
-        ));
+        )
+        .timeout(const Duration(seconds: 20)));
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       throw Exception(data['error'] ?? 'Failed to report post');
@@ -625,10 +670,12 @@ extension CommunityApiExtension on ApiService {
 
   /// Delete own post
   Future<void> deleteCommunityPost(int postId) async {
-    final response = await _executeWithRetry(() => http.delete(
+    final response = await _executeWithRetry(() => http
+        .delete(
           Uri.parse('$_communityBase/posts/$postId'),
           headers: headers,
-        ));
+        )
+        .timeout(const Duration(seconds: 20)));
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       throw Exception(data['error'] ?? 'Failed to delete post');
@@ -639,7 +686,8 @@ extension CommunityApiExtension on ApiService {
   Future<Map<String, dynamic>> getSavedPosts({int page = 1}) async {
     final uri = Uri.parse('$_communityBase/saved').replace(
         queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() => http.get(uri, headers: headers));
+    final response = await _executeWithRetry(() =>
+        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load saved posts');
     return data;
