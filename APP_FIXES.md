@@ -30,4 +30,8 @@ Run from `awg-backend`: `npm test` (builds TypeScript and runs Node's built-in t
 
 ## Release checks
 
+## Collective trending follow-up
+
+The live public trending API returned zero posts despite reporting 14 approved posts on 4 October 2026. The backend's seven-day creation cutoff hid older approved wallpapers. Trending now includes all approved posts, ranked by likes, then creation date and ID; guest access and moderation remain enforced. Three regression tests reproduced the failure before the fix and passed afterward, covering guest visibility, signed-in visibility, and pagination of older posts. All seven backend tests pass. No Flutter UI changes or new APK are required for this server-side fix. The live backend must run the updated code for users to see the correction.
+
 App and backend fixes were pushed to GitHub main as commit `3bee864`. Live backend deployment was not verified; the requested publication was a GitHub push. Further device testing is needed for gallery permissions, home/lock wallpaper application, background scheduling, purchases, and detailed visual comparison. No measured release-mode device speedup or comprehensive bug-free certification is claimed.

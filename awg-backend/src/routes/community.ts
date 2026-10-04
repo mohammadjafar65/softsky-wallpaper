@@ -199,7 +199,7 @@ router.get("/feed", optionalAuth, async (req: Request, res: Response) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /api/community/trending — top liked posts from last 7 days
+// GET /api/community/trending — approved posts ranked by popularity
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/trending", optionalAuth, async (req: Request, res: Response) => {
     try {
@@ -210,15 +210,13 @@ router.get("/trending", optionalAuth, async (req: Request, res: Response) => {
 
         const postRepo = AppDataSource.getRepository(CommunityPost);
         const totalCount = await postRepo.count({ where: { isApproved: true } });
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
         const posts = await postRepo
             .createQueryBuilder("post")
             .leftJoinAndSelect("post.author", "author")
-            .where("post.createdAt >= :since AND post.isApproved = true", { since: sevenDaysAgo })
+            .where("post.isApproved = true")
             .orderBy("post.likesCount", "DESC")
             .addOrderBy("post.createdAt", "DESC")
+            .addOrderBy("post.id", "DESC")
             .skip(skip)
             .take(limit)
             .getMany();
