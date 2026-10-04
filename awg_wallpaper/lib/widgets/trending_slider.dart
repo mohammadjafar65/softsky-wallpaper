@@ -1,3 +1,4 @@
+import '../config/cached_image_config.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -96,6 +97,7 @@ class _TrendingSliderState extends State<TrendingSlider> {
             fit: StackFit.expand,
             children: [
               CachedNetworkImage(
+                cacheManager: CachedImageConfig.cacheManager,
                 imageUrl: wallpaper.thumbnailUrl,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
@@ -176,4 +178,3 @@ class _TrendingSliderState extends State<TrendingSlider> {
     );
   }
 }
-

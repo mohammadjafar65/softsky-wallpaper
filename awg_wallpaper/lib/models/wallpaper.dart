@@ -65,7 +65,11 @@ class Wallpaper {
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       title: json['title']?.toString() ?? 'Untitled',
       imageUrl: ensureHttps(json['imageUrl']?.toString()),
-      thumbnailUrl: ensureHttps(json['thumbnailUrl']?.toString()),
+      thumbnailUrl: ensureHttps(
+        json['thumbnailUrl']?.toString().trim().isNotEmpty == true
+            ? json['thumbnailUrl'].toString()
+            : json['imageUrl']?.toString(),
+      ),
       category: parseCategory(json['category']),
       isWide: json['isWide'] as bool? ?? false,
       isPro: json['isPro'] as bool? ?? false,
@@ -112,4 +116,3 @@ class Wallpaper {
   @override
   int get hashCode => id.hashCode;
 }
-

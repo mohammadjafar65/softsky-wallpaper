@@ -214,12 +214,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         // Mixed Content Grid (Wallpapers + Collections)
                         if ((_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
-                            (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.allWallpapers.isEmpty))
+                            (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.wallpapers.isEmpty))
                           const SliverToBoxAdapter(
                             child: ShimmerLoading(),
                           )
                         else if (!(_filterIndex == 1 ? provider.isProLoading : provider.isLoading) &&
-                            (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.allWallpapers.isEmpty))
+                            (_filterIndex == 1 ? provider.proWallpapersList.isEmpty : provider.wallpapers.isEmpty))
                           SliverFillRemaining(
                             hasScrollBody: false,
                             child: Center(
@@ -553,10 +553,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // 1. Get wallpapers for current tab
     final wallpapers = _filterIndex == 1
         ? provider.proWallpapersList
-        : provider.allWallpapers.where((w) => !w.isWide).toList();
+        : provider.wallpapers;
 
     // 2. Get Pro Packs
-    final packs = context.watch<PackProvider>().proPacks;
+    final packs = provider.proPacks;
 
     // 3. Create a mixed list
     // Algorithm: Interleave packs into wallpapers every N items

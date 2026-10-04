@@ -9,27 +9,32 @@ const Pack_1 = require("../entities/Pack");
 const auth_1 = require("../middleware/auth");
 const upload_1 = require("../middleware/upload");
 const router = (0, express_1.Router)();
+function paginationValue(value, fallback, maximum) {
+    const parsed = typeof value === 'string' ? Number(value) : NaN;
+    return Number.isSafeInteger(parsed) && parsed > 0
+        ? Math.min(parsed, maximum)
+        : fallback;
+}
 // Get all wallpapers (public, with pagination)
 router.get("/", auth_1.optionalAuth, async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const page = paginationValue(req.query.page, 1, 1000000);
+        const limit = paginationValue(req.query.limit, 20, 100);
         const category = req.query.category;
         const isPro = req.query.isPro === "true";
         const isWide = req.query.isWide === "true";
         const wallpaperRepository = data_source_1.AppDataSource.getRepository(Wallpaper_1.Wallpaper);
-        const categoryRepository = data_source_1.AppDataSource.getRepository(Category_1.Category);
         const queryBuilder = wallpaperRepository
             .createQueryBuilder("wallpaper")
             .leftJoinAndSelect("wallpaper.category", "category");
         if (category && category !== "all") {
-            const categoryDoc = await categoryRepository.findOne({
-                where: { slug: category },
-            });
-            if (categoryDoc) {
+            if (/^\d+$/.test(category)) {
                 queryBuilder.andWhere("wallpaper.categoryId = :categoryId", {
-                    categoryId: categoryDoc.id,
+                    categoryId: Number(category),
                 });
+            }
+            else {
+                queryBuilder.andWhere("category.slug = :category", { category });
             }
         }
         if (req.query.isPro !== undefined) {
@@ -46,6 +51,7 @@ router.get("/", auth_1.optionalAuth, async (req, res) => {
         const total = await queryBuilder.getCount();
         const wallpapers = await queryBuilder
             .orderBy("wallpaper.createdAt", "DESC")
+            .addOrderBy("wallpaper.id", "DESC")
             .skip((page - 1) * limit)
             .take(limit)
             .getMany();
@@ -86,8 +92,8 @@ router.get("/", auth_1.optionalAuth, async (req, res) => {
 router.get("/search", async (req, res) => {
     try {
         const query = req.query.q;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const page = paginationValue(req.query.page, 1, 1000000);
+        const limit = paginationValue(req.query.limit, 20, 100);
         if (!query) {
             return res.status(400).json({ error: "Search query is required" });
         }
@@ -103,6 +109,7 @@ router.get("/search", async (req, res) => {
         const wallpapers = await queryBuilder
             .orderBy("wallpaper.downloads", "DESC")
             .addOrderBy("wallpaper.createdAt", "DESC")
+            .addOrderBy("wallpaper.id", "DESC")
             .skip((page - 1) * limit)
             .take(limit)
             .getMany();

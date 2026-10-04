@@ -1,3 +1,4 @@
+import '../config/cached_image_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -103,6 +104,7 @@ class _PackDetailScreenState extends State<PackDetailScreen> {
                 fit: StackFit.expand,
                 children: [
                   CachedNetworkImage(
+                    cacheManager: CachedImageConfig.cacheManager,
                     imageUrl: _pack!.coverImage,
                     fit: BoxFit.cover,
                   ),

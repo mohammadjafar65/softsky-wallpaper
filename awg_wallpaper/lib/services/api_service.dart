@@ -25,7 +25,7 @@ class ApiService {
   /// Helper method to execute HTTP requests with retry logic
   Future<http.Response> _executeWithRetry(
     Future<http.Response> Function() request, {
-    int maxRetries = _maxRetries,
+    int maxRetries = 1,
   }) async {
     int attempt = 0;
     Duration delay = _initialRetryDelay;
@@ -121,10 +121,10 @@ class ApiService {
       final uri = Uri.parse('$baseUrl/wallpapers')
           .replace(queryParameters: queryParams);
       final response = await _executeWithRetry(
-        () => http
-            .get(uri, headers: headers)
-            .timeout(const Duration(seconds: 30)),
-      );
+          () => http
+              .get(uri, headers: headers)
+              .timeout(const Duration(seconds: 30)),
+          maxRetries: ApiService._maxRetries);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -148,10 +148,10 @@ class ApiService {
       final uri = Uri.parse('$baseUrl/wallpapers/search')
           .replace(queryParameters: {'q': query});
       final response = await _executeWithRetry(
-        () => http
-            .get(uri, headers: headers)
-            .timeout(const Duration(seconds: 30)),
-      );
+          () => http
+              .get(uri, headers: headers)
+              .timeout(const Duration(seconds: 30)),
+          maxRetries: ApiService._maxRetries);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -169,13 +169,13 @@ class ApiService {
   Future<Wallpaper> getWallpaperById(String id) async {
     try {
       final response = await _executeWithRetry(
-        () => http
-            .get(
-              Uri.parse('$baseUrl/wallpapers/$id'),
-              headers: headers,
-            )
-            .timeout(const Duration(seconds: 30)),
-      );
+          () => http
+              .get(
+                Uri.parse('$baseUrl/wallpapers/$id'),
+                headers: headers,
+              )
+              .timeout(const Duration(seconds: 30)),
+          maxRetries: ApiService._maxRetries);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -206,7 +206,8 @@ class ApiService {
         return int.tryParse(data['downloads']?.toString() ?? '');
       }
 
-      debugPrint('Failed to track download: ${response.statusCode} - ${response.body}');
+      debugPrint(
+          'Failed to track download: ${response.statusCode} - ${response.body}');
       return null;
     } catch (e) {
       debugPrint('Error tracking download: $e');
@@ -220,13 +221,13 @@ class ApiService {
   Future<List<Category>> getCategories() async {
     try {
       final response = await _executeWithRetry(
-        () => http
-            .get(
-              Uri.parse('$baseUrl/categories'),
-              headers: headers,
-            )
-            .timeout(const Duration(seconds: 30)),
-      );
+          () => http
+              .get(
+                Uri.parse('$baseUrl/categories'),
+                headers: headers,
+              )
+              .timeout(const Duration(seconds: 30)),
+          maxRetries: ApiService._maxRetries);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -280,13 +281,13 @@ class ApiService {
   Future<SubscriptionStatus> getSubscriptionStatus() async {
     try {
       final response = await _executeWithRetry(
-        () => http
-            .get(
-              Uri.parse('$baseUrl/subscriptions/status'),
-              headers: headers,
-            )
-            .timeout(const Duration(seconds: 30)),
-      );
+          () => http
+              .get(
+                Uri.parse('$baseUrl/subscriptions/status'),
+                headers: headers,
+              )
+              .timeout(const Duration(seconds: 30)),
+          maxRetries: ApiService._maxRetries);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -464,7 +465,8 @@ extension CommunityApiExtension on ApiService {
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 404) {
-      throw Exception('Community server endpoint not found (404). Please ensure the backend server has the latest community update deployed.');
+      throw Exception(
+          'Community server endpoint not found (404). Please ensure the backend server has the latest community update deployed.');
     }
 
     Map<String, dynamic> data = {};
@@ -474,12 +476,15 @@ extension CommunityApiExtension on ApiService {
       }
     } catch (_) {
       if (response.statusCode != 201 && response.statusCode != 200) {
-        throw Exception('Server error (${response.statusCode}): ${response.body.isNotEmpty ? response.body : "Empty response"}');
+        throw Exception(
+            'Server error (${response.statusCode}): ${response.body.isNotEmpty ? response.body : "Empty response"}');
       }
     }
 
     if (response.statusCode != 201) {
-      throw Exception(data['error'] ?? data['message'] ?? 'Failed to upload post (${response.statusCode})');
+      throw Exception(data['error'] ??
+          data['message'] ??
+          'Failed to upload post (${response.statusCode})');
     }
     return data;
   }
@@ -508,29 +513,43 @@ extension CommunityApiExtension on ApiService {
         )
         .timeout(const Duration(seconds: 30)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 201) throw Exception(data['error'] ?? 'Failed to create post');
+    if (response.statusCode != 201) {
+      throw Exception(data['error'] ?? 'Failed to create post');
+    }
     return data;
   }
 
   /// Get community feed (following + own)
-  Future<Map<String, dynamic>> getCommunityFeed({int page = 1, int limit = 20}) async {
-    final uri = Uri.parse('$_communityBase/feed').replace(
-        queryParameters: {'page': '$page', 'limit': '$limit'});
-    final response = await _executeWithRetry(() =>
-        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
+  Future<Map<String, dynamic>> getCommunityFeed(
+      {int page = 1, int limit = 20}) async {
+    final uri = Uri.parse('$_communityBase/feed')
+        .replace(queryParameters: {'page': '$page', 'limit': '$limit'});
+    final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load feed');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to load feed');
+    }
     return data;
   }
 
   /// Get trending posts
-  Future<Map<String, dynamic>> getTrendingPosts({int page = 1, int limit = 20}) async {
-    final uri = Uri.parse('$_communityBase/trending').replace(
-        queryParameters: {'page': '$page', 'limit': '$limit'});
-    final response = await _executeWithRetry(() =>
-        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
+  Future<Map<String, dynamic>> getTrendingPosts(
+      {int page = 1, int limit = 20}) async {
+    final uri = Uri.parse('$_communityBase/trending')
+        .replace(queryParameters: {'page': '$page', 'limit': '$limit'});
+    final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load trending');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to load trending');
+    }
     return data;
   }
 
@@ -543,7 +562,9 @@ extension CommunityApiExtension on ApiService {
         )
         .timeout(const Duration(seconds: 20)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to like post');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to like post');
+    }
     return data['liked'] as bool;
   }
 
@@ -556,7 +577,9 @@ extension CommunityApiExtension on ApiService {
         )
         .timeout(const Duration(seconds: 20)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to save post');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to save post');
+    }
     return data['saved'] as bool;
   }
 
@@ -578,18 +601,25 @@ extension CommunityApiExtension on ApiService {
         )
         .timeout(const Duration(seconds: 20)));
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 201) throw Exception(data['error'] ?? 'Failed to add comment');
+    if (response.statusCode != 201) {
+      throw Exception(data['error'] ?? 'Failed to add comment');
+    }
     return data;
   }
 
   /// Get comments for a post
   Future<Map<String, dynamic>> getComments(int postId, {int page = 1}) async {
-    final uri = Uri.parse('$_communityBase/posts/$postId/comments').replace(
-        queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() =>
-        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
+    final uri = Uri.parse('$_communityBase/posts/$postId/comments')
+        .replace(queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load comments');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to load comments');
+    }
     return data;
   }
 
@@ -623,33 +653,47 @@ extension CommunityApiExtension on ApiService {
 
   /// Get public user profile
   Future<Map<String, dynamic>> getCommunityUser(int userId) async {
-    final response = await _executeWithRetry(() => http
-        .get(Uri.parse('$_communityBase/users/$userId'), headers: headers)
-        .timeout(const Duration(seconds: 30)));
+    final response = await _executeWithRetry(
+        () => http
+            .get(Uri.parse('$_communityBase/users/$userId'), headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'User not found');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'User not found');
+    }
     return data;
   }
 
   /// Get user's community posts
   Future<Map<String, dynamic>> getUserPosts(int userId, {int page = 1}) async {
-    final uri = Uri.parse('$_communityBase/users/$userId/posts').replace(
-        queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() =>
-        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
+    final uri = Uri.parse('$_communityBase/users/$userId/posts')
+        .replace(queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load posts');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to load posts');
+    }
     return data;
   }
 
   /// Get current user's posts
   Future<Map<String, dynamic>> getMyPosts({int page = 1}) async {
-    final uri = Uri.parse('$_communityBase/me/posts').replace(
-        queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() =>
-        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
+    final uri = Uri.parse('$_communityBase/me/posts')
+        .replace(queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load your posts');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to load your posts');
+    }
     return data;
   }
 
@@ -684,12 +728,17 @@ extension CommunityApiExtension on ApiService {
 
   /// Get saved community posts
   Future<Map<String, dynamic>> getSavedPosts({int page = 1}) async {
-    final uri = Uri.parse('$_communityBase/saved').replace(
-        queryParameters: {'page': '$page', 'limit': '20'});
-    final response = await _executeWithRetry(() =>
-        http.get(uri, headers: headers).timeout(const Duration(seconds: 30)));
+    final uri = Uri.parse('$_communityBase/saved')
+        .replace(queryParameters: {'page': '$page', 'limit': '20'});
+    final response = await _executeWithRetry(
+        () => http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 30)),
+        maxRetries: ApiService._maxRetries);
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    if (response.statusCode != 200) throw Exception(data['error'] ?? 'Failed to load saved posts');
+    if (response.statusCode != 200) {
+      throw Exception(data['error'] ?? 'Failed to load saved posts');
+    }
     return data;
   }
 

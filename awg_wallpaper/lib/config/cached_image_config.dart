@@ -4,15 +4,15 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class CachedImageConfig {
   static const String key = 'wallpaperCacheKey';
 
-  static CacheManager get cacheManager => CacheManager(
-        Config(
-          key,
-          stalePeriod: const Duration(days: 30),
-          maxNrOfCacheObjects: 500,
-          repo: JsonCacheInfoRepository(databaseName: key),
-          fileService: HttpFileService(),
-        ),
-      );
+  static final CacheManager cacheManager = CacheManager(
+    Config(
+      key,
+      stalePeriod: const Duration(days: 30),
+      maxNrOfCacheObjects: 500,
+      repo: JsonCacheInfoRepository(databaseName: key),
+      fileService: HttpFileService(),
+    ),
+  );
 
   /// Memory cache configuration
   static const int maxMemoryCacheSize = 100 * 1024 * 1024; // 100 MB
@@ -26,4 +26,3 @@ class CachedImageConfig {
   /// Cache duration for full images
   static const Duration fullImageCacheDuration = Duration(days: 60);
 }
-

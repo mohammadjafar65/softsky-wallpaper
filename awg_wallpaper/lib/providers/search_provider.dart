@@ -16,6 +16,8 @@ class SearchProvider extends ChangeNotifier {
 
   // Debounce timer
   Timer? _debounceTimer;
+  int _requestId = 0;
+  bool _disposed = false;
   static const _debounceDuration = Duration(milliseconds: 500);
 
   // Use API mode (set to false to use local search)
@@ -50,12 +52,16 @@ class SearchProvider extends ChangeNotifier {
   }
 
   void setQuery(String query) {
-    _query = query;
+    ++_requestId;
+    _query = query.trim();
+    _error = null;
+    _results = [];
+    _isSearching = _query.isNotEmpty;
     notifyListeners();
 
     // Debounce search
     _debounceTimer?.cancel();
-    if (query.isNotEmpty) {
+    if (_query.isNotEmpty) {
       _debounceTimer = Timer(_debounceDuration, () {
         _performSearch();
       });
@@ -68,6 +74,7 @@ class SearchProvider extends ChangeNotifier {
 
   /// Search using API or local data
   void search(List<Wallpaper> allWallpapers) {
+    _debounceTimer?.cancel();
     if (_query.isEmpty) {
       _results = [];
       _isSearching = false;
@@ -84,6 +91,8 @@ class SearchProvider extends ChangeNotifier {
 
   /// Perform search using API
   Future<void> _performSearch() async {
+    final requestId = ++_requestId;
+    final query = _query;
     if (_query.isEmpty) {
       _results = [];
       _isSearching = false;
@@ -96,10 +105,12 @@ class SearchProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiService.searchWallpapers(_query);
+      final response = await _apiService.searchWallpapers(query);
+      if (_disposed || requestId != _requestId) return;
       _results = response.wallpapers;
       _error = null;
     } catch (e) {
+      if (_disposed || requestId != _requestId) return;
       debugPrint('API search failed: $e');
       _error = 'Search failed. Please try again.';
       _results = [];
@@ -126,10 +137,11 @@ class SearchProvider extends ChangeNotifier {
 
   /// Search with custom query (instant, for history tap)
   Future<void> searchWithQuery(String query) async {
-    _query = query;
+    _debounceTimer?.cancel();
+    _query = query.trim();
     notifyListeners();
     await _performSearch();
-    await addToHistory(query);
+    if (!_disposed && _query == query.trim()) await addToHistory(_query);
   }
 
   Future<void> addToHistory(String query) async {
@@ -160,6 +172,7 @@ class SearchProvider extends ChangeNotifier {
   }
 
   void clearSearch() {
+    ++_requestId;
     _debounceTimer?.cancel();
     _query = '';
     _results = [];
@@ -174,8 +187,9 @@ class SearchProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
+    ++_requestId;
     _debounceTimer?.cancel();
     super.dispose();
   }
 }
-

@@ -1,9 +1,9 @@
+import '../config/cached_image_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:ui';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
@@ -326,6 +326,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
               fit: wallpaper.isWide ? BoxFit.contain : BoxFit.cover,
             )
           : CachedNetworkImage(
+              cacheManager: CachedImageConfig.cacheManager,
               imageUrl: wallpaper.imageUrl,
               fit: wallpaper.isWide ? BoxFit.contain : BoxFit.cover,
               placeholder: (context, url) => Container(
@@ -1118,7 +1119,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
         filePath = file.path;
       } else {
-        final file = await DefaultCacheManager().getSingleFile(url);
+        final file = await CachedImageConfig.cacheManager.getSingleFile(url);
         filePath = file.path;
       }
 
@@ -1189,7 +1190,7 @@ class _WallpaperDetailScreenState extends State<WallpaperDetailScreen> {
         await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
         filePath = file.path;
       } else {
-        final file = await DefaultCacheManager().getSingleFile(url);
+        final file = await CachedImageConfig.cacheManager.getSingleFile(url);
         filePath = file.path;
       }
 

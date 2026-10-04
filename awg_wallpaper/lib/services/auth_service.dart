@@ -18,9 +18,12 @@ class AuthService {
   final ApiService _apiService = ApiService();
 
   bool _initialized = false;
+  Future<void>? _initialization;
 
   /// Initialize auth service and restore session if user was logged in
-  Future<void> initialize() async {
+  Future<void> initialize() => _initialization ??= _restoreSession();
+
+  Future<void> _restoreSession() async {
     if (_initialized) return;
 
     if (_auth.currentUser != null) {

@@ -62,7 +62,10 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _startAutoNavigation() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.wait([
+      Future<void>.delayed(const Duration(milliseconds: 1500)),
+      AuthService().initialize(),
+    ]);
     if (!mounted || _isNavigating) return;
     _proceed();
   }

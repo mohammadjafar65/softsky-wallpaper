@@ -29,16 +29,19 @@ void main() async {
 
   // Initialize Hive (required before app starts)
   await Hive.initFlutter();
-  await Hive.openBox('bookmarks');
-  await Hive.openBox('settings');
-  await Hive.openBox('cache');
+  await Future.wait([
+    Hive.openBox('bookmarks'),
+    Hive.openBox('settings'),
+    Hive.openBox('cache'),
+  ]);
 
   // Initialize Firebase (required before app starts)
   try {
     await Firebase.initializeApp();
 
-    // Initialize AuthService singleton (critical for session restoration)
-    await AuthService().initialize().catchError((e) {
+    // Firebase restores the local session. Backend synchronization can finish
+    // in the background without blocking the first frame on a slow network.
+    AuthService().initialize().catchError((e) {
       debugPrint('AuthService init failed: $e');
     });
 
@@ -115,7 +118,10 @@ class AWGWallpaperApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => WallpaperProvider()),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (_) => WallpaperProvider(),
+        ),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),

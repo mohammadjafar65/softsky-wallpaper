@@ -1,8 +1,8 @@
+import '../config/cached_image_config.dart';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter/services.dart';
 import '../models/wallpaper.dart';
 import 'api_service.dart';
@@ -333,7 +333,7 @@ class AutoWallpaperService {
   Future<void> _applyWallpaper(String imageUrl) async {
     try {
       // Download the image first
-      final file = await DefaultCacheManager().getSingleFile(imageUrl);
+      final file = await CachedImageConfig.cacheManager.getSingleFile(imageUrl);
 
       // Apply using native channel
       await _wallpaperChannel.invokeMethod('setWallpaper', {
@@ -441,4 +441,3 @@ class AutoWallpaperService {
     await setNextWallpaper();
   }
 }
-

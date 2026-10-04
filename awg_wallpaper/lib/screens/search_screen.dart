@@ -134,7 +134,6 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 onChanged: (value) {
                   searchProvider.setQuery(value);
-                  searchProvider.search(wallpaperProvider.wallpapers);
                   setState(() {});
                 },
                 onSubmitted: (value) {
@@ -200,8 +199,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     onTap: () {
                       _controller.text = query;
                       searchProvider.setQuery(query);
-                      searchProvider.search(wallpaperProvider.wallpapers);
-                      setState(() {});
+                          setState(() {});
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -274,8 +272,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       onTap: () {
                         _controller.text = cat.name;
                         searchProvider.setQuery(cat.name);
-                        searchProvider.search(wallpaperProvider.wallpapers);
-                        setState(() {});
+                              setState(() {});
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(

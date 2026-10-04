@@ -1,8 +1,8 @@
+import '../config/cached_image_config.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/wallpaper.dart';
 
@@ -110,8 +110,8 @@ class BatchDownloadService {
   Future<void> _downloadAndSave(Wallpaper wallpaper) async {
     try {
       // Download using cache manager
-      final file =
-          await DefaultCacheManager().getSingleFile(wallpaper.imageUrl);
+      final file = await CachedImageConfig.cacheManager
+          .getSingleFile(wallpaper.imageUrl);
 
       // Copy to a temp location with proper name
       final tempDir = await getTemporaryDirectory();
@@ -148,4 +148,3 @@ class BatchDownloadService {
     _progressController.close();
   }
 }
-

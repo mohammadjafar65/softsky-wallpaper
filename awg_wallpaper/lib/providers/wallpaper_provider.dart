@@ -37,16 +37,20 @@ class WallpaperProvider extends ChangeNotifier {
   bool _hasMorePro = true;
   bool _isProLoading = false;
   int _proRequestId = 0;
+  int _freeRequestId = 0;
+  int _refreshId = 0;
+  bool _disposed = false;
+  Future<void>? _refreshFuture;
+  List<Wallpaper> _categoryWallpapers = [];
+  List<Wallpaper> _allProWallpapers = [];
+  bool _freeLoading = false;
 
   // Use API mode (set to false to use sample data)
   // bool _useApi = true;
 
   List<Wallpaper> get wallpapers => _selectedCategory == 'all'
       ? _wallpapers.where((w) => !w.isPro && !w.isWide).toList()
-      : _wallpapers
-          .where(
-              (w) => w.category == _selectedCategory && !w.isPro && !w.isWide)
-          .toList();
+      : _categoryWallpapers.where((w) => !w.isPro && !w.isWide).toList();
 
   List<Wallpaper> get allWallpapers => _wallpapers;
   List<Wallpaper> get wideWallpapers => _wideWallpapers;
@@ -80,125 +84,59 @@ class WallpaperProvider extends ChangeNotifier {
   }
 
   Future<void> _initializeData() async {
-    // Cache-first strategy: Load cached data immediately, then refresh from API
-    _isLoading = true;
-    _error = null;
-
-    // 1. Load from cache first (synchronous, instant display)
     _loadFromCache();
-
-    // If we have cached data, show it immediately
-    if (_wallpapers.isNotEmpty) {
-      _isLoading = false;
-      notifyListeners();
-    }
-
-    // 2. Then fetch fresh data from API in background
-    try {
-      await _loadFromApi();
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('API initialization failed: $e');
-      // If API fails but we have cached data, that's okay
-      if (_wallpapers.isEmpty) {
-        _error = 'Failed to connect to server.';
-      } else {
-        debugPrint('API failed but showing cached data');
-      }
-      _isLoading = false;
-      notifyListeners();
-    }
+    await refresh();
   }
 
   Future<void> _loadFromApi() async {
-    try {
-      // Load data in parallel for better performance
-      final stopwatch = Stopwatch()..start();
-
-      // Wrap each call in a try-catch to allow partial successes
-      final results = await Future.wait([
-        _apiService.getCategories().catchError((e) {
-          debugPrint('Error loading categories: $e');
-          return <Category>[];
-        }),
-        _apiService
-            .getWallpapers(page: 1, limit: 20, isPro: false, isWide: false)
-            .catchError((e) {
-          debugPrint('Error loading wallpapers: $e');
-          return WallpapersResponse(
-              wallpapers: [], page: 1, limit: 20, total: 0, pages: 1);
-        }),
-        _apiService
-            .getWallpapers(page: 1, limit: 15, isWide: true)
-            .catchError((e) {
-          debugPrint('Error loading wide wallpapers: $e');
-          return WallpapersResponse(
-              wallpapers: [], page: 1, limit: 15, total: 0, pages: 1);
-        }),
-        _packService.getPacks(page: 1, limit: 20).catchError((e) {
-          debugPrint('Error loading packs: $e');
-          return <WallpaperPack>[];
-        }),
-        _apiService
-            .getWallpapers(page: 1, limit: 20, isPro: true, isWide: false)
-            .catchError((e) {
-          debugPrint('Error loading pro wallpapers: $e');
-          return WallpapersResponse(
-              wallpapers: [], page: 1, limit: 20, total: 0, pages: 1);
-        }),
-      ]);
-
-      debugPrint(
-          'WallpaperProvider: Parallel API calls completed in ${stopwatch.elapsedMilliseconds}ms');
-
-      // 1. Categories
-      final fetchedCategories = results[0] as List<Category>;
-      if (!fetchedCategories.any((c) => c.id == 'all')) {
-        fetchedCategories.insert(
-            0, const Category(id: 'all', name: 'All', icon: '✨'));
+    final refreshId = ++_refreshId;
+    // Publish each section when it arrives; a slow optional section must not
+    // prevent the free feed from leaving its loading state.
+    Future<void> loadSection(Future<void> Function() load) async {
+      try {
+        await load();
+      } catch (e) {
+        debugPrint('Wallpaper section refresh failed: $e');
       }
-      _categories = fetchedCategories;
-
-      // 2. All Non-Wide Wallpapers (master list for both Free and Pro screens)
-      final wallpapersResponse = results[1] as WallpapersResponse;
-      _wallpapers = wallpapersResponse.wallpapers;
-      _currentPage = wallpapersResponse.page;
-      _totalPages = wallpapersResponse.pages;
-      _hasMore = _currentPage < _totalPages;
-
-      // 3. Wide Wallpapers
-      final wideWallpapersResponse = results[2] as WallpapersResponse;
-      _wideWallpapers = wideWallpapersResponse.wallpapers
-          .map((w) => w.copyWith(isPro: true))
-          .toList();
-
-      // 4. Packs
-      _packs = results[3] as List<WallpaperPack>;
-      debugPrint('WallpaperProvider: Loaded ${_packs.length} packs');
-
-      // 5. Pro Wallpapers & Counters
-      final proNonWideResponse = results[4] as WallpapersResponse;
-      _totalProWallpapers = proNonWideResponse.total;
-      if (proNonWideResponse.wallpapers.isNotEmpty) {
-        _proWallpapersList = proNonWideResponse.wallpapers;
-        _currentProPage = proNonWideResponse.page + 1;
-        _hasMorePro = proNonWideResponse.page < proNonWideResponse.pages;
-      }
-
-      // wallpapersResponse is already filtered to free (isPro: false)
-      _totalFreeWallpapers = wallpapersResponse.total;
-
-      // Overall total (all categories)
-      _totalWallpapers =
-          wallpapersResponse.total + wideWallpapersResponse.total;
-
-      // Save to cache
-      _saveToCache();
-    } catch (e) {
-      debugPrint('Failed to load data from API: $e');
-      rethrow;
     }
+
+    await Future.wait([
+      _loadFreeWallpapers(replace: true),
+      loadProWallpapers(refresh: true, force: true),
+      loadSection(() async {
+        final categories = await _apiService.getCategories();
+        if (_disposed || refreshId != _refreshId) return;
+        if (!categories.any((c) => c.id == 'all')) {
+          categories.insert(
+              0, const Category(id: 'all', name: 'All', icon: '✨'));
+        }
+        _categories = categories;
+        notifyListeners();
+      }),
+      loadSection(() async {
+        final response =
+            await _apiService.getWallpapers(page: 1, limit: 15, isWide: true);
+        if (_disposed || refreshId != _refreshId) return;
+        _wideWallpapers =
+            response.wallpapers.map((w) => w.copyWith(isPro: true)).toList();
+        _wideTotal = response.total;
+        _updateTotal();
+        notifyListeners();
+      }),
+      loadSection(() async {
+        final packs = await _packService.getPacks(page: 1, limit: 20);
+        if (_disposed || refreshId != _refreshId) return;
+        _packs = packs;
+        notifyListeners();
+      }),
+    ]);
+    if (!_disposed && refreshId == _refreshId) _saveToCache();
+  }
+
+  int _wideTotal = 0;
+
+  void _updateTotal() {
+    _totalWallpapers = _totalFreeWallpapers + _totalProWallpapers + _wideTotal;
   }
 
   void _loadFromCache() {
@@ -256,6 +194,7 @@ class WallpaperProvider extends ChangeNotifier {
         final List<dynamic> proJson = json.decode(box.get('pro_wallpapers'));
         _proWallpapersList = proJson.map((w) => Wallpaper.fromJson(w)).toList();
         _sortWallpapers(_proWallpapersList);
+        _allProWallpapers = List.of(_proWallpapersList);
       } catch (e) {
         debugPrint('Error loading pro wallpapers from cache: $e');
       }
@@ -290,7 +229,7 @@ class WallpaperProvider extends ChangeNotifier {
       box.put('packs', json.encode(_packs.map((p) => p.toJson()).toList()));
       // Save pro wallpapers to cache
       box.put('pro_wallpapers',
-          json.encode(_proWallpapersList.map((w) => w.toJson()).toList()));
+          json.encode(_allProWallpapers.map((w) => w.toJson()).toList()));
 
       debugPrint('WallpaperProvider: Saved ${_packs.length} packs to cache');
     } catch (e) {
@@ -299,74 +238,62 @@ class WallpaperProvider extends ChangeNotifier {
   }
 
   Future<void> loadMoreWallpapers() async {
-    if (_isLoading || !_hasMore) return;
+    if (_freeLoading || !_hasMore) return;
+    await _loadFreeWallpapers(replace: false);
+  }
 
-    _isLoading = true;
+  Future<void> _loadFreeWallpapers({required bool replace}) async {
+    final requestId = ++_freeRequestId;
+    final category = _selectedCategory;
+    final page = replace ? 1 : _currentPage + 1;
+    _freeLoading = true;
+    _isLoading = replace ? wallpapers.isEmpty : true;
+    _error = null;
     notifyListeners();
-
     try {
       final response = await _apiService.getWallpapers(
-        page: _currentPage + 1,
+        page: page,
         limit: 20,
         isPro: false,
-        category: _selectedCategory == 'all' ? null : _selectedCategory,
-        isWide: false, // Explicitly exclude wide wallpapers
+        category: category == 'all' ? null : category,
+        isWide: false,
       );
-      _wallpapers.addAll(response.wallpapers);
+      if (_disposed || requestId != _freeRequestId) return;
+      final existing = category == 'all' ? _wallpapers : _categoryWallpapers;
+      final items = replace ? <Wallpaper>[] : List<Wallpaper>.of(existing);
+      final ids = items.map((w) => w.id).toSet();
+      items.addAll(response.wallpapers.where((w) => ids.add(w.id)));
+      if (category == 'all') {
+        _wallpapers = items;
+        _totalFreeWallpapers = response.total;
+        _updateTotal();
+      } else {
+        _categoryWallpapers = items;
+      }
       _currentPage = response.page;
       _totalPages = response.pages;
       _hasMore = _currentPage < _totalPages;
+      if (category == 'all') _saveToCache();
     } catch (e) {
-      debugPrint('Failed to load more wallpapers: $e');
+      if (_disposed || requestId != _freeRequestId) return;
+      _error = 'Failed to load wallpapers. Please try again.';
+      debugPrint('Failed to load wallpapers: $e');
+    } finally {
+      if (!_disposed && requestId == _freeRequestId) {
+        _freeLoading = false;
+        _isLoading = false;
+        notifyListeners();
+      }
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   void setSelectedCategory(String category) {
     if (_selectedCategory == category) return;
-
     _selectedCategory = category;
+    _categoryWallpapers = [];
     _currentPage = 1;
     _hasMore = true;
-    notifyListeners();
-
-    // Reload wallpapers for selected category from API
-    if (category != 'all') {
-      _loadCategoryWallpapers(category);
-    }
-  }
-
-  Future<void> _loadCategoryWallpapers(String category) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final response = await _apiService.getWallpapers(
-        page: 1,
-        limit: 30,
-        isPro: false,
-        category: category,
-        isWide: false, // Explicitly exclude wide wallpapers
-      );
-      // Merge with existing wallpapers or filter
-      final newWallpapers = response.wallpapers;
-      for (final w in newWallpapers) {
-        if (!_wallpapers.any((existing) => existing.id == w.id)) {
-          _wallpapers.add(w);
-        }
-      }
-
-      _currentPage = response.page;
-      _totalPages = response.pages;
-      _hasMore = _currentPage < _totalPages;
-    } catch (e) {
-      debugPrint('Failed to load category wallpapers: $e');
-    }
-
-    _isLoading = false;
-    notifyListeners();
+    _loadFreeWallpapers(replace: true);
   }
 
   Future<void> loadProWallpapers({
@@ -382,23 +309,27 @@ class WallpaperProvider extends ChangeNotifier {
 
     _isProLoading = true;
     final requestId = ++_proRequestId;
+    final category = _selectedProCategory;
+    final page = _currentProPage;
     notifyListeners();
 
     try {
-      debugPrint('[ProWallpapers] Loading for category: \'$_selectedProCategory\' (sent: \'${_selectedProCategory == 'all' ? null : _selectedProCategory}\')');
+      debugPrint(
+          '[ProWallpapers] Loading for category: \'$_selectedProCategory\' (sent: \'${_selectedProCategory == 'all' ? null : _selectedProCategory}\')');
       final response = await _apiService.getWallpapers(
-        page: _currentProPage,
+        page: page,
         limit: 20,
         isPro: true,
         isWide: false,
-        category: _selectedProCategory == 'all' ? null : _selectedProCategory,
+        category: category == 'all' ? null : category,
       );
-      debugPrint('[ProWallpapers] API returned count: \'${response.wallpapers.length}\'');
-      if (requestId != _proRequestId) {
+      debugPrint(
+          '[ProWallpapers] API returned count: \'${response.wallpapers.length}\'');
+      if (_disposed || requestId != _proRequestId) {
         return;
       }
 
-      if (refresh || force || _currentProPage == 1) {
+      if (refresh || force || page == 1) {
         _proWallpapersList = response.wallpapers;
       } else {
         for (final w in response.wallpapers) {
@@ -411,7 +342,10 @@ class WallpaperProvider extends ChangeNotifier {
       _currentProPage = response.page + 1;
       _hasMorePro = response.page < response.pages;
 
-      if (_selectedProCategory == 'all' && _proWallpapersList.isNotEmpty) {
+      if (category == 'all') {
+        _totalProWallpapers = response.total;
+        _updateTotal();
+        _allProWallpapers = List.of(_proWallpapersList);
         _saveToCache();
       }
     } catch (e) {
@@ -431,6 +365,9 @@ class WallpaperProvider extends ChangeNotifier {
   void setSelectedProCategory(String category, {bool reload = false}) {
     if (_selectedProCategory == category && !reload) return;
     _selectedProCategory = category;
+    if (reload) {
+      _proWallpapersList = category == 'all' ? List.of(_allProWallpapers) : [];
+    }
     notifyListeners();
 
     if (reload) {
@@ -439,6 +376,9 @@ class WallpaperProvider extends ChangeNotifier {
   }
 
   Wallpaper? getWallpaperById(String id) {
+    for (final wallpaper in _categoryWallpapers) {
+      if (wallpaper.id == id) return wallpaper;
+    }
     try {
       return _wallpapers.firstWhere((w) => w.id == id);
     } catch (_) {
@@ -495,31 +435,38 @@ class WallpaperProvider extends ChangeNotifier {
     }
 
     _wallpapers = replaceInList(_wallpapers);
+    _categoryWallpapers = replaceInList(_categoryWallpapers);
     _wideWallpapers = replaceInList(_wideWallpapers);
     _proWallpapersList = replaceInList(_proWallpapersList);
+    _allProWallpapers = replaceInList(_allProWallpapers);
     _packs = _packs
-        .map((pack) => pack.copyWith(wallpapers: replaceInList(pack.wallpapers)))
+        .map(
+            (pack) => pack.copyWith(wallpapers: replaceInList(pack.wallpapers)))
         .toList();
   }
 
-  Future<void> refresh() async {
-    _currentPage = 1;
-    _hasMore = true;
-    _currentProPage = 1;
-    _hasMorePro = true;
-    _isLoading = true;
-    _isProLoading = true;
-    _error = null;
-    notifyListeners();
+  Future<void> refresh() {
+    return _refreshFuture ??= _refreshData().whenComplete(() {
+      _refreshFuture = null;
+    });
+  }
 
-    try {
-      await _loadFromApi();
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      _isProLoading = false;
-      notifyListeners();
-    }
+  Future<void> _refreshData() async {
+    _error = null;
+    await _loadFromApi();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    ++_freeRequestId;
+    ++_proRequestId;
+    ++_refreshId;
+    super.dispose();
   }
 }
