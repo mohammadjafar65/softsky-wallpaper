@@ -18,7 +18,9 @@ The existing screens, visual styling, animations, navigation, and purchase flows
 
 ## Validation
 
-The complete Flutter regression suite passed (9 tests), and the backend build/test command passed (4 tests). Static analysis identified brace-only lint issues, which were corrected. Subsequent analyzer runs and the Android debug build stopped producing progress and were interrupted; a clean final analyzer result and a current APK are not confirmed. The Android build had emitted dependency deprecation/Java compatibility warnings before stalling. `git diff --check` passed.
+The complete Flutter regression suite passed (9 tests), and the backend build/test command passed (4 tests). Final Dart analysis completed with no issues. The Android debug APK built successfully on 4 October 2026 and was installed and launched on the Pixel_9 emulator. `git diff --check` passed. The Windows Flutter launcher delayed the build; invoking the Flutter tool snapshot directly completed compilation.
+
+Emulator smoke checks covered guest onboarding, dismissing the existing Pro offer, the home feed (374 free wallpapers), opening wallpaper detail after dismissing the existing interstitial advertisement, and searching for nature (20 results). App-specific logs showed successful wallpaper and pack requests, with no unhandled app exception observed during these checks. The APK is available locally at `awg_wallpaper/build/app/outputs/apk/debug/app-debug.apk`.
 
 Flutter regression tests cover thumbnail fallback, slow optional API requests, failed cache refresh, category pagination and lookup, stale search/category responses, clearing search, debounce, and safe toggle retries. Backend tests exercise the real wallpaper route with a controlled database boundary for category predicates, pagination limits, and stable ordering.
 
@@ -28,4 +30,4 @@ Run from `awg-backend`: `npm test` (builds TypeScript and runs Node's built-in t
 
 ## Release checks
 
-Backend changes require deploying the updated backend; editing this repository does not update the running server. Device testing is needed for gallery permissions, home/lock wallpaper application, background scheduling, purchases, ads, and visual comparison. No Android device was connected during this work. No measured device speedup or comprehensive bug-free certification is claimed.
+App and backend fixes were pushed to GitHub main as commit `3bee864`. Live backend deployment was not verified; the requested publication was a GitHub push. Further device testing is needed for gallery permissions, home/lock wallpaper application, background scheduling, purchases, and detailed visual comparison. No measured release-mode device speedup or comprehensive bug-free certification is claimed.
